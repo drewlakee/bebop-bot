@@ -1,8 +1,10 @@
 plugins {
+    id 'org.springframework.boot' version '2.2.4.RELEASE'
+    id 'io.app.spring.dependency-management' version '1.0.8.RELEASE'
     id 'java'
 }
 
-group 'vk'
+group 'app.vk'
 version '1.0'
 
 sourceCompatibility = 1.8
@@ -12,6 +14,15 @@ repositories {
 }
 
 dependencies {
-    compile 'com.vk.api:sdk:1.0.6'
-    compile "org.telegram:telegrambots:4.6"
+    implementation 'org.springframework.boot:app.spring-boot-starter-web'
+
+    compile 'com.app.vk.api:sdk:1.0.6'
+    compile "org.app.telegram:telegrambots:4.6"
+    compile 'org.springframework.boot:app.spring-boot-starter-log4j2'
+}
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'app.spring-boot-starter-logging'
+    }
 }
