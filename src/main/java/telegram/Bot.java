@@ -11,15 +11,13 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            new Thread(
-                    () -> handleMessage(update.getMessage())
-            ).start();
+            handleMessage(update.getMessage());
         }
     }
 
     private void handleMessage(Message message) {
         try {
-            execute(new SendMessage().setChatId(message.getChatId()).setText(Thread.currentThread().getName()));
+            execute(new SendMessage().setChatId(message.getChatId()).setText("ping"));
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
