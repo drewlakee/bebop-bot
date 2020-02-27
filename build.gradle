@@ -1,6 +1,4 @@
 plugins {
-    id 'org.springframework.boot' version '2.2.4.RELEASE'
-    id "io.spring.dependency-management" version "1.0.9.RELEASE"
     id 'java'
 }
 
@@ -14,15 +12,13 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-
     compile 'com.vk.api:sdk:1.0.6'
     compile "org.telegram:telegrambots:4.6"
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '2.2.4.RELEASE'
-}
 
-configurations {
-    all {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.10.2'
+    compile group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.25.v20191220'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.13.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.0'
 }
