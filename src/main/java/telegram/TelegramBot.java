@@ -9,7 +9,7 @@ import telegram.services.SendService;
 
 public class TelegramBot {
 
-    private static HandlerBot bot;
+    private static Bot bot;
 
     public static void run() {
         if (isEmpty()) {
@@ -34,17 +34,18 @@ public class TelegramBot {
         } else
             options.setMaxThreads(4);
 
-        if (Environment.PROPERTIES.containsKey("bot_proxy_host") &&
+        if (Environment.PROPERTIES.containsKey("bot_proxy_type") &&
+                Environment.PROPERTIES.containsKey("bot_proxy_host") &&
                     Environment.PROPERTIES.containsKey("bot_proxy_port")) {
             options.setProxyType(DefaultBotOptions.ProxyType.valueOf(Environment.PROPERTIES.get("bot_proxy_type").toString()));
             options.setProxyHost(Environment.PROPERTIES.get("bot_proxy_host").toString());
             options.setProxyPort(Integer.parseInt(Environment.PROPERTIES.get("bot_proxy_port").toString()));
         }
 
-        bot = new HandlerBot(options);
+        bot = new Bot(options);
     }
 
-    public static HandlerBot instance() {
+    public static Bot instance() {
         if (isEmpty())
             throw new NullPointerException();
         else
