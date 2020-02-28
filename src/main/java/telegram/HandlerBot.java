@@ -1,27 +1,30 @@
 package telegram;
 
+import app.Environment;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-public class Bot extends TelegramLongPollingBot {
+public class HandlerBot extends TelegramLongPollingBot {
 
-    public Bot(DefaultBotOptions options) {
+    public HandlerBot(DefaultBotOptions options) {
         super(options);
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            handleMessage(update.getMessage());
-        }
+        exe.submit(() -> handleUpdate(update));
     }
 
-    private void handleMessage(Message message) {
-
+    private void handleUpdate(Update update) {
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("ping" + Thread.currentThread().getName());
+            sendMessage.setChatId(update.getMessage().getChatId());
+            executeSendMessage(sendMessage);
+        }
     }
 
     public void executeSendMessage(SendMessage message) {
@@ -34,11 +37,11 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return System.getProperty("bot_username");
+        return Environment.PROPERTIES.get("bot_username").toString();
     }
 
     @Override
     public String getBotToken() {
-        return System.getProperty("bot_token");
+        return Environment.PROPERTIES.get(("bot_token")).toString();
     }
 }

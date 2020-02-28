@@ -1,8 +1,8 @@
 package app;
 
-import java.util.Map;
+import java.util.Properties;
 
-public class Envairoment {
+public class Environment {
 
-    public final static Map<String, String>
+    public final static Properties PROPERTIES = System.getProperties();
 }
