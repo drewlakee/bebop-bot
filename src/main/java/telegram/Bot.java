@@ -4,12 +4,15 @@ import app.Environment;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import telegram.services.SendService;
+import vk.VkAccessToken;
 
-public class HandlerBot extends TelegramLongPollingBot {
+public class Bot extends TelegramLongPollingBot {
 
-    public HandlerBot(DefaultBotOptions options) {
+    public Bot(DefaultBotOptions options) {
         super(options);
     }
 
@@ -19,12 +22,22 @@ public class HandlerBot extends TelegramLongPollingBot {
     }
 
     private void handleUpdate(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setText("ping" + Thread.currentThread().getName());
-            sendMessage.setChatId(update.getMessage().getChatId());
-            executeSendMessage(sendMessage);
-        }
+        if (isHostChat(update))
+            if (VkAccessToken.isEmpty())
+                SendService.sendVkAuthNotification();
+            else if (update.hasMessage() && update.getMessage().hasText())
+                handleReceivedMessage(update.getMessage());
+    }
+
+    private boolean isHostChat(Update update) {
+        return update.getMessage().getChatId() == Long.parseLong(Environment.PROPERTIES.get("chat_id").toString());
+    }
+
+    private void handleReceivedMessage(Message message) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("ping" + Thread.currentThread().getName());
+        sendMessage.setChatId(message.getChatId());
+        executeSendMessage(sendMessage);
     }
 
     public void executeSendMessage(SendMessage message) {
