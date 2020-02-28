@@ -6,19 +6,20 @@ public class VkUserActor {
 
     private static UserActor actor;
 
-    private static boolean isNull() {
+    private static boolean isEmpty() {
         return actor == null;
     }
 
-    public static UserActor instance(UserActor receivedActor) {
-        if (isNull()) {
+    public static void init(UserActor receivedActor) {
+        if (isEmpty()) {
             actor = receivedActor;
         }
-
-        return actor;
     }
 
     public static UserActor instance() {
-        return instance(null);
+        if (isEmpty())
+            throw new NullPointerException();
+        else
+            return actor;
     }
 }
