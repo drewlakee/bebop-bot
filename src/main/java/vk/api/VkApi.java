@@ -1,4 +1,4 @@
-package vk;
+package vk.api;
 
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
