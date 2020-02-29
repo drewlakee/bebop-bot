@@ -7,8 +7,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import telegram.services.SendService;
-import vk.VkAccessToken;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -23,14 +21,12 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleUpdate(Update update) {
         if (isHostChat(update))
-            if (VkAccessToken.isEmpty())
-                SendService.sendVkAuthNotification();
-            else if (update.hasMessage() && update.getMessage().hasText())
+            if (update.hasMessage() && update.getMessage().hasText())
                 handleReceivedMessage(update.getMessage());
     }
 
     private boolean isHostChat(Update update) {
-        return update.getMessage().getChatId() == Long.parseLong(Environment.PROPERTIES.get("chat_id").toString());
+        return update.getMessage().getChatId() == Long.parseLong(Environment.PROPERTIES.get("host_chat_id").toString());
     }
 
     private void handleReceivedMessage(Message message) {

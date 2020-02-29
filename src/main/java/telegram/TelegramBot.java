@@ -5,7 +5,6 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import telegram.services.SendService;
 
 public class TelegramBot {
 
@@ -19,7 +18,6 @@ public class TelegramBot {
             TelegramBotsApi botsApi = new TelegramBotsApi();
             try {
                 botsApi.registerBot(bot);
-                SendService.sendVkAuthNotification();
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
@@ -27,29 +25,31 @@ public class TelegramBot {
     }
 
     private static void initBot() {
-        DefaultBotOptions options = new DefaultBotOptions();
+        if (isEmpty()) {
+            DefaultBotOptions customOptions = new DefaultBotOptions();
 
-        if (Environment.PROPERTIES.containsKey("bot_threads")) {
-            options.setMaxThreads(Integer.parseInt(Environment.PROPERTIES.get("bot_threads").toString()));
-        } else
-            options.setMaxThreads(4);
+            if (Environment.PROPERTIES.containsKey("bot_threads")) {
+                customOptions.setMaxThreads(Integer.parseInt(Environment.PROPERTIES.get("bot_threads").toString()));
+            } else
+                customOptions.setMaxThreads(4);
 
-        if (Environment.PROPERTIES.containsKey("bot_proxy_type") &&
-                Environment.PROPERTIES.containsKey("bot_proxy_host") &&
+            if (Environment.PROPERTIES.containsKey("bot_proxy_type") &&
+                    Environment.PROPERTIES.containsKey("bot_proxy_host") &&
                     Environment.PROPERTIES.containsKey("bot_proxy_port")) {
-            options.setProxyType(DefaultBotOptions.ProxyType.valueOf(Environment.PROPERTIES.get("bot_proxy_type").toString()));
-            options.setProxyHost(Environment.PROPERTIES.get("bot_proxy_host").toString());
-            options.setProxyPort(Integer.parseInt(Environment.PROPERTIES.get("bot_proxy_port").toString()));
-        }
+                customOptions.setProxyType(DefaultBotOptions.ProxyType.valueOf(Environment.PROPERTIES.get("bot_proxy_type").toString()));
+                customOptions.setProxyHost(Environment.PROPERTIES.get("bot_proxy_host").toString());
+                customOptions.setProxyPort(Integer.parseInt(Environment.PROPERTIES.get("bot_proxy_port").toString()));
+            }
 
-        bot = new Bot(options);
+            bot = new Bot(customOptions);
+        }
     }
 
     public static Bot instance() {
         if (isEmpty())
-            throw new NullPointerException();
-        else
-            return bot;
+            initBot();
+
+        return bot;
     }
 
     private static boolean isEmpty() {

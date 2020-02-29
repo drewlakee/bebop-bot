@@ -7,15 +7,14 @@ public class VkApi {
 
     private static VkApiClient vk;
 
-
-    private static boolean isNull() {
-        return vk == null;
-    }
-
     public static VkApiClient instance() {
-        if (isNull())
+        if (isEmpty())
             vk = new VkApiClient(new HttpTransportClient());
 
         return vk;
+    }
+
+    private static boolean isEmpty() {
+        return vk == null;
     }
 }
