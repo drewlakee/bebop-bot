@@ -5,7 +5,7 @@ telegram bot:
 -Dhost_chat_id=id 
 -Dbot_username=username
 -Dbot_token=token
-[-Dbot_proxy_type=type]type=SOCKS5, SOCKS4, HTTP
+[-Dbot_proxy_type=type]
 [-Dbot_proxy_host=ip]
 [-Dbot_proxy_port=port]
 [-Dbot_threads=count]
@@ -21,5 +21,5 @@ vk api:
 
 Получаются через Implicit Flow для доступа к VK от лица пользователя.
 
-Подробнее в [документации](https://vk.com/dev/manuals).
+Подробнее в [документации](https://vk.com/dev/manuals)
 ````
