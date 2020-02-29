@@ -18,8 +18,8 @@ bot_threads - количество потоков, которые обрабат
 vk api:
 -Dvk_token=token
 -Dvk_user_id=user_id
-
-Получаются через Implicit Flow для доступа к VK от лица пользователя.
-
-Подробнее в [документации](https://vk.com/dev/manuals)
 ````
+
+Ключ доступа получается через Implicit Flow для доступа к VK от лица пользователя.
+
+Подробнее в [документации ВКонтакте](https://vk.com/dev/manuals).
