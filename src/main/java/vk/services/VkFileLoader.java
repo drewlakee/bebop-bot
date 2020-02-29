@@ -1,6 +1,6 @@
 package vk.services;
 
-import vk.domain.GroupProvider;
+import vk.domain.VkGroupProvider;
 import vk.domain.groups.*;
 
 import java.io.File;
@@ -13,21 +13,21 @@ import java.util.List;
 public class VkFileLoader {
 
     public static void loadVkGroups() {
-        AudioGroupPool audioGroupPool = new AudioGroupPool(loadAudioGroups());
-        PhotoGroupPool photoGroupPool = new PhotoGroupPool(loadPhotoGroups());
-        GroupProvider.init(audioGroupPool, photoGroupPool);
+        VkAudioGroupPool audioGroupPool = new VkAudioGroupPool(loadAudioGroups());
+        VkPhotoGroupPool photoGroupPool = new VkPhotoGroupPool(loadPhotoGroups());
+        VkGroupProvider.init(audioGroupPool, photoGroupPool);
     }
 
-    public static ArrayList<Group> loadAudioGroups() {
+    public static ArrayList<VkGroup> loadAudioGroups() {
         return loadAudioGroups(null);
     }
 
-    public static ArrayList<Group> loadPhotoGroups() {
+    public static ArrayList<VkGroup> loadPhotoGroups() {
         return loadPhotoGroups(null);
     }
 
-    public static ArrayList<Group> loadAudioGroups(File file) {
-        ArrayList<Group> groups;
+    public static ArrayList<VkGroup> loadAudioGroups(File file) {
+        ArrayList<VkGroup> groups;
 
         if (file == null) {
             File defaultFile = new File(
@@ -40,8 +40,8 @@ public class VkFileLoader {
         return groups;
     }
 
-    public static ArrayList<Group> loadPhotoGroups(File file) {
-        ArrayList<Group> groups;
+    public static ArrayList<VkGroup> loadPhotoGroups(File file) {
+        ArrayList<VkGroup> groups;
 
         if (file == null) {
             File defaultFile = new File(
@@ -54,22 +54,22 @@ public class VkFileLoader {
         return groups;
     }
 
-    private static ArrayList<Group> readAudioGroupsFile(File file) {
-        ArrayList<Group> groups = new ArrayList<>();
+    private static ArrayList<VkGroup> readAudioGroupsFile(File file) {
+        ArrayList<VkGroup> groups = new ArrayList<>();
         List<String> allLinesOfFile = readFile(file);
 
         for(String groupId : allLinesOfFile)
-            groups.add(new AudioGroup(Integer.parseInt(groupId)));
+            groups.add(new VkAudioGroup(Integer.parseInt(groupId)));
 
         return groups;
     }
 
-    private static ArrayList<Group> readPhotoGroupsFile(File file) {
-        ArrayList<Group> groups = new ArrayList<>();
+    private static ArrayList<VkGroup> readPhotoGroupsFile(File file) {
+        ArrayList<VkGroup> groups = new ArrayList<>();
         List<String> allLinesOfFile = readFile(file);
 
         for(String groupId : allLinesOfFile)
-            groups.add(new PhotoGroup(Integer.parseInt(groupId)));
+            groups.add(new VkPhotoGroup(Integer.parseInt(groupId)));
 
         return groups;
     }

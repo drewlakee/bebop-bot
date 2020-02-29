@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import telegram.services.SendService;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -30,13 +31,21 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleReceivedMessage(Message message) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setText("ping" + Thread.currentThread().getName());
-        sendMessage.setChatId(message.getChatId());
-        executeSendMessage(sendMessage);
+        String handleCommand = message.getText();
+
+        switch (handleCommand) {
+            case "/random":
+                SendService.sendRandomVkPost(message);
+                break;
+            case "/status":
+                SendService.sendBotStatus(message);
+                break;
+            default:
+                break;
+        }
     }
 
-    public void executeSendMessage(SendMessage message) {
+    public void sendMessage(SendMessage message) {
         try {
             execute(message);
         } catch (TelegramApiException e) {

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.vk.api.sdk.objects.annotations.Required;
 import com.vk.api.sdk.objects.audio.Audio;
 
-public class CustomAudio extends Audio {
+public class VkCustomAudio extends Audio {
 
     /**
      * Owner ID
