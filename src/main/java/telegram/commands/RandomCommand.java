@@ -1,4 +1,4 @@
-package telegram.services;
+package telegram.commands;
 
 import app.Environment;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -6,22 +6,15 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.Photo;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import telegram.TelegramBot;
+import org.telegram.telegrambots.meta.bots.AbsSender;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.services.VkContentFinder;
 
-public class SendService {
+public class RandomCommand extends AbstractCommand {
 
-    public static void sendBotStatus(Message message) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("Еее емо роккк \uD83D\uDE3B");
-        TelegramBot.instance().sendMessage(sendMessage);
-    }
-
-    public static void sendRandomVkPost(Message message) {
+    public static void sendRandomVkPost(AbsSender sender, Message message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
 
@@ -41,6 +34,6 @@ public class SendService {
         }
 
         sendMessage.setText("Готово, чекай группу \uD83D\uDE38");
-        TelegramBot.instance().sendMessage(sendMessage);
+        execute(sender, sendMessage);
     }
 }

@@ -7,7 +7,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import telegram.services.SendService;
+import telegram.commands.RandomCommand;
+import telegram.commands.StatusCommand;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -35,10 +36,10 @@ public class Bot extends TelegramLongPollingBot {
 
         switch (handleCommand) {
             case "/random":
-                SendService.sendRandomVkPost(message);
+                RandomCommand.sendRandomVkPost(this, message);
                 break;
             case "/status":
-                SendService.sendBotStatus(message);
+                StatusCommand.sendStatus(this, message);
                 break;
             default:
                 break;
