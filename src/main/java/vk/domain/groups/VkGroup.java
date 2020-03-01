@@ -1,7 +1,5 @@
 package vk.domain.groups;
 
-import vk.services.VkFileLoader;
-
 public class VkGroup {
 
     private final int groupId;
@@ -11,7 +9,6 @@ public class VkGroup {
     }
 
     public int getGroupId() {
-        VkFileLoader.
         return groupId;
     }
 }
