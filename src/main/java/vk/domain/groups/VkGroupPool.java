@@ -3,14 +3,18 @@ package vk.domain.groups;
 import java.util.ArrayList;
 import java.util.Random;
 
-public abstract class VkGroupPool {
+public class VkGroupPool {
 
     private final ArrayList<VkGroup> pool;
     private final Random random;
 
-    protected VkGroupPool(ArrayList<VkGroup> groups) {
+    public VkGroupPool(ArrayList<VkGroup> groups) {
         this.pool = groups;
         this.random = new Random();
+    }
+
+    public final ArrayList<VkGroup> getPool() {
+        return pool;
     }
 
     public final VkGroup getRandomGroup() {

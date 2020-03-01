@@ -1,9 +1,8 @@
 package vk.services;
 
 import vk.domain.VkGroupProvider;
-import vk.domain.groups.VkAudioGroupPool;
 import vk.domain.groups.VkGroup;
-import vk.domain.groups.VkPhotoGroupPool;
+import vk.domain.groups.VkGroupPool;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,40 +13,31 @@ import java.util.List;
 
 public class VkFileLoader {
 
+    /**
+     *  Regexp for String.split(): group attributes from files
+     *
+     *  Format: <group name> <group_id(or owner_id)> <url>
+     *  Result of split: String[4] = {"", group name, group_id, url}
+     *  TODO: [0] == "" - need to make better regexp
+     */
+    private static final String groupAttributesSplitRegexp = "(\\s+)?[<>](\\s+<?)?";
+
     public static void loadVkGroups() {
-        VkAudioGroupPool audioGroupPool = new VkAudioGroupPool(loadAudioGroups("audioGroups"));
-        VkPhotoGroupPool photoGroupPool = new VkPhotoGroupPool(loadPhotoGroups("photoGroups"));
-        VkGroupProvider.init(audioGroupPool, photoGroupPool);
+        VkGroupPool audioGroupPool = new VkGroupPool(loadGroups("audioGroups"));
+        VkGroupPool photoGroupPool = new VkGroupPool(loadGroups("photoGroups"));
+        VkGroupPool hostGroupPool = new VkGroupPool(loadGroups("hostGroups"));
+        VkGroupProvider.init(audioGroupPool, photoGroupPool, hostGroupPool);
     }
 
-    public static ArrayList<VkGroup> loadAudioGroups(String filename) {
-        return loadAudioGroups(filename, null);
+    public static ArrayList<VkGroup> loadGroups(String filename) {
+        return loadGroups(filename, null);
     }
 
-    public static ArrayList<VkGroup> loadPhotoGroups(String filename) {
-        return loadPhotoGroups(filename, null);
+    public static ArrayList<VkGroup> loadGroups(File file) {
+        return loadGroups(null, file);
     }
 
-    public static ArrayList<VkGroup> loadAudioGroups(File file) {
-        return loadAudioGroups(null, file);
-    }
-
-    public static ArrayList<VkGroup> loadPhotoGroups(File file) {
-        return loadPhotoGroups(null, file);
-    }
-
-    private static ArrayList<VkGroup> loadAudioGroups(String filename, File file) {
-        ArrayList<VkGroup> groups;
-
-        if (file == null) {
-            groups = filterLoadFile(filename);
-        } else
-            groups = filterLoadFile(file);
-
-        return groups;
-    }
-
-    private static ArrayList<VkGroup> loadPhotoGroups(String filename, File file) {
+    private static ArrayList<VkGroup> loadGroups(String filename, File file) {
         ArrayList<VkGroup> groups;
 
         if (file == null) {
@@ -84,8 +74,17 @@ public class VkFileLoader {
         ArrayList<VkGroup> groups = new ArrayList<>();
         List<String> allLinesOfFile = readLines(file);
 
-        for(String groupId : allLinesOfFile)
-            groups.add(new VkGroup(Integer.parseInt(groupId)));
+        for(String attributes : allLinesOfFile) {
+            String[] groupAttributes = attributes.split(groupAttributesSplitRegexp);
+
+            if (groupAttributes.length == 4) {
+                groups.add(new VkGroup(
+                        groupAttributes[1],
+                        Integer.parseInt(groupAttributes[2]),
+                        groupAttributes[3]
+                ));
+            }
+        }
 
         return groups;
     }

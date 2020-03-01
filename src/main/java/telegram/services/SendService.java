@@ -30,7 +30,12 @@ public class SendService {
             VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
             String photoAttachment = "photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId();
             String audioAttachment = "audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId();
-            VkApi.instance().wall().post(VkUserActor.instance()).ownerId(Integer.parseInt(Environment.PROPERTIES.get("my_public").toString())).attachments(photoAttachment, audioAttachment).execute();
+            VkApi.instance()
+                    .wall()
+                    .post(VkUserActor.instance())
+                    .ownerId(Integer.parseInt(Environment.PROPERTIES.get("my_public").toString()))
+                    .attachments(photoAttachment, audioAttachment)
+                    .execute();
         } catch (ClientException | ApiException e) {
             e.printStackTrace();
         }

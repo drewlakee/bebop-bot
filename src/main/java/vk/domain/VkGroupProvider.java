@@ -1,31 +1,28 @@
 package vk.domain;
 
-import vk.domain.groups.VkAudioGroupPool;
-import vk.domain.groups.VkPhotoGroupPool;
+import vk.domain.groups.VkGroupPool;
 
 public class VkGroupProvider {
 
-    private static VkAudioGroupPool audioGroupPool;
-    private static VkPhotoGroupPool photoGroupPool;
+    private static VkGroupPool audioGroupPool;
+    private static VkGroupPool photoGroupPool;
+    private static VkGroupPool hostGroupPool;
 
-    public static void init(VkAudioGroupPool agp, VkPhotoGroupPool pgp) {
-        audioGroupPool = agp;
-        photoGroupPool = pgp;
+    public static void init(VkGroupPool audioGroupsPool, VkGroupPool photoGroupsPool, VkGroupPool hostGroupsPool) {
+        audioGroupPool = audioGroupsPool;
+        photoGroupPool = photoGroupsPool;
+        hostGroupPool = hostGroupsPool;
     }
 
-    public static void init(VkAudioGroupPool agp) {
-        audioGroupPool = agp;
-    }
-
-    public static void init(VkPhotoGroupPool pgp) {
-        photoGroupPool = pgp;
-    }
-
-    public static VkAudioGroupPool getAudioGroupPool() {
+    public static VkGroupPool getAudioGroupPool() {
         return audioGroupPool;
     }
 
-    public static VkPhotoGroupPool getPhotoGroupPool() {
+    public static VkGroupPool getPhotoGroupPool() {
         return photoGroupPool;
+    }
+
+    public static VkGroupPool getHostGroupPool() {
+        return hostGroupPool;
     }
 }
