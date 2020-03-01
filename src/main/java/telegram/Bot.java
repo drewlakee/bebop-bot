@@ -3,10 +3,9 @@ package telegram;
 import app.Environment;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import telegram.commands.RandomCommand;
 import telegram.commands.StatusCommand;
 
@@ -23,8 +22,10 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleUpdate(Update update) {
         if (isHostChat(update))
-            if (update.hasMessage() && update.getMessage().hasText())
+            if (update.hasMessage())
                 handleReceivedMessage(update.getMessage());
+            else if (update.hasCallbackQuery())
+                handleReceivedCallbackQuery(update.getCallbackQuery());
     }
 
     private boolean isHostChat(Update update) {
@@ -36,7 +37,7 @@ public class Bot extends TelegramLongPollingBot {
 
         switch (handleCommand) {
             case "/random":
-                RandomCommand.sendRandomVkPost(this, message);
+                RandomCommand.handleRequest(this, message);
                 break;
             case "/status":
                 StatusCommand.sendStatus(this, message);
@@ -46,12 +47,8 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendMessage(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+    private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
+
     }
 
     @Override

@@ -14,6 +14,10 @@ import vk.services.VkContentFinder;
 
 public class RandomCommand extends AbstractCommand {
 
+    public static void handleRequest(AbsSender sender, Message message) {
+
+    }
+
     public static void sendRandomVkPost(AbsSender sender, Message message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());

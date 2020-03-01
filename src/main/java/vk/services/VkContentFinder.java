@@ -31,6 +31,9 @@ public class VkContentFinder {
             jsonWallPostsAttachments = getJsonWallPosts(postsCount, randomOffset, randomGroupId);
             jsonWallAudioObjects = getJsonAudioObjects(jsonWallPostsAttachments);
             randomGroupId = VkGroupProvider.getAudioGroupPool().getRandomGroup().getGroupId();
+
+            if (jsonWallAudioObjects.isEmpty())
+                requestDelay();
         } while (jsonWallAudioObjects.isEmpty());
 
         int randomAudioJsonObject = random.nextInt(jsonWallAudioObjects.size());
@@ -86,6 +89,9 @@ public class VkContentFinder {
             wallPosts = getWallPosts(postsCount, randomOffset, randomGroupId);
             wallPosts = getPostsWithPhoto(wallPosts);
             randomGroupId = VkGroupProvider.getPhotoGroupPool().getRandomGroup().getGroupId();
+
+            if (wallPosts.isEmpty())
+                requestDelay();
         } while (wallPosts.isEmpty());
 
         int randomPostIndex = random.nextInt(wallPosts.size());
@@ -128,5 +134,13 @@ public class VkContentFinder {
         }
 
         return postsWithPhoto;
+    }
+
+    private static void requestDelay() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
