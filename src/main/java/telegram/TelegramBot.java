@@ -47,7 +47,7 @@ public class TelegramBot {
 
     public static Bot instance() {
         if (isEmpty())
-            initBot();
+            run();
 
         return bot;
     }

@@ -12,7 +12,9 @@ import vk.api.VkUserActor;
 import vk.domain.VkGroupProvider;
 import vk.domain.vkObjects.VkCustomAudio;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class VkContentFinder {
@@ -22,12 +24,12 @@ public class VkContentFinder {
         int randomOffset = random.nextInt(1000);
         int postsCount = 5;
         int randomGroupId = VkGroupProvider.getAudioGroupPool().getRandomGroup().getGroupId();
-        JsonElement jsonWallPosts;
+        JsonElement jsonWallPostsAttachments;
         List<JsonObject> jsonWallAudioObjects;
 
         do {
-            jsonWallPosts = getJsonWallPosts(postsCount, randomOffset, randomGroupId);
-            jsonWallAudioObjects = getJsonAudioObjects(jsonWallPosts);
+            jsonWallPostsAttachments = getJsonWallPosts(postsCount, randomOffset, randomGroupId);
+            jsonWallAudioObjects = getJsonAudioObjects(jsonWallPostsAttachments);
             randomGroupId = VkGroupProvider.getAudioGroupPool().getRandomGroup().getGroupId();
         } while (jsonWallAudioObjects.isEmpty());
 
@@ -41,7 +43,7 @@ public class VkContentFinder {
     }
 
     private static JsonElement getJsonWallPosts(int postsCount, int offset, int ownerId) {
-        JsonElement audios = new JsonObject();
+        JsonElement postsAttachments = new JsonObject();
 
         try {
             String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", postsCount, offset, ownerId);
@@ -49,12 +51,12 @@ public class VkContentFinder {
                     .execute()
                     .code(VkUserActor.instance(), request)
                     .execute();
-            audios = response;
+            postsAttachments = response;
         } catch (ClientException | ApiException e) {
             e.printStackTrace();
         }
 
-        return audios;
+        return postsAttachments;
     }
 
     private static List<JsonObject> getJsonAudioObjects(JsonElement jsonPosts) {

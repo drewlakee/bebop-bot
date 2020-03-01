@@ -35,7 +35,7 @@ public class SendService {
             e.printStackTrace();
         }
 
-        sendMessage.setText("Готов, чекай группу \uD83D\uDE38");
+        sendMessage.setText("Готово, чекай группу \uD83D\uDE38");
         TelegramBot.instance().sendMessage(sendMessage);
     }
 }
