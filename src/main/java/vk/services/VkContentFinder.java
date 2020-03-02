@@ -127,10 +127,12 @@ public class VkContentFinder {
         List<WallpostFull> postsWithPhoto = new ArrayList<>();
         boolean isPostHavePhotos;
         for (WallpostFull post : posts) {
-            isPostHavePhotos = post.getAttachments().stream()
-                    .anyMatch(attachment -> attachment.getPhoto() != null);
-            if (isPostHavePhotos)
-                postsWithPhoto.add(post);
+            if (post.getAttachments() != null) {
+                isPostHavePhotos = post.getAttachments().stream()
+                        .anyMatch(attachment -> attachment.getPhoto() != null);
+                if (isPostHavePhotos)
+                    postsWithPhoto.add(post);
+            }
         }
 
         return postsWithPhoto;

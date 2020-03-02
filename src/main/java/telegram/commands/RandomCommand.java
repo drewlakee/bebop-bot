@@ -31,6 +31,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     public void handle(AbsSender sender, Message message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("");
 
         try {
             Photo randomPhoto = VkContentFinder.findRandomPhoto();
@@ -44,10 +45,12 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                     .attachments(photoAttachment, audioAttachment)
                     .execute();
         } catch (ClientException | ApiException e) {
-            e.printStackTrace();
+            sendMessage.setText("Что-то по пути сломалось...");
         }
 
-        sendMessage.setText("Готово, чекай группу \uD83D\uDE38");
+        boolean isOk = sendMessage.getText().isEmpty();
+        if (isOk)
+            sendMessage.setText("Готово, чекай группу \uD83D\uDE38");
         sendAnswerMessage(sender, sendMessage);
     }
 }
