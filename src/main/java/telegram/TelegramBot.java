@@ -5,22 +5,28 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import telegram.commands.CommandsPool;
+import telegram.commands.RandomCommand;
+import telegram.commands.StatusCommand;
 
 public class TelegramBot {
 
     public static void run() {
         ApiContextInitializer.init();
-        Bot bot = initializeCustomBot();
-
+        DefaultBotOptions customOptions = initializeCustomOptions();
+        Bot bot = new Bot(customOptions);
         TelegramBotsApi botsApi = new TelegramBotsApi();
+
         try {
+            CommandsPool.register(new RandomCommand());
+            CommandsPool.register(new StatusCommand());
             botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    private static Bot initializeCustomBot() {
+    private static DefaultBotOptions initializeCustomOptions() {
         DefaultBotOptions customOptions = new DefaultBotOptions();
 
         if (Environment.PROPERTIES.containsKey("bot_threads")) {
@@ -36,6 +42,6 @@ public class TelegramBot {
             customOptions.setProxyPort(Integer.parseInt(Environment.PROPERTIES.get("bot_proxy_port").toString()));
         }
 
-        return new Bot(customOptions);
+        return customOptions;
     }
 }

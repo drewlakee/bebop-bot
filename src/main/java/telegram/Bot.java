@@ -6,6 +6,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.CommandsPool;
 import telegram.commands.RandomCommand;
 import telegram.commands.StatusCommand;
 
@@ -22,7 +23,7 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleUpdate(Update update) {
         if (isHostChat(update))
-            if (update.hasMessage())
+            if (update.hasMessage() && update.getMessage().hasText())
                 handleReceivedMessage(update.getMessage());
             else if (update.hasCallbackQuery())
                 handleReceivedCallbackQuery(update.getCallbackQuery());
@@ -37,10 +38,10 @@ public class Bot extends TelegramLongPollingBot {
 
         switch (handleCommand) {
             case "/random":
-                RandomCommand.handleRequest(this, message);
+                CommandsPool.handleCommand("/random", this, message);
                 break;
             case "/status":
-                StatusCommand.sendStatus(this, message);
+                CommandsPool.handleCommand("/status", this, message);
                 break;
             default:
                 break;

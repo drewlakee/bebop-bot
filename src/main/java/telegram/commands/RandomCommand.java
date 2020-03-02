@@ -5,20 +5,30 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.Photo;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
+import telegram.commands.abstractions.BotCommand;
+import telegram.commands.abstractions.CallbackQueryHandler;
+import telegram.commands.abstractions.MessageHandler;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.services.VkContentFinder;
 
-public class RandomCommand extends AbstractCommand {
+public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    public static void handleRequest(AbsSender sender, Message message) {
+    public RandomCommand() {
+        super("/random");
+    }
+
+    @Override
+    public void handle(AbsSender sender, CallbackQuery callbackQuery) {
 
     }
 
-    public static void sendRandomVkPost(AbsSender sender, Message message) {
+    @Override
+    public void handle(AbsSender sender, Message message) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
 
@@ -38,6 +48,6 @@ public class RandomCommand extends AbstractCommand {
         }
 
         sendMessage.setText("Готово, чекай группу \uD83D\uDE38");
-        execute(sender, sendMessage);
+        sendAnswerMessage(sender, sendMessage);
     }
 }

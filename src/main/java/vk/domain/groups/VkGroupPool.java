@@ -5,6 +5,7 @@ import java.util.Random;
 
 public class VkGroupPool {
 
+    // TODO: Make Singleton (Delete VkGroupProvider)
     private final ArrayList<VkGroup> pool;
     private final Random random;
 
