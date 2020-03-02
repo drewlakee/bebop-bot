@@ -7,8 +7,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegram.commands.CommandsPool;
-import telegram.commands.RandomCommand;
-import telegram.commands.StatusCommand;
 
 public class Bot extends TelegramLongPollingBot {
 

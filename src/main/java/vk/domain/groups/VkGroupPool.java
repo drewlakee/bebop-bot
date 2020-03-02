@@ -1,9 +1,7 @@
 package vk.domain.groups;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class VkGroupPool {
 
@@ -27,21 +25,21 @@ public class VkGroupPool {
     }
 
     public static VkGroup getRandomAudioGroup() {
-        int randomIndex = new Random().nextInt(pool.size());
-        Collection<VkGroup> audioGroup = pool.values()
+        Object[] audioGroups = pool.values()
                 .stream()
-                .filter(group -> group.getGroupObjective().equals(GroupObjective.AUDIO))
-                .collect(Collectors.toList());
-        return (VkGroup) audioGroup.toArray()[randomIndex];
+                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.AUDIO))
+                .toArray();
+        int randomIndex = new Random().nextInt(audioGroups.length);
+        return (VkGroup) audioGroups[randomIndex];
     }
 
     public static VkGroup getRandomPhotoGroup() {
-        int randomIndex = new Random().nextInt(pool.size());
-        Collection<VkGroup> photoGroup = pool.values()
+        Object[] photoGroups = pool.values()
                 .stream()
-                .filter(group -> group.getGroupObjective().equals(GroupObjective.PHOTO))
-                .collect(Collectors.toList());
-        return (VkGroup) pool.values().toArray()[randomIndex];
+                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.PHOTO))
+                .toArray();
+        int randomIndex = new Random().nextInt(photoGroups.length);
+        return (VkGroup) photoGroups[randomIndex];
     }
 
     private static boolean isEmpty() {
