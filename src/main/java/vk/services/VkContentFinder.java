@@ -9,7 +9,7 @@ import com.vk.api.sdk.objects.wall.WallpostAttachment;
 import com.vk.api.sdk.objects.wall.WallpostFull;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
-import vk.domain.VkGroupProvider;
+import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
 
 import java.util.ArrayList;
@@ -23,14 +23,14 @@ public class VkContentFinder {
         Random random = new Random();
         int randomOffset = random.nextInt(1000);
         int postsCount = 5;
-        int randomGroupId = VkGroupProvider.getAudioGroupPool().getRandomGroup().getGroupId();
+        int randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
         JsonElement jsonWallPostsAttachments;
         List<JsonObject> jsonWallAudioObjects;
 
         do {
             jsonWallPostsAttachments = getJsonWallPosts(postsCount, randomOffset, randomGroupId);
             jsonWallAudioObjects = getJsonAudioObjects(jsonWallPostsAttachments);
-            randomGroupId = VkGroupProvider.getAudioGroupPool().getRandomGroup().getGroupId();
+            randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
 
             if (jsonWallAudioObjects.isEmpty())
                 requestDelay();
@@ -82,13 +82,13 @@ public class VkContentFinder {
         Random random = new Random();
         int randomOffset = random.nextInt(1000);
         int postsCount = 10;
-        int randomGroupId = VkGroupProvider.getPhotoGroupPool().getRandomGroup().getGroupId();
+        int randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
         List<WallpostFull> wallPosts;
 
         do {
             wallPosts = getWallPosts(postsCount, randomOffset, randomGroupId);
             wallPosts = getPostsWithPhoto(wallPosts);
-            randomGroupId = VkGroupProvider.getPhotoGroupPool().getRandomGroup().getGroupId();
+            randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
 
             if (wallPosts.isEmpty())
                 requestDelay();
