@@ -3,9 +3,9 @@
 <details>
    <summary>Примеры</summary>
    
-    ![make_post](images/make_post.png)
-    ![post](images/post.png)
-
+   ![make_post](images/make_post.png)
+   ![post](images/post.png)
+   
 </details>
 
 #### VM аргументы:
@@ -36,4 +36,4 @@ vk api:
 
 #### Изменения:
 ##### v1.0.1
-* Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
+##### * Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
