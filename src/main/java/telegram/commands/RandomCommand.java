@@ -34,13 +34,17 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
         List<VkGroup> groups = VkGroupPool.getHostGroups();
+        String textAnswer;
 
         boolean isDataHaveGroup = groups.stream().anyMatch(group -> group.getUrl().equals(data));
         if (isDataHaveGroup) {
             VkGroup vkGroup = groups.stream().filter(group -> group.getUrl().equals(data)).findFirst().get();
             sendRandomVkPost(sender, callbackQuery.getMessage(), vkGroup);
+            textAnswer = "Запрос на отправку поста обработан.";
+            hideReplyMarkup(sender, callbackQuery, textAnswer);
         } else if (data.equals("exit")) {
-            sendCancel(sender, callbackQuery);
+            textAnswer = "Запрос на отправку поста отменен.";
+            hideReplyMarkup(sender, callbackQuery, textAnswer);
         }
     }
 
@@ -97,12 +101,12 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         sendAnswerMessage(sender, sendMessage);
     }
 
-    private void sendCancel(AbsSender sender, CallbackQuery callbackQuery) {
+    private void hideReplyMarkup(AbsSender sender, CallbackQuery callbackQuery, String textAnswer) {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(callbackQuery.getMessage().getChatId());
         editMessageText.setInlineMessageId(callbackQuery.getInlineMessageId());
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-        editMessageText.setText("Запрос на отправку поста отменен.");
+        editMessageText.setText(textAnswer);
         editMessageText.setReplyMarkup(null);
 
         sendEditContent(sender, editMessageText);
