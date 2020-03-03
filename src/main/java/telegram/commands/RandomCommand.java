@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import telegram.commands.abstractions.BotCommand;
 import telegram.commands.abstractions.CallbackQueryHandler;
+import telegram.commands.abstractions.EditContentHandler;
 import telegram.commands.abstractions.MessageHandler;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
@@ -23,7 +24,7 @@ import vk.services.VkContentFinder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
+public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler, EditContentHandler {
 
     public RandomCommand() {
         super("/random");
