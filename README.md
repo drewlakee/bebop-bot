@@ -1,3 +1,6 @@
+![make_post](images/make_post.png)
+![post](images/post.png)
+
 ###### VM arguments:
 
 ```` 
