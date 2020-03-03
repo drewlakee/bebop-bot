@@ -1,7 +1,7 @@
 # Telegram бот, постящий контент в VK
 
 <details>
-   <summary>Примеры</summary>
+   <summary>Примеры (с котиками)</summary>
    
    ![make_post](images/make_post.png)
    ![post](images/post.png)
@@ -36,4 +36,4 @@ vk api:
 
 #### Изменения:
 #### v1.0.1
-* Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
+* Добавлен интерактивный диалог у команды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
