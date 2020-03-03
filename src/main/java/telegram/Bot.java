@@ -6,6 +6,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.Commands;
 import telegram.commands.CommandsPool;
 
 public class Bot extends TelegramLongPollingBot {
@@ -42,11 +43,11 @@ public class Bot extends TelegramLongPollingBot {
         String handleCommand = message.getText();
 
         switch (handleCommand) {
-            case "/random":
-                CommandsPool.handleCommand("/random", this, message);
+            case Commands.RANDOM:
+                CommandsPool.handleCommand(Commands.RANDOM, this, message);
                 break;
-            case "/status":
-                CommandsPool.handleCommand("/status", this, message);
+            case Commands.STATUS:
+                CommandsPool.handleCommand(Commands.STATUS, this, message);
                 break;
         }
     }
@@ -56,7 +57,7 @@ public class Bot extends TelegramLongPollingBot {
 
         switch (recentMessage) {
             case "Выбери группу, в которую хочешь пост:":
-                CommandsPool.handleCommand("/random", this, callbackQuery);
+                CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
     }
