@@ -3,7 +3,18 @@
 <details>
    <summary>Примеры (с котиками)</summary>
    
+   #### Выбор своей группы
+   
    ![make_post](images/make_post.png)
+   
+   #### Диалог
+    
+   ![choose_cat](images/choose_cat.png)
+   
+   ![post_maked](images/post_maked.png)
+   
+   #### Пост в паблике
+   
    ![post](images/post.png)
    
 </details>
