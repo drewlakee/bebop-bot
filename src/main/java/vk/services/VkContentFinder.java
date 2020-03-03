@@ -22,7 +22,7 @@ public class VkContentFinder {
     public static VkCustomAudio findRandomAudio() {
         Random random = new Random();
         int randomOffset = random.nextInt(1000);
-        int postsCount = 5;
+        int postsCount = 10;
         int randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
         JsonElement jsonWallPostsAttachments;
         List<JsonObject> jsonWallAudioObjects;

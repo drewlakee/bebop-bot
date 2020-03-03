@@ -20,15 +20,22 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleUpdate(Update update) {
-        if (isHostChat(update))
+        if (isHostRequest(update))
             if (update.hasMessage() && update.getMessage().hasText())
                 handleReceivedMessage(update.getMessage());
             else if (update.hasCallbackQuery())
                 handleReceivedCallbackQuery(update.getCallbackQuery());
     }
 
-    private boolean isHostChat(Update update) {
-        return update.getMessage().getChatId() == Long.parseLong(Environment.PROPERTIES.get("host_chat_id").toString());
+    private boolean isHostRequest(Update update) {
+        String hostUsername = Environment.PROPERTIES.getProperty("host_username");
+
+        if (update.hasMessage())
+            return update.getMessage().getChat().getUserName().equals(hostUsername);
+        else if (update.hasCallbackQuery())
+            return update.getCallbackQuery().getMessage().getChat().getUserName().equals(hostUsername);
+
+        return false;
     }
 
     private void handleReceivedMessage(Message message) {
@@ -41,13 +48,17 @@ public class Bot extends TelegramLongPollingBot {
             case "/status":
                 CommandsPool.handleCommand("/status", this, message);
                 break;
-            default:
-                break;
         }
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
+        String recentMessage = callbackQuery.getMessage().getText();
 
+        switch (recentMessage) {
+            case "Выбери группу, в которую хочешь пост:":
+                CommandsPool.handleCommand("/random", this, callbackQuery);
+                break;
+        }
     }
 
     @Override

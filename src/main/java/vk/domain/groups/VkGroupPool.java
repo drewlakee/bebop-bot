@@ -1,7 +1,9 @@
 package vk.domain.groups;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class VkGroupPool {
 
@@ -20,10 +22,6 @@ public class VkGroupPool {
             add(group);
     }
 
-    public static HashMap<String, VkGroup> getPool() {
-        return pool;
-    }
-
     public static VkGroup getRandomAudioGroup() {
         Object[] audioGroups = pool.values()
                 .stream()
@@ -40,6 +38,13 @@ public class VkGroupPool {
                 .toArray();
         int randomIndex = new Random().nextInt(photoGroups.length);
         return (VkGroup) photoGroups[randomIndex];
+    }
+
+    public static List<VkGroup> getHostGroups() {
+        return pool.values()
+                .stream()
+                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.HOST))
+                .collect(Collectors.toList());
     }
 
     private static boolean isEmpty() {
