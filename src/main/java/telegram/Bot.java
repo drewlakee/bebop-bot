@@ -6,6 +6,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.Callbacks;
 import telegram.commands.Commands;
 import telegram.commands.CommandsPool;
 
@@ -55,8 +56,12 @@ public class Bot extends TelegramLongPollingBot {
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String recentMessage = callbackQuery.getMessage().getText();
 
+        if (recentMessage.startsWith("https") && recentMessage.endsWith("jpg"))
+            recentMessage = Callbacks.CHOOSE_PHOTO;
+
         switch (recentMessage) {
-            case "Выбери группу, в которую хочешь пост:":
+            case Callbacks.CHOOSE_GROUP:
+            case Callbacks.CHOOSE_PHOTO:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
