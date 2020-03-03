@@ -58,10 +58,10 @@ public class VkFileLoader {
         HashMap<String, VkGroup> groups;
 
         if (file == null) {
-            File defaultFile = new File(
+            File projectFile = new File(
                     VkFileLoader.class.getClassLoader().getResource(filename).getFile()
             );
-            groups = readGroupsFile(defaultFile);
+            groups = readGroupsFile(projectFile);
         } else
             groups = readGroupsFile(file);
 
@@ -76,7 +76,7 @@ public class VkFileLoader {
             String[] groupAttributes = attributes.split(groupAttributesSplitRegexp);
 
             if (groupAttributes.length == 5) {
-                groups.put( groupAttributes[2], new VkGroup(
+                groups.put(groupAttributes[2], new VkGroup(
                         GroupObjective.valueOf(groupAttributes[1]),
                         groupAttributes[2],
                         Integer.parseInt(groupAttributes[3]),
