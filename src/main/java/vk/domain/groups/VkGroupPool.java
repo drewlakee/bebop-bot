@@ -10,9 +10,8 @@ public class VkGroupPool {
     private static HashMap<String, VkGroup> pool;
 
     public static void add(VkGroup vkGroup) {
-        if (isEmpty()) {
+        if (isEmpty())
             pool = new HashMap<>();
-        }
 
         pool.put(vkGroup.getName(), vkGroup);
     }
