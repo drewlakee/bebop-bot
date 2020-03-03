@@ -2,7 +2,7 @@
 
 ```` 
 telegram bot:
--Dhost_chat_id=id 
+-Dhost_username=username
 -Dbot_username=username
 -Dbot_token=token
 [-Dbot_proxy_type=type]
@@ -11,7 +11,7 @@ telegram bot:
 [-Dbot_threads=count]
 
 [-D...] - опционально
-host_chat_id - id чата пользователя в telegram, от лица которого бот будет взаимодействоать с VK API
+host_username - пользователь в telegram, от лица которого бот будет взаимодействоать с VK API
 bot_proxy_type - тип протокола: HTTP, SOCKS4, SOCKS5
 bot_threads - количество потоков, которые обрабатывают запросы к боту
 
