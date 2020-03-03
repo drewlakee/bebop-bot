@@ -1,7 +1,14 @@
-![make_post](images/make_post.png)
-![post](images/post.png)
+# Telegram бот, постящий контент в VK
 
-###### VM arguments:
+<details>
+   <summary>Примеры</summary>
+   
+    ![make_post](images/make_post.png)
+    ![post](images/post.png)
+
+</details>
+
+#### VM аргументы:
 
 ```` 
 telegram bot:
@@ -26,3 +33,7 @@ vk api:
 Ключ доступа получается через Implicit Flow для доступа к VK от лица пользователя.
 
 Подробнее в [документации ВКонтакте](https://vk.com/dev/manuals).
+
+#### Изменения:
+##### v1.0.1
+* Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
