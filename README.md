@@ -35,5 +35,5 @@ vk api:
 Подробнее в [документации ВКонтакте](https://vk.com/dev/manuals).
 
 #### Изменения:
-##### v1.0.1
-##### * Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
+#### v1.0.1
+* Добавлен интерактивный диалог у комнды [/random](src/main/java/telegram/commands/RandomCommand.java) по выбору подобранной фотографии.
