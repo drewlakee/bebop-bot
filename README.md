@@ -5,17 +5,9 @@
    
    #### Выбор своей группы
    
-   ![make_post](images/choose_group.png)
-   
-   #### Диалог
+   ![make_post](images/make_post.png)
     
-   ![choose_cat](images/cat.png)
-   
-   ![post_maked](images/post_maked.png)
-   
-   #### Пост в паблике
-   
-   ![post](images/posted.png)
+   ![post](images/post.png)
    
 </details>
 
