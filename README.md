@@ -3,8 +3,6 @@
 <details>
    <summary>Примеры (с котиками)</summary>
    
-   #### Выбор своей группы
-   
    ![make_post](images/make_post.png)
     
    ![post](images/post.png)
