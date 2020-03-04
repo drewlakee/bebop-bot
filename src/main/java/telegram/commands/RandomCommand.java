@@ -63,7 +63,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 handleNegativeAnswerPhotoChoose(sender, callbackQuery);
                 break;
             case CANCEL:
-                cancelPostRequest(sender, callbackQuery);
+                sendCancelPostRequest(sender, callbackQuery);
                 break;
             default:
                 sendGroupChooseInlineKeyboard(sender, callbackQuery, data);
@@ -71,7 +71,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         }
     }
 
-    private void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
+    private synchronized void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (isStorageContainMessageId(messageId)) {
@@ -101,11 +101,11 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
         VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
 
-        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку слуйчайного поста обработан");
+        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку слуйчайного поста обработан.");
         sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
     }
 
-    private void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+    private synchronized void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (isStorageContainMessageId(messageId)) {
@@ -121,7 +121,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
-    private void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+    private synchronized void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (isStorageContainMessageId(messageId)) {
@@ -134,13 +134,22 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
-    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
-        EditMessageText oldMessage = new EditMessageText();
-        oldMessage.setChatId(callbackQuery.getMessage().getChatId());
-        oldMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-        oldMessage.setText("Запрос на отправку случайного поста устарел.");
+    private void sendCancelPostRequest(AbsSender sender, CallbackQuery callbackQuery) {
+        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста отменен.");
+    }
 
-        send(sender, oldMessage);
+    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (!isStorageContainMessageId(messageId)) {
+            EditMessageText oldMessage = new EditMessageText();
+            oldMessage.setChatId(callbackQuery.getMessage().getChatId());
+            oldMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+            oldMessage.setText("Запрос на отправку случайного поста устарел.");
+
+            send(sender, oldMessage);
+        }
     }
 
     private void sendPhotoChooseKeyboard(AbsSender sender, CallbackQuery callbackQuery, Photo randomPhoto) {
@@ -170,12 +179,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         markupKeyboard.setKeyboard(buttons);
 
         newPhotoMessage.setReplyMarkup(markupKeyboard);
-    }
-
-    private void cancelPostRequest(AbsSender sender, CallbackQuery callbackQuery) {
-        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
-
-        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста отменен.");
     }
 
     private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {

@@ -8,7 +8,7 @@ public abstract class Dialog {
         this.messageId = messageId;
     }
 
-    public Integer getMessageId() {
+    public synchronized Integer getMessageId() {
         return messageId;
     }
 }
