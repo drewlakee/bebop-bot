@@ -5,11 +5,20 @@ import vk.domain.groups.VkGroup;
 
 public class RandomCommandDialog extends Dialog {
 
+    private String photoChooseAnswer;
     private Photo photo;
     private VkGroup vkGroup;
 
     public RandomCommandDialog(Integer messageId) {
         super(messageId);
+    }
+
+    public void setPhotoChooseAnswer(String photoChooseAnswer) {
+        this.photoChooseAnswer = photoChooseAnswer;
+    }
+
+    public String getPhotoChooseAnswer() {
+        return photoChooseAnswer;
     }
 
     public Photo getPhoto() {

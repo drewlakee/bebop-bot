@@ -3,6 +3,7 @@ package telegram.commands;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.Photo;
+import com.vk.api.sdk.objects.photos.PhotoSizes;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -28,12 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    private static ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogProcess = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
 
     private final static String CANCEL = "0";
-    private final static String OK = "1";
-    private final static String GROUP = "2";
-    private final static String TRY_AGAIN = "3";
+    private final static String PHOTO_OK = "1";
+    private final static String GROUP_IS_CHOSEN = "2";
+    private final static String PHOTO_TRY_AGAIN = "3";
+    private final static String DIDNT_WANT_CHOOSE_PHOTO = "4";
+    private final static String WANT_CHOOSE_PHOTO = "5";
 
     public RandomCommand() {
         super("/random");
@@ -46,63 +49,119 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         boolean isDataHaveGroup = Integer.parseInt(data) < 0;
         if (isDataHaveGroup)
-            handleWay = GROUP;
+            handleWay = GROUP_IS_CHOSEN;
 
-        Photo randomPhoto;
-        String textAnswer;
+
         switch (handleWay) {
-            case GROUP:
-                RandomCommandDialog startedDialog = new RandomCommandDialog(callbackQuery.getMessage().getMessageId());
-                VkGroup chosenVkGroup = VkGroupPool.getHostGroups()
-                        .stream()
-                        .filter(group -> group.getGroupId() == Integer.parseInt(data))
-                        .findFirst()
-                        .get();
-                randomPhoto = VkContentFinder.findRandomPhoto();
-                startedDialog.setVkGroup(chosenVkGroup);
-                startedDialog.setPhoto(randomPhoto);
-                bufferedStorageMessageIdToDialogProcess.put(callbackQuery.getMessage().getMessageId(), startedDialog);
-                sendPhotoChooseInlineKeyboard(sender, callbackQuery, randomPhoto);
+            case GROUP_IS_CHOSEN:
+                handlePostRequestDialog(sender, callbackQuery, data);
                 break;
-            case OK:
-                if (bufferedStorageMessageIdToDialogProcess.containsKey(callbackQuery.getMessage().getMessageId())) {
-                    RandomCommandDialog endingDialog = bufferedStorageMessageIdToDialogProcess.get(callbackQuery.getMessage().getMessageId());
-                    bufferedStorageMessageIdToDialogProcess.remove(callbackQuery.getMessage().getMessageId(), endingDialog);
-                    VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
-                    textAnswer = "Запрос на отправку поста обработан.";
-                    hideReplyMarkup(sender, callbackQuery, textAnswer);
-                    sendRandomVkPost(sender, callbackQuery.getMessage(), randomAudio, endingDialog);
-                }
+            case PHOTO_OK:
+                handlePositiveAnswerPhotoChoose(sender, callbackQuery);
                 break;
-            case TRY_AGAIN:
-                if (bufferedStorageMessageIdToDialogProcess.containsKey(callbackQuery.getMessage().getMessageId())) {
-                    RandomCommandDialog dialogInProcess = bufferedStorageMessageIdToDialogProcess.get(callbackQuery.getMessage().getMessageId());
-                    randomPhoto = VkContentFinder.findRandomPhoto();
-                    dialogInProcess.setPhoto(randomPhoto);
-                    sendPhotoChooseInlineKeyboard(sender, callbackQuery, randomPhoto);
-                }
+            case PHOTO_TRY_AGAIN:
+                handleNegativeAnswerPhotoChoose(sender, callbackQuery);
                 break;
             case CANCEL:
-                bufferedStorageMessageIdToDialogProcess.remove(callbackQuery.getMessage().getMessageId());
-                textAnswer = "Запрос на отправку поста отменен.";
-                hideReplyMarkup(sender, callbackQuery, textAnswer);
+                cancelPostRequest(sender, callbackQuery);
+                break;
+            default:
+                sendGroupChooseInlineKeyboard(sender, callbackQuery, data);
                 break;
         }
     }
 
-    private void sendPhotoChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, Photo randomPhoto) {
-        EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(callbackQuery.getMessage().getChatId());
-        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-        URL imageUrl = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1).getUrl();
-        editMessageText.setText(imageUrl.toString());
+    private void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
+        int messageId = callbackQuery.getMessage().getMessageId();
 
+        if (isStorageContainMessageId(messageId)) {
+            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+
+            if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
+                sendAnotherPhoto(sender, callbackQuery, dialog, data);
+            } else
+                sendRandomPost(sender, callbackQuery, data);
+        } else
+            sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void sendAnotherPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog, String data) {
+        VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+        Photo randomPhoto = VkContentFinder.findRandomPhoto();
+        dialog.setVkGroup(chosenVkGroup);
+        dialog.setPhoto(randomPhoto);
+        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+
+        sendPhotoChooseKeyboard(sender, callbackQuery, randomPhoto);
+    }
+
+    private void sendRandomPost(AbsSender sender, CallbackQuery callbackQuery, String data) {
+        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+        Photo randomPhoto = VkContentFinder.findRandomPhoto();
+        VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
+        VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+
+        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку слуйчайного поста обработан");
+        sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
+    }
+
+    private void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (isStorageContainMessageId(messageId)) {
+            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+            bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId(), dialog);
+            VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
+            VkGroup chosenGroup = dialog.getVkGroup();
+            Photo chosenPhoto = dialog.getPhoto();
+
+            hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста обработан.");
+            sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
+        } else
+            sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (isStorageContainMessageId(messageId)) {
+            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+            Photo randomPhoto = VkContentFinder.findRandomPhoto();
+            dialog.setPhoto(randomPhoto);
+
+            sendPhotoChooseKeyboard(sender, callbackQuery, randomPhoto);
+        } else
+            sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
+        EditMessageText oldMessage = new EditMessageText();
+        oldMessage.setChatId(callbackQuery.getMessage().getChatId());
+        oldMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+        oldMessage.setText("Запрос на отправку случайного поста устарел.");
+
+        send(sender, oldMessage);
+    }
+
+    private void sendPhotoChooseKeyboard(AbsSender sender, CallbackQuery callbackQuery, Photo randomPhoto) {
+        EditMessageText newPhotoMessage = new EditMessageText();
+        newPhotoMessage.setChatId(callbackQuery.getMessage().getChatId());
+        newPhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+        PhotoSizes bigResolutionPhoto = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
+        URL imageUrl = bigResolutionPhoto.getUrl();
+        newPhotoMessage.setText(imageUrl.toString());
+        setPhotoChooseInlineKeyboard(newPhotoMessage);
+
+        send(sender, newPhotoMessage);
+    }
+
+    private void setPhotoChooseInlineKeyboard(EditMessageText newPhotoMessage) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> answersGroup = new ArrayList<>();
         List<InlineKeyboardButton> cancelButtonsLine = new ArrayList<>();
 
-        answersGroup.add(new InlineKeyboardButton().setText("Пойдет").setCallbackData(OK));
-        answersGroup.add(new InlineKeyboardButton().setText("Не пойдет").setCallbackData(TRY_AGAIN));
+        answersGroup.add(new InlineKeyboardButton().setText("Пойдет").setCallbackData(PHOTO_OK));
+        answersGroup.add(new InlineKeyboardButton().setText("Не пойдет").setCallbackData(PHOTO_TRY_AGAIN));
         cancelButtonsLine.add(new InlineKeyboardButton().setText("Прервать").setCallbackData(CANCEL));
         buttons.add(answersGroup);
         buttons.add(cancelButtonsLine);
@@ -110,20 +169,30 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
-        editMessageText.setReplyMarkup(markupKeyboard);
-        send(sender, editMessageText);
+        newPhotoMessage.setReplyMarkup(markupKeyboard);
     }
 
-    @Override
-    public void handle(AbsSender sender, Message message) {
-        SendMessage answer = new SendMessage();
-        setHostGroupsInlineKeyboardMarkup(answer);
-        answer.setChatId(message.getChatId());
-        answer.setText("Выбери группу, в которую хочешь пост:");
-        send(sender, answer);
+    private void cancelPostRequest(AbsSender sender, CallbackQuery callbackQuery) {
+        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+
+        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста отменен.");
     }
 
-    private void setHostGroupsInlineKeyboardMarkup(SendMessage message) {
+    private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
+        RandomCommandDialog dialog = new RandomCommandDialog(callbackQuery.getMessage().getMessageId());
+        dialog.setPhotoChooseAnswer(data);
+        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+
+        EditMessageText groupChooseMessage = new EditMessageText();
+        groupChooseMessage.setText(Callbacks.RANDOM_CHOOSE_GROUP);
+        groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
+        groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+        setHostGroupsInlineKeyboardMarkup(groupChooseMessage);
+
+        send(sender, groupChooseMessage);
+    }
+
+    private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> groupsButtonsLine = new ArrayList<>();
         List<InlineKeyboardButton> manageButtonsLine = new ArrayList<>();
@@ -133,38 +202,11 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         manageButtonsLine.add(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL));
         buttons.add(groupsButtonsLine);
         buttons.add(manageButtonsLine);
-
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
+        message.setText(Callbacks.RANDOM_CHOOSE_GROUP);
         message.setReplyMarkup(markupKeyboard);
-    }
-
-    private void sendRandomVkPost(AbsSender sender, Message message, VkCustomAudio randomAudio, RandomCommandDialog endedDialog) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("");
-        VkGroup chosenGroup = endedDialog.getVkGroup();
-        Photo chosenPhoto = endedDialog.getPhoto();
-
-
-        try {
-            String photoAttachment = "photo" + chosenPhoto.getOwnerId() + "_" + chosenPhoto.getId();
-            String audioAttachment = "audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId();
-            VkApi.instance()
-                    .wall()
-                    .post(VkUserActor.instance())
-                    .ownerId(chosenGroup.getGroupId())
-                    .attachments(photoAttachment, audioAttachment)
-                    .execute();
-        } catch (ClientException | ApiException e) {
-            sendMessage.setText("Что-то по пути сломалось...");
-        }
-
-        boolean isOk = sendMessage.getText().isEmpty();
-        if (isOk)
-            sendMessage.setText("Готово, чекай группу \uD83D\uDE38\n" + chosenGroup.getUrl());
-        send(sender, sendMessage);
     }
 
     private void hideReplyMarkup(AbsSender sender, CallbackQuery callbackQuery, String textAnswer) {
@@ -173,6 +215,58 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         editMessageText.setText(textAnswer);
         editMessageText.setReplyMarkup(null);
+
         send(sender, editMessageText);
+    }
+
+    @Override
+    public void handle(AbsSender sender, Message message) {
+        SendMessage answer = new SendMessage();
+        setPhotoAskInlineKeyboardMarkup(answer);
+        answer.setChatId(message.getChatId());
+
+        send(sender, answer);
+    }
+
+    private void setPhotoAskInlineKeyboardMarkup(SendMessage message) {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<InlineKeyboardButton> questionButtonsLine = new ArrayList<>();
+        List<InlineKeyboardButton> cancelButtonLine = new ArrayList<>();
+
+        questionButtonsLine.add(new InlineKeyboardButton().setText("Да").setCallbackData(WANT_CHOOSE_PHOTO));
+        questionButtonsLine.add(new InlineKeyboardButton().setText("Нет").setCallbackData(DIDNT_WANT_CHOOSE_PHOTO));
+        cancelButtonLine.add(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL));
+        buttons.add(questionButtonsLine);
+        buttons.add(cancelButtonLine);
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+
+        message.setText(Callbacks.RANDOM_ASK_CHOOSE_PHOTO);
+        message.setReplyMarkup(markupKeyboard);
+    }
+
+    private void sendVkPost(AbsSender sender, Message message, VkCustomAudio audio, Photo photo, VkGroup group) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Готово, чекай группу \uD83D\uDE38\n" + group.getUrl());
+
+        try {
+            String photoAttachment = "photo" + photo.getOwnerId() + "_" + photo.getId();
+            String audioAttachment = "audio" + audio.getOwnerId() + "_" + audio.getId();
+            VkApi.instance()
+                    .wall()
+                    .post(VkUserActor.instance())
+                    .ownerId(group.getGroupId())
+                    .attachments(photoAttachment, audioAttachment)
+                    .execute();
+        } catch (ClientException | ApiException e) {
+            sendMessage.setText("Что-то по пути сломалось...");
+        }
+
+        send(sender, sendMessage);
+    }
+
+    private boolean isStorageContainMessageId(int messageId) {
+        return bufferedStorageMessageIdToDialogMessage.containsKey(messageId);
     }
 }

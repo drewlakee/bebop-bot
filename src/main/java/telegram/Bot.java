@@ -57,11 +57,12 @@ public class Bot extends TelegramLongPollingBot {
         String recentMessage = callbackQuery.getMessage().getText();
 
         if (recentMessage.startsWith("https") && recentMessage.endsWith("jpg"))
-            recentMessage = Callbacks.CHOOSE_PHOTO;
+            recentMessage = Callbacks.RANDOM_CHOOSE_PHOTO;
 
         switch (recentMessage) {
-            case Callbacks.CHOOSE_GROUP:
-            case Callbacks.CHOOSE_PHOTO:
+            case Callbacks.RANDOM_ASK_CHOOSE_PHOTO:
+            case Callbacks.RANDOM_CHOOSE_GROUP:
+            case Callbacks.RANDOM_CHOOSE_PHOTO:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
