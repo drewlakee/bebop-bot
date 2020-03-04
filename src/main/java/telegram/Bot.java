@@ -6,6 +6,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.Callbacks;
+import telegram.commands.Commands;
 import telegram.commands.CommandsPool;
 
 public class Bot extends TelegramLongPollingBot {
@@ -42,11 +44,11 @@ public class Bot extends TelegramLongPollingBot {
         String handleCommand = message.getText();
 
         switch (handleCommand) {
-            case "/random":
-                CommandsPool.handleCommand("/random", this, message);
+            case Commands.RANDOM:
+                CommandsPool.handleCommand(Commands.RANDOM, this, message);
                 break;
-            case "/status":
-                CommandsPool.handleCommand("/status", this, message);
+            case Commands.STATUS:
+                CommandsPool.handleCommand(Commands.STATUS, this, message);
                 break;
         }
     }
@@ -54,9 +56,14 @@ public class Bot extends TelegramLongPollingBot {
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String recentMessage = callbackQuery.getMessage().getText();
 
+        if (recentMessage.startsWith("https") && recentMessage.endsWith("jpg"))
+            recentMessage = Callbacks.RANDOM_CHOOSE_PHOTO;
+
         switch (recentMessage) {
-            case "Выбери группу, в которую хочешь пост:":
-                CommandsPool.handleCommand("/random", this, callbackQuery);
+            case Callbacks.RANDOM_ASK_CHOOSE_PHOTO:
+            case Callbacks.RANDOM_CHOOSE_GROUP:
+            case Callbacks.RANDOM_CHOOSE_PHOTO:
+                CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
     }

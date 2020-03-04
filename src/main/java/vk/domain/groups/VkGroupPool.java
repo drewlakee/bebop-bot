@@ -46,6 +46,14 @@ public class VkGroupPool {
                 .collect(Collectors.toList());
     }
 
+    public static VkGroup getHostGroup(int id) {
+        return pool.values()
+                .stream()
+                .filter(group -> group.getGroupId() == id)
+                .findAny()
+                .orElseThrow();
+    }
+
     private static boolean isEmpty() {
         return pool == null;
     }

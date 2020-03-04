@@ -3,9 +3,9 @@ package telegram.commands;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import telegram.commands.abstractions.BotCommand;
-import telegram.commands.abstractions.CallbackQueryHandler;
-import telegram.commands.abstractions.MessageHandler;
+import telegram.commands.handlers.BotCommand;
+import telegram.commands.handlers.CallbackQueryHandler;
+import telegram.commands.handlers.MessageHandler;
 
 import java.util.HashMap;
 
