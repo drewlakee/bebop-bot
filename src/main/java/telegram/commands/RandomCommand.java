@@ -5,6 +5,7 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.photos.PhotoSizes;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -24,12 +25,12 @@ import vk.services.VkContentFinder;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    private static ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
+    private static HashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage = new HashMap<>();
 
     private final static String CANCEL = "0";
     private final static String PHOTO_OK = "1";
@@ -50,7 +51,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         boolean isDataHaveGroup = Integer.parseInt(data) < 0;
         if (isDataHaveGroup)
             handleWay = GROUP_IS_CHOSEN;
-
 
         switch (handleWay) {
             case GROUP_IS_CHOSEN:
@@ -101,7 +101,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
         VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
 
-        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку слуйчайного поста обработан.");
+        deleteHandledMessage(sender, callbackQuery);
         sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
     }
 
@@ -115,7 +115,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             VkGroup chosenGroup = dialog.getVkGroup();
             Photo chosenPhoto = dialog.getPhoto();
 
-            hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста обработан.");
+            deleteHandledMessage(sender, callbackQuery);
             sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
         } else
             sendNotificationAboutOldMessage(sender, callbackQuery);
@@ -136,10 +136,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private void sendCancelPostRequest(AbsSender sender, CallbackQuery callbackQuery) {
         bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
-        hideReplyMarkup(sender, callbackQuery, "Запрос на отправку случайного поста отменен.");
+        deleteHandledMessage(sender, callbackQuery);
     }
 
-    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
+    private synchronized void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (!isStorageContainMessageId(messageId)) {
@@ -212,14 +212,12 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         message.setReplyMarkup(markupKeyboard);
     }
 
-    private void hideReplyMarkup(AbsSender sender, CallbackQuery callbackQuery, String textAnswer) {
-        EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(callbackQuery.getMessage().getChatId());
-        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-        editMessageText.setText(textAnswer);
-        editMessageText.setReplyMarkup(null);
+    private void deleteHandledMessage(AbsSender sender, CallbackQuery callbackQuery) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
+        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
-        send(sender, editMessageText);
+        send(sender, deleteMessage);
     }
 
     @Override
