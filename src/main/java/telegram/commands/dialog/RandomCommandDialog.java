@@ -36,4 +36,12 @@ public class RandomCommandDialog extends Dialog {
     public void setVkGroup(VkGroup vkGroup) {
         this.vkGroup = vkGroup;
     }
+
+    public boolean hasPhotoChooseAnswer() {
+        return photoChooseAnswer != null;
+    }
+
+    public boolean hasVkGroup() {
+        return vkGroup != null;
+    }
 }

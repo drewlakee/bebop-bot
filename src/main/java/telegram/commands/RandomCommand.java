@@ -32,7 +32,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private static HashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage = new HashMap<>();
 
-    private final static String CANCEL = "0";
     private final static String PHOTO_OK = "1";
     private final static String GROUP_IS_CHOSEN = "2";
     private final static String PHOTO_TRY_AGAIN = "3";
@@ -62,9 +61,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             case PHOTO_TRY_AGAIN:
                 handleNegativeAnswerPhotoChoose(sender, callbackQuery);
                 break;
-            case CANCEL:
-                sendCancelPostRequest(sender, callbackQuery);
-                break;
             default:
                 sendGroupChooseInlineKeyboard(sender, callbackQuery, data);
                 break;
@@ -77,29 +73,34 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         if (isStorageContainMessageId(messageId)) {
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
 
+            synchronized (this) {
+                if (!dialog.hasVkGroup()) {
+                    VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+                    dialog.setVkGroup(chosenVkGroup);
+                }
+            }
+
             if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
-                sendAnotherPhoto(sender, callbackQuery, dialog, data);
+                sendPhoto(sender, callbackQuery, dialog);
             } else
-                sendRandomPost(sender, callbackQuery, data);
+                sendRandomPost(sender, callbackQuery, dialog);
         } else
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
-    private void sendAnotherPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog, String data) {
-        VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+    private void sendPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
         Photo randomPhoto = VkContentFinder.findRandomPhoto();
-        dialog.setVkGroup(chosenVkGroup);
         dialog.setPhoto(randomPhoto);
         bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
 
         sendPhotoChooseKeyboard(sender, callbackQuery, randomPhoto);
     }
 
-    private void sendRandomPost(AbsSender sender, CallbackQuery callbackQuery, String data) {
+    private void sendRandomPost(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
         bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
         Photo randomPhoto = VkContentFinder.findRandomPhoto();
         VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
-        VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+        VkGroup chosenVkGroup = dialog.getVkGroup();
 
         deleteHandledMessage(sender, callbackQuery);
         sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
@@ -126,17 +127,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         if (isStorageContainMessageId(messageId)) {
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            Photo randomPhoto = VkContentFinder.findRandomPhoto();
-            dialog.setPhoto(randomPhoto);
-
-            sendPhotoChooseKeyboard(sender, callbackQuery, randomPhoto);
+            sendPhoto(sender, callbackQuery, dialog);
         } else
             sendNotificationAboutOldMessage(sender, callbackQuery);
-    }
-
-    private void sendCancelPostRequest(AbsSender sender, CallbackQuery callbackQuery) {
-        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
-        deleteHandledMessage(sender, callbackQuery);
     }
 
     private synchronized void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
@@ -171,7 +164,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         answersGroup.add(new InlineKeyboardButton().setText("Пойдет").setCallbackData(PHOTO_OK));
         answersGroup.add(new InlineKeyboardButton().setText("Не пойдет").setCallbackData(PHOTO_TRY_AGAIN));
-        cancelButtonsLine.add(new InlineKeyboardButton().setText("Прервать").setCallbackData(CANCEL));
         buttons.add(answersGroup);
         buttons.add(cancelButtonsLine);
 
@@ -183,8 +175,13 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
         RandomCommandDialog dialog = new RandomCommandDialog(callbackQuery.getMessage().getMessageId());
-        dialog.setPhotoChooseAnswer(data);
-        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+
+        synchronized (this) {
+            if (!dialog.hasPhotoChooseAnswer()) {
+                dialog.setPhotoChooseAnswer(data);
+                bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+            }
+        }
 
         EditMessageText groupChooseMessage = new EditMessageText();
         groupChooseMessage.setText(Callbacks.RANDOM_CHOOSE_GROUP);
@@ -198,13 +195,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> groupsButtonsLine = new ArrayList<>();
-        List<InlineKeyboardButton> manageButtonsLine = new ArrayList<>();
 
         for (VkGroup group : VkGroupPool.getHostGroups())
             groupsButtonsLine.add(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId())));
-        manageButtonsLine.add(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL));
         buttons.add(groupsButtonsLine);
-        buttons.add(manageButtonsLine);
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
@@ -232,13 +226,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void setPhotoAskInlineKeyboardMarkup(SendMessage message) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> questionButtonsLine = new ArrayList<>();
-        List<InlineKeyboardButton> cancelButtonLine = new ArrayList<>();
 
         questionButtonsLine.add(new InlineKeyboardButton().setText("Да").setCallbackData(WANT_CHOOSE_PHOTO));
         questionButtonsLine.add(new InlineKeyboardButton().setText("Нет").setCallbackData(DIDNT_WANT_CHOOSE_PHOTO));
-        cancelButtonLine.add(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL));
         buttons.add(questionButtonsLine);
-        buttons.add(cancelButtonLine);
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
