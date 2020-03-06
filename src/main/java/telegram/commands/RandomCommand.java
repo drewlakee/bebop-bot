@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
+import telegram.commands.dialog.DialogCleanerThread;
 import telegram.commands.dialog.RandomCommandDialog;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
@@ -25,12 +26,12 @@ import vk.services.VkContentFinder;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    private static HashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage = new HashMap<>();
+    private ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage;
 
     private final static String PHOTO_OK = "1";
     private final static String GROUP_IS_CHOSEN = "2";
@@ -40,6 +41,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     public RandomCommand() {
         super("/random");
+
+        bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
+        DialogCleanerThread cleaner = new DialogCleanerThread(bufferedStorageMessageIdToDialogMessage);
+        cleaner.start();
     }
 
     @Override
@@ -67,18 +72,22 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         }
     }
 
-    private synchronized void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
+    @Override
+    public void handle(AbsSender sender, Message message) {
+        SendMessage answer = new SendMessage();
+        setPhotoAskInlineKeyboardMarkup(answer);
+        answer.setChatId(message.getChatId());
+
+        send(sender, answer);
+    }
+
+    private void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (isStorageContainMessageId(messageId)) {
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-
-            synchronized (this) {
-                if (!dialog.hasVkGroup()) {
-                    VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
-                    dialog.setVkGroup(chosenVkGroup);
-                }
-            }
+            VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+            dialog.setVkGroup(chosenVkGroup);
 
             if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
                 sendPhoto(sender, callbackQuery, dialog);
@@ -86,6 +95,82 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 sendRandomPost(sender, callbackQuery, dialog);
         } else
             sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (isStorageContainMessageId(messageId)) {
+            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+            bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId(), dialog);
+            VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
+            VkGroup chosenGroup = dialog.getVkGroup();
+            Photo chosenPhoto = dialog.getPhoto();
+
+            deleteHandledMessage(sender, callbackQuery);
+            sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
+        } else
+            sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        if (isStorageContainMessageId(messageId)) {
+            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+            sendPhoto(sender, callbackQuery, dialog);
+        } else
+            sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
+        startBufferedDialogWithMessage(callbackQuery.getMessage());
+        RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(callbackQuery.getMessage().getMessageId());
+        dialog.setPhotoChooseAnswer(data);
+        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+
+        EditMessageText groupChooseMessage = new EditMessageText();
+        groupChooseMessage.setText(Callbacks.RANDOM_CHOOSE_GROUP);
+        groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
+        groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+        setHostGroupsInlineKeyboardMarkup(groupChooseMessage);
+
+        send(sender, groupChooseMessage);
+    }
+
+    private void startBufferedDialogWithMessage(Message message) {
+        if (!isStorageContainMessageId(message.getMessageId())) {
+            RandomCommandDialog dialog = new RandomCommandDialog(message.getMessageId());
+            bufferedStorageMessageIdToDialogMessage.put(message.getMessageId(), dialog);
+        }
+    }
+
+    private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<InlineKeyboardButton> groupsButtonsLine = new ArrayList<>();
+
+        for (VkGroup group : VkGroupPool.getHostGroups())
+            groupsButtonsLine.add(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId())));
+        buttons.add(groupsButtonsLine);
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+
+        message.setText(Callbacks.RANDOM_CHOOSE_GROUP);
+        message.setReplyMarkup(markupKeyboard);
+    }
+
+    private void setPhotoAskInlineKeyboardMarkup(SendMessage message) {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<InlineKeyboardButton> questionButtonsLine = new ArrayList<>();
+
+        questionButtonsLine.add(new InlineKeyboardButton().setText("Да").setCallbackData(WANT_CHOOSE_PHOTO));
+        questionButtonsLine.add(new InlineKeyboardButton().setText("Нет").setCallbackData(DIDNT_WANT_CHOOSE_PHOTO));
+        buttons.add(questionButtonsLine);
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+
+        message.setText(Callbacks.RANDOM_ASK_CHOOSE_PHOTO);
+        message.setReplyMarkup(markupKeyboard);
     }
 
     private void sendPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
@@ -106,33 +191,15 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
     }
 
-    private synchronized void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
+    private void deleteHandledMessage(AbsSender sender, CallbackQuery callbackQuery) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
+        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
-        if (isStorageContainMessageId(messageId)) {
-            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId(), dialog);
-            VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
-            VkGroup chosenGroup = dialog.getVkGroup();
-            Photo chosenPhoto = dialog.getPhoto();
-
-            deleteHandledMessage(sender, callbackQuery);
-            sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
-        } else
-            sendNotificationAboutOldMessage(sender, callbackQuery);
+        send(sender, deleteMessage);
     }
 
-    private synchronized void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-
-        if (isStorageContainMessageId(messageId)) {
-            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            sendPhoto(sender, callbackQuery, dialog);
-        } else
-            sendNotificationAboutOldMessage(sender, callbackQuery);
-    }
-
-    private synchronized void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
+    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
 
         if (!isStorageContainMessageId(messageId)) {
@@ -171,70 +238,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         markupKeyboard.setKeyboard(buttons);
 
         newPhotoMessage.setReplyMarkup(markupKeyboard);
-    }
-
-    private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
-        RandomCommandDialog dialog = new RandomCommandDialog(callbackQuery.getMessage().getMessageId());
-
-        synchronized (this) {
-            if (!dialog.hasPhotoChooseAnswer()) {
-                dialog.setPhotoChooseAnswer(data);
-                bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
-            }
-        }
-
-        EditMessageText groupChooseMessage = new EditMessageText();
-        groupChooseMessage.setText(Callbacks.RANDOM_CHOOSE_GROUP);
-        groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
-        groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-        setHostGroupsInlineKeyboardMarkup(groupChooseMessage);
-
-        send(sender, groupChooseMessage);
-    }
-
-    private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> groupsButtonsLine = new ArrayList<>();
-
-        for (VkGroup group : VkGroupPool.getHostGroups())
-            groupsButtonsLine.add(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId())));
-        buttons.add(groupsButtonsLine);
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-        markupKeyboard.setKeyboard(buttons);
-
-        message.setText(Callbacks.RANDOM_CHOOSE_GROUP);
-        message.setReplyMarkup(markupKeyboard);
-    }
-
-    private void deleteHandledMessage(AbsSender sender, CallbackQuery callbackQuery) {
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
-        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-
-        send(sender, deleteMessage);
-    }
-
-    @Override
-    public void handle(AbsSender sender, Message message) {
-        SendMessage answer = new SendMessage();
-        setPhotoAskInlineKeyboardMarkup(answer);
-        answer.setChatId(message.getChatId());
-
-        send(sender, answer);
-    }
-
-    private void setPhotoAskInlineKeyboardMarkup(SendMessage message) {
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> questionButtonsLine = new ArrayList<>();
-
-        questionButtonsLine.add(new InlineKeyboardButton().setText("Да").setCallbackData(WANT_CHOOSE_PHOTO));
-        questionButtonsLine.add(new InlineKeyboardButton().setText("Нет").setCallbackData(DIDNT_WANT_CHOOSE_PHOTO));
-        buttons.add(questionButtonsLine);
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-        markupKeyboard.setKeyboard(buttons);
-
-        message.setText(Callbacks.RANDOM_ASK_CHOOSE_PHOTO);
-        message.setReplyMarkup(markupKeyboard);
     }
 
     private void sendVkPost(AbsSender sender, Message message, VkCustomAudio audio, Photo photo, VkGroup group) {
