@@ -5,8 +5,7 @@ plugins {
 group 'vk'
 version '1.0'
 
-sourceCompatibility("11.0.5")
-targetCompatibility("11.0.5")
+sourceCompatibility = '13'
 
 repositories {
     mavenCentral()
