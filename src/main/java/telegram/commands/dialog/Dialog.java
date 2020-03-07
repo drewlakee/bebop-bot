@@ -4,11 +4,15 @@ public abstract class Dialog {
 
     private final int messageId;
     private final int timeToLiveMinutes;
-    private final long timeWhenDialogStartMillis;
+    private long timeWhenDialogStartMillis;
 
     protected Dialog(int messageId, int timeToLiveMinutes) {
         this.messageId = messageId;
         this.timeToLiveMinutes = timeToLiveMinutes;
+        this.timeWhenDialogStartMillis = System.currentTimeMillis();
+    }
+
+    public void updateLiveTime() {
         this.timeWhenDialogStartMillis = System.currentTimeMillis();
     }
 

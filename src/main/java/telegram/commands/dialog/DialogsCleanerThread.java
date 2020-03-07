@@ -3,11 +3,11 @@ package telegram.commands.dialog;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class DialogCleanerThread extends Thread {
+public class DialogsCleanerThread extends Thread {
 
     private final ConcurrentHashMap<Integer, ? extends Dialog> dialogs;
 
-    public DialogCleanerThread(ConcurrentHashMap<Integer, ? extends Dialog> dialogs) {
+    public DialogsCleanerThread(ConcurrentHashMap<Integer, ? extends Dialog> dialogs) {
             this.dialogs = dialogs;
     }
 
