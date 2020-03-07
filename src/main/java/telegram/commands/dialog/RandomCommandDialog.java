@@ -9,8 +9,8 @@ public class RandomCommandDialog extends Dialog {
     private Photo photo;
     private VkGroup vkGroup;
 
-    public RandomCommandDialog(Integer messageId) {
-        super(messageId);
+    public RandomCommandDialog(int messageId) {
+        super(messageId, Dialogs.DEFAULT_DIALOG_TO_LIVE_MINUTES);
     }
 
     public void setPhotoChooseAnswer(String photoChooseAnswer) {
