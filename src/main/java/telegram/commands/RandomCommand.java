@@ -12,7 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import telegram.commands.dialog.DialogCleanerThread;
+import telegram.commands.dialog.DialogsCleanerThread;
 import telegram.commands.dialog.RandomCommandDialog;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
@@ -33,6 +33,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage;
 
+    private final static String CANCEL = "0";
     private final static String PHOTO_OK = "1";
     private final static String GROUP_IS_CHOSEN = "2";
     private final static String PHOTO_TRY_AGAIN = "3";
@@ -43,7 +44,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         super("/random");
 
         bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
-        DialogCleanerThread cleaner = new DialogCleanerThread(bufferedStorageMessageIdToDialogMessage);
+        DialogsCleanerThread cleaner = new DialogsCleanerThread(bufferedStorageMessageIdToDialogMessage);
         cleaner.start();
     }
 
@@ -66,6 +67,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             case PHOTO_TRY_AGAIN:
                 handleNegativeAnswerPhotoChoose(sender, callbackQuery);
                 break;
+            case CANCEL:
+                callOffPostRequestDialog(sender, callbackQuery);
+                break;
             default:
                 sendGroupChooseInlineKeyboard(sender, callbackQuery, data);
                 break;
@@ -77,7 +81,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         SendMessage answer = new SendMessage();
         setPhotoAskInlineKeyboardMarkup(answer);
         answer.setChatId(message.getChatId());
-
         send(sender, answer);
     }
 
@@ -88,6 +91,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
             VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
             dialog.setVkGroup(chosenVkGroup);
+            dialog.updateLiveTime();
 
             if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
                 sendPhoto(sender, callbackQuery, dialog);
@@ -118,9 +122,15 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         if (isStorageContainMessageId(messageId)) {
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
+            dialog.updateLiveTime();
             sendPhoto(sender, callbackQuery, dialog);
         } else
             sendNotificationAboutOldMessage(sender, callbackQuery);
+    }
+
+    private void callOffPostRequestDialog(AbsSender sender, CallbackQuery callbackQuery) {
+        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+        deleteHandledMessage(sender, callbackQuery);
     }
 
     private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
@@ -148,10 +158,13 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> groupsButtonsLine = new ArrayList<>();
+        List<InlineKeyboardButton> cancelButtonLine = new ArrayList<>();
 
         for (VkGroup group : VkGroupPool.getHostGroups())
             groupsButtonsLine.add(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId())));
+        cancelButtonLine.add(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL));
         buttons.add(groupsButtonsLine);
+        buttons.add(cancelButtonLine);
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
@@ -226,13 +239,14 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private void setPhotoChooseInlineKeyboard(EditMessageText newPhotoMessage) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> answersGroup = new ArrayList<>();
-        List<InlineKeyboardButton> cancelButtonsLine = new ArrayList<>();
+        List<InlineKeyboardButton> answersButtonsLine = new ArrayList<>();
+        List<InlineKeyboardButton> cancelButtonLine = new ArrayList<>();
 
-        answersGroup.add(new InlineKeyboardButton().setText("Пойдет").setCallbackData(PHOTO_OK));
-        answersGroup.add(new InlineKeyboardButton().setText("Не пойдет").setCallbackData(PHOTO_TRY_AGAIN));
-        buttons.add(answersGroup);
-        buttons.add(cancelButtonsLine);
+        answersButtonsLine.add(new InlineKeyboardButton().setText("Пойдет").setCallbackData(PHOTO_OK));
+        answersButtonsLine.add(new InlineKeyboardButton().setText("Не пойдет").setCallbackData(PHOTO_TRY_AGAIN));
+        cancelButtonLine.add(new InlineKeyboardButton().setText("Прервать").setCallbackData(CANCEL));
+        buttons.add(answersButtonsLine);
+        buttons.add(cancelButtonLine);
 
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
@@ -244,6 +258,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         sendMessage.setText("Готово, чекай группу \uD83D\uDE38\n" + group.getUrl());
+        sendMessage.disableWebPagePreview();
 
         try {
             String photoAttachment = "photo" + photo.getOwnerId() + "_" + photo.getId();
