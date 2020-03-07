@@ -5,6 +5,9 @@ plugins {
 group 'vk'
 version '1.0'
 
+sourceCompatibility("13")
+targetCompatibility("13")
+
 repositories {
     mavenCentral()
 }
