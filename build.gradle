@@ -13,3 +13,5 @@ dependencies {
     compile 'com.vk.api:sdk:1.0.6'
     compile "org.telegram:telegrambots:4.6"
 }
+
+task stage(dependsOn: ['build'])
