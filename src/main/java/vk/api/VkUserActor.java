@@ -10,8 +10,8 @@ public class VkUserActor {
     public static UserActor instance() {
         if (isEmpty())
             actor = new UserActor(
-                    Integer.parseInt(Environment.PROPERTIES.getProperty("vk_user_id")),
-                    Environment.PROPERTIES.getProperty("vk_token")
+                    Integer.parseInt(System.getenv("vk_user_id")),
+                    System.getenv("vk_token")
             );
 
         return actor;

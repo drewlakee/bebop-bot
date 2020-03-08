@@ -30,7 +30,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private boolean isHostRequest(Update update) {
-        String hostUsername = Environment.PROPERTIES.getProperty("host_username");
+        String hostUsername = System.getenv("host_username");
 
         if (update.hasMessage())
             return update.getMessage().getChat().getUserName().equals(hostUsername);
@@ -70,11 +70,11 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return Environment.PROPERTIES.get("bot_username").toString();
+        return System.getenv("bot_username");
     }
 
     @Override
     public String getBotToken() {
-        return Environment.PROPERTIES.get(("bot_token")).toString();
+        return System.getenv(("bot_token"));
     }
 }
