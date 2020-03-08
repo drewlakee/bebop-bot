@@ -5,6 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ *  App properties definer and collector
+ *
+ *  Made for easier debug with heroku deploy (needed System.getenv()) and local (needed System.getProperty()).
+ */
 public class AppEnvironment {
 
     private final static Set<String> neededProperties = Set.of(
@@ -15,18 +20,24 @@ public class AppEnvironment {
             "vk_user_id"
     );
 
-    private static Map<String, String> appProperties = new HashMap<>();
+    private static Map<String, String> appProperties = defineAppProperties();
 
-    static {
+    private static Map<String, String> defineAppProperties() {
+        Map<String, String> properties = new HashMap<>();
+
         Set<String> envProperties = System.getenv().keySet()
                 .stream()
                 .filter(neededProperties::contains)
                 .collect(Collectors.toSet());
 
         if (envProperties.equals(neededProperties)) {
-            appProperties = System.getenv();
-        } else
-            System.getProperties().forEach((key, value) -> appProperties.put((String) key, (String) value));
+            properties = System.getenv();
+        } else {
+            Map<String, String> finalProperties = properties;
+            System.getProperties().forEach((key, value) -> finalProperties.put((String) key, (String) value));
+        }
+
+        return properties;
     }
 
     public static String getAppProperty(String property) {
