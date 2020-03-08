@@ -18,4 +18,8 @@ dependencies {
     compile "org.telegram:telegrambots:4.6"
 }
 
-task stage(dependsOn: ['build'])
+task stage(type: Copy) {
+    from sourceSets.main.runtimeClasspath
+    into 'build/staging'
+}
+stage.dependsOn build

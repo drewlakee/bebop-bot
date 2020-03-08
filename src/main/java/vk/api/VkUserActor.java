@@ -1,6 +1,5 @@
 package vk.api;
 
-import app.Environment;
 import com.vk.api.sdk.client.actors.UserActor;
 
 public class VkUserActor {
