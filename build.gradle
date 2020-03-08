@@ -5,6 +5,8 @@ plugins {
 group 'vk'
 version '1.0'
 
+sourceCompatibility = 11
+
 repositories {
     mavenCentral()
 }
@@ -13,11 +15,5 @@ dependencies {
     compile 'com.vk.api:sdk:1.0.6'
     compile "org.telegram:telegrambots:4.6"
 }
-
-compileJava {
-    sourceCompatibility = 13
-    targetCompatibility = 13
-}
-
 
 task stage(dependsOn: ['build'])
