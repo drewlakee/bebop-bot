@@ -140,7 +140,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
 
         EditMessageText groupChooseMessage = new EditMessageText();
-        groupChooseMessage.setText(Callbacks.RANDOM_CHOOSE_GROUP);
+        groupChooseMessage.setText(Callbacks.CHOOSE_GROUP);
         groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
         groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
         setHostGroupsInlineKeyboardMarkup(groupChooseMessage);
@@ -168,7 +168,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
-        message.setText(Callbacks.RANDOM_CHOOSE_GROUP);
+        message.setText(Callbacks.CHOOSE_GROUP);
         message.setReplyMarkup(markupKeyboard);
     }
 
@@ -182,7 +182,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
 
-        message.setText(Callbacks.RANDOM_ASK_CHOOSE_PHOTO);
+        message.setText(Callbacks.ASK_CHOOSE_PHOTO);
         message.setReplyMarkup(markupKeyboard);
     }
 
