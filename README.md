@@ -1,14 +1,5 @@
 # Telegram бот, постящий контент в VK
 
-<details>
-   <summary>Примеры (с котиками)</summary>
-   
-   ![make_post](images/make_post.png)
-    
-   ![post](images/post.png)
-   
-</details>
-
 #### VM аргументы:
 
 ```` 
