@@ -50,6 +50,9 @@ public class Bot extends TelegramLongPollingBot {
             case Commands.STATUS:
                 CommandsPool.handleCommand(Commands.STATUS, this, message);
                 break;
+            case Commands.MY_GROUPS:
+                CommandsPool.handleCommand(Commands.MY_GROUPS, this, message);
+                break;
         }
     }
 
