@@ -37,7 +37,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
         }
 
         desk.append("\n\n")
-            .append("У тебя " + count + " групп.");
+            .append("Всего - " + count + ".");
         return desk.toString();
     }
 }
