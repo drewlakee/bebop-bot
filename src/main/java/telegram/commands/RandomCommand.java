@@ -22,7 +22,7 @@ import vk.api.VkUserActor;
 import vk.domain.groups.VkGroup;
 import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
-import vk.services.VkContentFinder;
+import vk.services.VkRandomContentFinder;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         if (isStorageContainMessageId(messageId)) {
             RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
             bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId(), dialog);
-            VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
+            VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
             VkGroup chosenGroup = dialog.getVkGroup();
             Photo chosenPhoto = dialog.getPhoto();
 
@@ -187,7 +187,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     }
 
     private void sendPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
-        Photo randomPhoto = VkContentFinder.findRandomPhoto();
+        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
         dialog.setPhoto(randomPhoto);
         bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
 
@@ -196,8 +196,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private void sendRandomPost(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
         bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
-        Photo randomPhoto = VkContentFinder.findRandomPhoto();
-        VkCustomAudio randomAudio = VkContentFinder.findRandomAudio();
+        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
         VkGroup chosenVkGroup = dialog.getVkGroup();
 
         deleteHandledMessage(sender, callbackQuery);
