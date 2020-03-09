@@ -41,7 +41,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private final static String WANT_CHOOSE_PHOTO = "5";
 
     public RandomCommand() {
-        super("/random");
+        super(Commands.RANDOM);
 
         bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
         DialogsCleanerThread cleaner = new DialogsCleanerThread(bufferedStorageMessageIdToDialogMessage);
