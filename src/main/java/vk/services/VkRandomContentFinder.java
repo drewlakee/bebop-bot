@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class VkContentFinder {
+public class VkRandomContentFinder {
 
     public static VkCustomAudio findRandomAudio() {
         Random random = new Random();
