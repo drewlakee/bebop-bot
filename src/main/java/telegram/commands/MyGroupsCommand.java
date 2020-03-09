@@ -30,7 +30,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
         for (VkGroup group : VkGroupPool.getHostGroups()) {
             desk.append("\n\n")
-                .append(count + ": " + group.getName())
+                .append(count + ": " + group.getName() + " (" + group.getGroupId() + ")")
                 .append("\n")
                 .append(group.getUrl());
             count++;
