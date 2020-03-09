@@ -12,7 +12,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import telegram.commands.dialog.DialogsCleanerThread;
 import telegram.commands.dialog.RandomCommandDialog;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
@@ -24,14 +23,17 @@ import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.services.VkRandomContentFinder;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    private ConcurrentHashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToDialogMessage;
+    @GuardedBy("this")
+    private final HashMap<Integer, RandomCommandDialog> bufferedStorageMessageIdToMessageDialogState;
 
     private final static String CANCEL = "0";
     private final static String PHOTO_OK = "1";
@@ -43,9 +45,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     public RandomCommand() {
         super(Commands.RANDOM);
 
-        bufferedStorageMessageIdToDialogMessage = new ConcurrentHashMap<>();
-        DialogsCleanerThread cleaner = new DialogsCleanerThread(bufferedStorageMessageIdToDialogMessage);
-        cleaner.start();
+        bufferedStorageMessageIdToMessageDialogState = new HashMap<>();
     }
 
     @Override
@@ -59,7 +59,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         switch (handleWay) {
             case GROUP_IS_CHOSEN:
-                handlePostRequestDialog(sender, callbackQuery, data);
+                handleRequestMessageDialog(sender, callbackQuery, data);
                 break;
             case PHOTO_OK:
                 handlePositiveAnswerPhotoChoose(sender, callbackQuery);
@@ -68,10 +68,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 handleNegativeAnswerPhotoChoose(sender, callbackQuery);
                 break;
             case CANCEL:
-                callOffPostRequestDialog(sender, callbackQuery);
+                endMessageDialog(sender, callbackQuery);
                 break;
             default:
-                sendGroupChooseInlineKeyboard(sender, callbackQuery, data);
+                startMessageDialog(sender, callbackQuery, data);
                 break;
         }
     }
@@ -84,60 +84,83 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         send(sender, answer);
     }
 
-    private void handlePostRequestDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
+    private void handleRequestMessageDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
         int messageId = callbackQuery.getMessage().getMessageId();
+        boolean isContain;
 
-        if (isStorageContainMessageId(messageId)) {
-            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
-            dialog.setVkGroup(chosenVkGroup);
-            dialog.updateLiveTime();
+        synchronized (this) {
+            isContain = isStorageContainMessageId(messageId);
+            if (isContain) {
+                RandomCommandDialog dialog = bufferedStorageMessageIdToMessageDialogState.get(messageId);
+                VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
+                if (!dialog.hasVkGroup())
+                    dialog.setVkGroup(chosenVkGroup);
 
-            if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
-                sendPhoto(sender, callbackQuery, dialog);
-            } else
-                sendRandomPost(sender, callbackQuery, dialog);
-        } else
+                if (dialog.getPhotoChooseAnswer().equals(WANT_CHOOSE_PHOTO)) {
+                    sendPhoto(sender, callbackQuery, dialog);
+                } else
+                    sendRandomPost(sender, callbackQuery, dialog);
+            }
+        }
+
+        if (!isContain)
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
     private void handlePositiveAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
+        boolean isContain;
 
-        if (isStorageContainMessageId(messageId)) {
-            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId(), dialog);
-            VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
-            VkGroup chosenGroup = dialog.getVkGroup();
-            Photo chosenPhoto = dialog.getPhoto();
+        synchronized (this) {
+            isContain = isStorageContainMessageId(messageId);
+            if (isContain) {
+                RandomCommandDialog dialog = bufferedStorageMessageIdToMessageDialogState.get(messageId);
+                endMessageDialog(sender, callbackQuery);
 
-            deleteHandledMessage(sender, callbackQuery);
-            sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
-        } else
+                VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
+                VkGroup chosenGroup = dialog.getVkGroup();
+                Photo chosenPhoto = dialog.getPhoto();
+
+                sendVkPost(sender, callbackQuery.getMessage(), randomAudio, chosenPhoto, chosenGroup);
+            }
+        }
+
+        if (!isContain)
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
     private void handleNegativeAnswerPhotoChoose(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
+        boolean isContain;
 
-        if (isStorageContainMessageId(messageId)) {
-            RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(messageId);
-            dialog.updateLiveTime();
-            sendPhoto(sender, callbackQuery, dialog);
-        } else
+        synchronized (this) {
+            isContain = isStorageContainMessageId(messageId);
+            if (isContain) {
+                RandomCommandDialog dialog = bufferedStorageMessageIdToMessageDialogState.get(messageId);
+                sendPhoto(sender, callbackQuery, dialog);
+            }
+        }
+
+        if (!isContain)
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
-    private void callOffPostRequestDialog(AbsSender sender, CallbackQuery callbackQuery) {
-        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+    private synchronized void endMessageDialog(AbsSender sender, CallbackQuery callbackQuery) {
+        bufferedStorageMessageIdToMessageDialogState.remove(callbackQuery.getMessage().getMessageId());
         deleteHandledMessage(sender, callbackQuery);
     }
 
-    private void sendGroupChooseInlineKeyboard(AbsSender sender, CallbackQuery callbackQuery, String data) {
-        startBufferedDialogWithMessage(callbackQuery.getMessage());
-        RandomCommandDialog dialog = bufferedStorageMessageIdToDialogMessage.get(callbackQuery.getMessage().getMessageId());
-        dialog.setPhotoChooseAnswer(data);
-        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+    private void startMessageDialog(AbsSender sender, CallbackQuery callbackQuery, String data) {
+        int messageId = callbackQuery.getMessage().getMessageId();
+
+        synchronized (this) {
+            if (!isStorageContainMessageId(messageId)) {
+                RandomCommandDialog dialog = new RandomCommandDialog(messageId);
+                if (!dialog.hasPhotoChooseAnswer())
+                    dialog.setPhotoChooseAnswer(data);
+                bufferedStorageMessageIdToMessageDialogState.put(messageId, dialog);
+            }
+        }
 
         EditMessageText groupChooseMessage = new EditMessageText();
         groupChooseMessage.setText(Callbacks.CHOOSE_GROUP);
@@ -146,13 +169,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         setHostGroupsInlineKeyboardMarkup(groupChooseMessage);
 
         send(sender, groupChooseMessage);
-    }
-
-    private void startBufferedDialogWithMessage(Message message) {
-        if (!isStorageContainMessageId(message.getMessageId())) {
-            RandomCommandDialog dialog = new RandomCommandDialog(message.getMessageId());
-            bufferedStorageMessageIdToDialogMessage.put(message.getMessageId(), dialog);
-        }
     }
 
     private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
@@ -189,18 +205,18 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void sendPhoto(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
         Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
         dialog.setPhoto(randomPhoto);
-        bufferedStorageMessageIdToDialogMessage.put(callbackQuery.getMessage().getMessageId(), dialog);
+        bufferedStorageMessageIdToMessageDialogState.put(callbackQuery.getMessage().getMessageId(), dialog);
 
         sendPhotoChooseKeyboard(sender, callbackQuery, randomPhoto);
     }
 
     private void sendRandomPost(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
-        bufferedStorageMessageIdToDialogMessage.remove(callbackQuery.getMessage().getMessageId());
+        endMessageDialog(sender, callbackQuery);
+
         Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
         VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
         VkGroup chosenVkGroup = dialog.getVkGroup();
 
-        deleteHandledMessage(sender, callbackQuery);
         sendVkPost(sender, callbackQuery.getMessage(), randomAudio, randomPhoto, chosenVkGroup);
     }
 
@@ -277,6 +293,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     }
 
     private boolean isStorageContainMessageId(int messageId) {
-        return bufferedStorageMessageIdToDialogMessage.containsKey(messageId);
+        return bufferedStorageMessageIdToMessageDialogState.containsKey(messageId);
     }
 }
