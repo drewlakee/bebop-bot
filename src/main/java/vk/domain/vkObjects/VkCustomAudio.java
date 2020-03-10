@@ -20,4 +20,8 @@ public class VkCustomAudio extends Audio {
     public Integer getOwnerId() {
         return ownerId;
     }
+
+    public String toPrettyString() {
+        return getArtist() + " - " + getTitle();
+    }
 }

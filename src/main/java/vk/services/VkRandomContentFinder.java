@@ -39,6 +39,8 @@ public class VkRandomContentFinder {
         int randomAudioJsonObject = random.nextInt(jsonWallAudioObjects.size());
         JsonObject audioJsonObject = jsonWallAudioObjects.get(randomAudioJsonObject);
         VkCustomAudio randomAudio = new VkCustomAudio();
+        randomAudio.setArtist(audioJsonObject.get("artist").getAsString());
+        randomAudio.setTitle(audioJsonObject.get("title").getAsString());
         randomAudio.setOwnerId(audioJsonObject.get("owner_id").getAsInt());
         randomAudio.setId(audioJsonObject.get("id").getAsInt());
 
