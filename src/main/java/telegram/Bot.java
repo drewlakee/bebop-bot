@@ -59,7 +59,7 @@ public class Bot extends TelegramLongPollingBot {
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String recentMessage = callbackQuery.getMessage().getText();
 
-        if (recentMessage.contains("Пикча") && recentMessage.endsWith("Трек"))
+        if (recentMessage.contains("Пикча") && recentMessage.contains("Трек"))
             recentMessage = Callbacks.CHOOSE_POST;
 
         switch (recentMessage) {

@@ -9,10 +9,7 @@ import javax.annotation.concurrent.GuardedBy;
 public class RandomCommandDialog extends Dialog {
 
     @GuardedBy("this")
-    private String photoChooseAnswer;
-
-    @GuardedBy("this")
-    private String audioChooseAnswer;
+    private String postPickAnswer;
 
     @GuardedBy("this")
     private Photo photo;
@@ -27,12 +24,8 @@ public class RandomCommandDialog extends Dialog {
         super(messageId);
     }
 
-    public synchronized void setPhotoChooseAnswer(String photoChooseAnswer) {
-        this.photoChooseAnswer = photoChooseAnswer;
-    }
-
-    public synchronized void setAudioChooseAnswer(String audioChooseAnswer) {
-        this.audioChooseAnswer = audioChooseAnswer;
+    public synchronized void setPostPickAnswer(String postPickAnswer) {
+        this.postPickAnswer = postPickAnswer;
     }
 
     public synchronized void setPhoto(Photo photo) {
@@ -47,12 +40,8 @@ public class RandomCommandDialog extends Dialog {
         this.vkGroup = vkGroup;
     }
 
-    public synchronized String getAudioChooseAnswer() {
-        return audioChooseAnswer;
-    }
-
-    public synchronized String getPhotoChooseAnswer() {
-        return photoChooseAnswer;
+    public synchronized String getPostPickAnswer() {
+        return postPickAnswer;
     }
 
     public synchronized Photo getPhoto() {
@@ -68,7 +57,7 @@ public class RandomCommandDialog extends Dialog {
     }
 
     public synchronized boolean hasPhotoChooseAnswer() {
-        return photoChooseAnswer != null;
+        return postPickAnswer != null;
     }
 
     public synchronized boolean hasPhoto() {
