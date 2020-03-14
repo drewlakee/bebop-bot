@@ -50,19 +50,22 @@ public class Bot extends TelegramLongPollingBot {
             case Commands.STATUS:
                 CommandsPool.handleCommand(Commands.STATUS, this, message);
                 break;
+            case Commands.MY_GROUPS:
+                CommandsPool.handleCommand(Commands.MY_GROUPS, this, message);
+                break;
         }
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String recentMessage = callbackQuery.getMessage().getText();
 
-        if (recentMessage.startsWith("https") && recentMessage.endsWith("jpg"))
-            recentMessage = Callbacks.CHOOSE_PHOTO;
+        if (recentMessage.contains("Пикча") && recentMessage.contains("Трек"))
+            recentMessage = Callbacks.CHOOSE_POST_RANDOM_COMMAND;
 
         switch (recentMessage) {
-            case Callbacks.ASK_CHOOSE_PHOTO:
-            case Callbacks.CHOOSE_GROUP:
-            case Callbacks.CHOOSE_PHOTO:
+            case Callbacks.ASK_CHOOSE_POST_RANDOM_COMMAND:
+            case Callbacks.CHOOSE_GROUP_RANDOM_COMMAND:
+            case Callbacks.CHOOSE_POST_RANDOM_COMMAND:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }

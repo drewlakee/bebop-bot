@@ -10,7 +10,7 @@ import telegram.fun.Greetings;
 public class StatusCommand extends BotCommand implements MessageHandler {
 
     public StatusCommand() {
-        super("/status");
+        super(Commands.STATUS);
     }
 
     @Override

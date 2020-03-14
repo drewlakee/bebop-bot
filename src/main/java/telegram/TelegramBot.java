@@ -5,9 +5,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import telegram.commands.CommandsPool;
-import telegram.commands.RandomCommand;
-import telegram.commands.StatusCommand;
+import telegram.commands.*;
 
 public class TelegramBot {
 
@@ -18,6 +16,7 @@ public class TelegramBot {
         TelegramBotsApi botsApi = new TelegramBotsApi();
 
         try {
+            CommandsPool.register(new MyGroupsCommand());
             CommandsPool.register(new RandomCommand());
             CommandsPool.register(new StatusCommand());
             botsApi.registerBot(bot);
