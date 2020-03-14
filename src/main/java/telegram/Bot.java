@@ -60,12 +60,12 @@ public class Bot extends TelegramLongPollingBot {
         String recentMessage = callbackQuery.getMessage().getText();
 
         if (recentMessage.contains("Пикча") && recentMessage.contains("Трек"))
-            recentMessage = Callbacks.CHOOSE_POST;
+            recentMessage = Callbacks.CHOOSE_POST_RANDOM_COMMAND;
 
         switch (recentMessage) {
-            case Callbacks.ASK_CHOOSE_POST:
-            case Callbacks.CHOOSE_GROUP:
-            case Callbacks.CHOOSE_POST:
+            case Callbacks.ASK_CHOOSE_POST_RANDOM_COMMAND:
+            case Callbacks.CHOOSE_GROUP_RANDOM_COMMAND:
+            case Callbacks.CHOOSE_POST_RANDOM_COMMAND:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
