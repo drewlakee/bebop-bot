@@ -22,8 +22,10 @@ public class VkRandomContentFinder {
     public static VkCustomAudio findRandomAudio() {
         Random random = new Random();
         int randomOffset = random.nextInt(1000);
-        int postsCount = 10;
         int randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
+        int postsCount = 10;
+        int requestLimit = 5;
+        int requestCount = 0;
         JsonElement jsonWallPostsAttachments;
         List<JsonObject> jsonWallAudioObjects;
 
@@ -32,17 +34,25 @@ public class VkRandomContentFinder {
             jsonWallAudioObjects = getJsonAudioObjects(jsonWallPostsAttachments);
             randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
 
+            requestCount++;
+            if (requestCount > requestLimit)
+                break;
+
             if (jsonWallAudioObjects.isEmpty())
                 requestDelay();
         } while (jsonWallAudioObjects.isEmpty());
 
-        int randomAudioJsonObject = random.nextInt(jsonWallAudioObjects.size());
-        JsonObject audioJsonObject = jsonWallAudioObjects.get(randomAudioJsonObject);
         VkCustomAudio randomAudio = new VkCustomAudio();
-        randomAudio.setArtist(audioJsonObject.get("artist").getAsString());
-        randomAudio.setTitle(audioJsonObject.get("title").getAsString());
-        randomAudio.setOwnerId(audioJsonObject.get("owner_id").getAsInt());
-        randomAudio.setId(audioJsonObject.get("id").getAsInt());
+        int randomAudioJsonObject;
+        JsonObject audioJsonObject;
+        if (requestCount < requestLimit) {
+            randomAudioJsonObject = random.nextInt(jsonWallAudioObjects.size());
+            audioJsonObject = jsonWallAudioObjects.get(randomAudioJsonObject);
+            randomAudio.setArtist(audioJsonObject.get("artist").getAsString());
+            randomAudio.setTitle(audioJsonObject.get("title").getAsString());
+            randomAudio.setOwnerId(audioJsonObject.get("owner_id").getAsInt());
+            randomAudio.setId(audioJsonObject.get("id").getAsInt());
+        }
 
         return randomAudio;
     }
@@ -52,11 +62,10 @@ public class VkRandomContentFinder {
 
         try {
             String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", postsCount, offset, ownerId);
-            JsonElement response = VkApi.instance()
+            postsAttachments = VkApi.instance()
                     .execute()
                     .code(VkUserActor.instance(), request)
                     .execute();
-            postsAttachments = response;
         } catch (ClientException | ApiException e) {
             e.printStackTrace();
         }
@@ -84,6 +93,8 @@ public class VkRandomContentFinder {
         Random random = new Random();
         int randomOffset = random.nextInt(1000);
         int postsCount = 10;
+        int requestCount = 0;
+        int requestLimit = 5;
         int randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
         List<WallpostFull> wallPosts;
 
@@ -92,18 +103,29 @@ public class VkRandomContentFinder {
             wallPosts = getPostsWithPhoto(wallPosts);
             randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
 
+            requestCount++;
+            if (requestCount > requestLimit)
+                break;
+
             if (wallPosts.isEmpty())
                 requestDelay();
         } while (wallPosts.isEmpty());
 
-        int randomPostIndex = random.nextInt(wallPosts.size());
-        List<WallpostAttachment> attachments = wallPosts.get(randomPostIndex).getAttachments();
-        List<WallpostAttachment> photos = attachments.stream()
-                .filter(attachment -> attachment.getPhoto() != null)
-                .collect(Collectors.toList());
-        int randomPhotoIndex = random.nextInt(photos.size());
+        Photo randomPhoto = new Photo();
+        int randomPostIndex;
+        int randomPhotoIndex;
+        if (requestCount < requestLimit) {
+            randomPostIndex = random.nextInt(wallPosts.size());
+            List<WallpostAttachment> attachments = wallPosts.get(randomPostIndex).getAttachments();
+            List<WallpostAttachment> photos = attachments
+                    .stream()
+                    .filter(attachment -> attachment.getPhoto() != null)
+                    .collect(Collectors.toList());
+            randomPhotoIndex = random.nextInt(photos.size());
+            randomPhoto = photos.get(randomPhotoIndex).getPhoto();
+        }
 
-        return photos.get(randomPhotoIndex).getPhoto();
+        return randomPhoto;
     }
 
     private static List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
@@ -128,6 +150,7 @@ public class VkRandomContentFinder {
     private static List<WallpostFull> getPostsWithPhoto(List<WallpostFull> posts) {
         List<WallpostFull> postsWithPhoto = new ArrayList<>();
         boolean isPostHavePhotos;
+
         for (WallpostFull post : posts) {
             if (post.getAttachments() != null) {
                 isPostHavePhotos = post.getAttachments().stream()
