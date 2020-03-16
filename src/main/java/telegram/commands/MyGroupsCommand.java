@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.MessageHandler;
+import telegram.commands.statics.Commands;
 import vk.domain.groups.VkGroup;
 import vk.domain.groups.VkGroupPool;
 import vk.services.VkInformationFinder;

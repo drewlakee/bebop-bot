@@ -1,4 +1,4 @@
-package telegram.commands;
+package telegram.commands.statics;
 
 public class Commands {
 

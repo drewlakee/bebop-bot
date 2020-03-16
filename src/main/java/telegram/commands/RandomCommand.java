@@ -16,6 +16,8 @@ import telegram.commands.dialog.RandomCommandDialog;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
+import telegram.commands.statics.Callbacks;
+import telegram.commands.statics.Commands;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
 import vk.domain.groups.VkGroup;
@@ -191,9 +193,11 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         send(sender, groupChooseMessage);
     }
 
-    private synchronized void endMessageDialog(AbsSender sender, CallbackQuery callbackQuery) {
-        bufferedStorageMessageIdToMessageDialogState.remove(callbackQuery.getMessage().getMessageId());
-        deleteHandledMessage(sender, callbackQuery);
+    private void endMessageDialog(AbsSender sender, CallbackQuery callbackQuery) {
+        synchronized (this) {
+            bufferedStorageMessageIdToMessageDialogState.remove(callbackQuery.getMessage().getMessageId());
+            deleteHandledMessage(sender, callbackQuery);
+        }
     }
 
     private void setHostGroupsInlineKeyboardMarkup(EditMessageText message) {
