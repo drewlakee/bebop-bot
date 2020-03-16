@@ -31,7 +31,7 @@ public class TelegramBot {
         if (AppEnvironment.containsKey("bot_threads")) {
             customOptions.setMaxThreads(Integer.parseInt(AppEnvironment.getAppProperty("bot_threads")));
         } else
-            customOptions.setMaxThreads(4);
+            customOptions.setMaxThreads(1);
 
         if (AppEnvironment.containsKey("bot_proxy_type") &&
                 AppEnvironment.containsKey("bot_proxy_host") &&
