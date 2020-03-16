@@ -21,8 +21,8 @@ public class VkRandomContentFinder {
 
     public static VkCustomAudio findRandomAudio() {
         Random random = new Random();
-        int randomOffset = random.nextInt(1000);
         int randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
+        int randomOffset = random.nextInt(VkInformationFinder.getGroupPostsCount(randomGroupId));
         int postsCount = 10;
         int requestLimit = 5;
         int requestCount = 0;
@@ -32,14 +32,16 @@ public class VkRandomContentFinder {
         do {
             jsonWallPostsAttachments = getJsonWallPosts(postsCount, randomOffset, randomGroupId);
             jsonWallAudioObjects = getJsonAudioObjects(jsonWallPostsAttachments);
-            randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
 
-            requestCount++;
             if (requestCount > requestLimit)
                 break;
+            requestCount++;
 
-            if (jsonWallAudioObjects.isEmpty())
+            if (jsonWallAudioObjects.isEmpty()) {
                 requestDelay();
+                randomGroupId = VkGroupPool.getRandomAudioGroup().getGroupId();
+                randomOffset = random.nextInt(VkInformationFinder.getGroupPostsCount(randomGroupId));
+            }
         } while (jsonWallAudioObjects.isEmpty());
 
         VkCustomAudio randomAudio = new VkCustomAudio();
@@ -91,24 +93,26 @@ public class VkRandomContentFinder {
 
     public static Photo findRandomPhoto() {
         Random random = new Random();
-        int randomOffset = random.nextInt(1000);
         int postsCount = 10;
         int requestCount = 0;
         int requestLimit = 5;
         int randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
+        int randomOffset = random.nextInt(VkInformationFinder.getGroupPostsCount(randomGroupId));
         List<WallpostFull> wallPosts;
 
         do {
             wallPosts = getWallPosts(postsCount, randomOffset, randomGroupId);
             wallPosts = getPostsWithPhoto(wallPosts);
-            randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
 
-            requestCount++;
             if (requestCount > requestLimit)
                 break;
+            requestCount++;
 
-            if (wallPosts.isEmpty())
+            if (wallPosts.isEmpty()) {
                 requestDelay();
+                randomGroupId = VkGroupPool.getRandomPhotoGroup().getGroupId();
+                randomOffset = random.nextInt(VkInformationFinder.getGroupPostsCount(randomGroupId));
+            }
         } while (wallPosts.isEmpty());
 
         Photo randomPhoto = new Photo();
@@ -165,7 +169,7 @@ public class VkRandomContentFinder {
 
     private static void requestDelay() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
