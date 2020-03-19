@@ -17,11 +17,9 @@ dependencies {
     compile 'com.vk.api:sdk:1.0.6'
     compile "org.telegram:telegrambots:4.6"
     compile 'com.google.guava:guava:28.2-jre'
-
 }
 
-task stage(type: Copy) {
+task stage(type: Copy, dependsOn: "build") {
     from sourceSets.main.runtimeClasspath
     into 'build/staging'
 }
-stage.dependsOn build
