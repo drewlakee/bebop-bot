@@ -19,7 +19,7 @@ dependencies {
     compile 'com.google.guava:guava:28.2-jre'
 }
 
-task stage(type: Copy, dependsOn: "build") {
+task stage(type: Copy, dependsOn: build) {
     from sourceSets.main.runtimeClasspath
     into 'build/staging'
 }
