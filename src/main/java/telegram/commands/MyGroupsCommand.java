@@ -30,8 +30,6 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
     }
 
     private String buildGroupsDesk() {
-        LocalDateTime lastPostDate;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         StringBuilder desk = new StringBuilder();
         int count = 0;
 
@@ -40,14 +38,6 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
                 .append(count + ": " + group.getName() + " (" + group.getGroupId() + ")")
                 .append("\n")
                 .append(group.getUrl());
-
-            lastPostDate = VkInformationFinder.getLastPostDate(group.getGroupId());
-            if (!lastPostDate.equals(LocalDateTime.MIN)) {
-                desk.append("\n")
-                    .append("Последний пост: " + lastPostDate.format(formatter) + ".");
-
-                requestDelay();
-            }
 
             count++;
         }

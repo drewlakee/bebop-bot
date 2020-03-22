@@ -11,30 +11,9 @@ import vk.api.VkUserActor;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.TimeZone;
 
 public class VkInformationFinder {
-
-    public static LocalDateTime getLastPostDate(int groupId) {
-        LocalDateTime date = LocalDateTime.MIN;
-        Wallpost wallpost;
-
-        try {
-            GetResponse response = VkApi.instance()
-                    .wall()
-                    .get(VkUserActor.instance())
-                    .ownerId(groupId)
-                    .offset(0)
-                    .count(1)
-                    .execute();
-
-            wallpost = response.getItems().get(0);
-            date = LocalDateTime.ofInstant(Instant.ofEpochSecond(wallpost.getDate()), ZoneId.systemDefault());
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
-
-        return date;
-    }
 
     static int getGroupPostsCount(int groupId) {
         JsonElement responseCount;
