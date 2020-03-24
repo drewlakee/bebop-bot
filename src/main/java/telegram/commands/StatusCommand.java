@@ -16,9 +16,9 @@ public class StatusCommand extends BotCommand implements MessageHandler {
 
     @Override
     public void handle(AbsSender sender, Message message) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText(Greetings.getRandomGreeting(message.getChat().getUserName()));
-        send(sender, sendMessage);
+        SendMessage botStatusAnswer = new SendMessage();
+        botStatusAnswer.setChatId(message.getChatId());
+        botStatusAnswer.setText(Greetings.getRandomGreeting(message.getChat().getUserName()));
+        send(sender, botStatusAnswer);
     }
 }
