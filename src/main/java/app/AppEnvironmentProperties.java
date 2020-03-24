@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  *
  *  Made for easier debug with heroku deploy (needed System.getenv()) and local (needed System.getProperty()).
  */
-public class AppEnvironment {
+public class AppEnvironmentProperties {
 
     private final static Set<String> neededProperties = Set.of(
             "bot_token",
@@ -34,7 +34,7 @@ public class AppEnvironment {
             properties = System.getenv();
         } else {
             Map<String, String> finalProperties = properties;
-            System.getProperties().forEach((key, value) -> finalProperties.put((String) key, (String) value));
+            System.getProperties().keySet().forEach(key -> finalProperties.put(key.toString(), System.getProperty(key.toString())));
         }
 
         return properties;
@@ -44,7 +44,7 @@ public class AppEnvironment {
         return appProperties.get(property);
     }
 
-    public static boolean containsKey(String property) {
+    public static boolean containsProperty(String property) {
         return appProperties.containsKey(property);
     }
 }
