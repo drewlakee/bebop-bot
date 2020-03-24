@@ -6,9 +6,6 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
 }
 
-group 'vk'
-version '1.0'
-
 repositories {
     mavenCentral()
 }
