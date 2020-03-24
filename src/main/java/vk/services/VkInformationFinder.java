@@ -3,15 +3,8 @@ package vk.services;
 import com.google.gson.JsonElement;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.wall.Wallpost;
-import com.vk.api.sdk.objects.wall.responses.GetResponse;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.TimeZone;
 
 public class VkInformationFinder {
 

@@ -8,10 +8,6 @@ import telegram.commands.handlers.MessageHandler;
 import telegram.commands.statics.Commands;
 import vk.domain.groups.VkGroup;
 import vk.domain.groups.VkGroupPool;
-import vk.services.VkInformationFinder;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
@@ -44,14 +40,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
         desk.append("\n\n")
             .append("Всего - " + count + ".");
-        return desk.toString();
-    }
 
-    private void requestDelay() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        return desk.toString();
     }
 }

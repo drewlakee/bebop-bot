@@ -6,9 +6,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.CommandsPool;
 import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
-import telegram.commands.CommandsPool;
 
 public class Bot extends TelegramLongPollingBot {
 

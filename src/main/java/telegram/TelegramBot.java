@@ -5,7 +5,10 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import telegram.commands.*;
+import telegram.commands.CommandsPool;
+import telegram.commands.MyGroupsCommand;
+import telegram.commands.RandomCommand;
+import telegram.commands.StatusCommand;
 
 public class TelegramBot {
 
