@@ -11,7 +11,7 @@ public class InlineKeyboardBuilder {
     private List<List<InlineKeyboardButton>> buttons;
     private int line;
 
-    InlineKeyboardBuilder() {
+    public InlineKeyboardBuilder() {
         this.keyboardMarkup = new InlineKeyboardMarkup();
         this.buttons = new ArrayList<>();
         this.line = 0;
