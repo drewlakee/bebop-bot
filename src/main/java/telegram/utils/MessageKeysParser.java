@@ -46,8 +46,15 @@ public class MessageKeysParser {
             keyMatcher = keyPattern.matcher(line);
             valueMatcher = valuePattern.matcher(line);
 
-            if (keyMatcher.find() && valueMatcher.find())
-                map.put(keyMatcher.group(), valueMatcher.group().strip());
+            String key;
+            String value;
+            if (keyMatcher.find() && valueMatcher.find()) {
+                key = keyMatcher.group();
+                value = valueMatcher.group().strip();
+
+                if (!key.isEmpty() && !value.isEmpty())
+                    map.put(key, value);
+            }
         }
 
         return map;
