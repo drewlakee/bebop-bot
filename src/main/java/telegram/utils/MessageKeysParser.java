@@ -36,7 +36,7 @@ public class MessageKeysParser {
      * @param textBody
      * @return @see HashMap<String, String>
      */
-    private static HashMap<String, String> parseMessageKeysBody(String textBody) {
+    public static HashMap<String, String> parseMessageKeysBody(String textBody) {
         String[] lines = textBody.split("\n");
         HashMap<String, String> map = new HashMap<>();
 

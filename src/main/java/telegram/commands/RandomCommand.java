@@ -19,6 +19,7 @@ import telegram.commands.handlers.MessageHandler;
 import telegram.commands.keyboards.InlineKeyboardBuilder;
 import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
+import telegram.utils.MessageKeysParser;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
 import vk.domain.groups.VkGroup;
@@ -71,10 +72,10 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             case SEND_CONSTRUCTED_POST:
                 sendConstructedPost(sender, callbackQuery);
             case CANCEL_REQUEST:
-                endMessageDialog(sender, callbackQuery);
+                deleteMessage(sender, callbackQuery);
                 break;
             default:
-                startMessageDialog(sender, callbackQuery);
+                pickMode(sender, callbackQuery);
                 break;
         }
     }
@@ -91,27 +92,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void handleChosenMode(AbsSender sender, CallbackQuery callbackQuery) {
         int messageId = callbackQuery.getMessage().getMessageId();
         String data = callbackQuery.getData();
-        boolean isContain;
+        HashMap<String, String> params = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
 
-        synchronized (this) {
-            isContain = isStorageContainsMessageId(messageId);
-            if (isContain) {
-                RandomCommandDialog dialog = messageIdToMessageDialogStorage.get(messageId);
-                VkGroup chosenVkGroup = VkGroupPool.getHostGroup(Integer.parseInt(data));
-                if (!dialog.hasVkGroup())
-                    dialog.setVkGroup(chosenVkGroup);
-
-                constructRandomPost(callbackQuery, dialog);
-                if (dialog.getConstructMode().equals(MANUAL_MODE)) {
-                    sendTelegramPost(sender, callbackQuery, dialog);
-                } else {
-                    sendVkPost(sender, callbackQuery, dialog);
-                }
-            }
-        }
-
-        if (!isContain)
-            sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
     private void changePhoto(AbsSender sender, CallbackQuery callbackQuery) {
@@ -166,21 +148,17 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
             sendNotificationAboutOldMessage(sender, callbackQuery);
     }
 
-    private void startMessageDialog(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-        String data = callbackQuery.getData();
-
-        synchronized (this) {
-            if (!isStorageContainsMessageId(messageId)) {
-                RandomCommandDialog dialog = new RandomCommandDialog(messageId);
-                if (!dialog.hasPhotoChooseAnswer())
-                    dialog.setConstructMode(data);
-                messageIdToMessageDialogStorage.put(messageId, dialog);
-            }
-        }
-
+    private void pickMode(AbsSender sender, CallbackQuery callbackQuery) {
         EditMessageText groupChooseMessage = new EditMessageText();
-        groupChooseMessage.setText(Callbacks.CHOOSE_GROUP_RANDOM_COMMAND);
+        StringBuilder messageBody = new StringBuilder();
+
+        if (callbackQuery.getData().equals(MANUAL_MODE))
+            messageBody.append("Режим: ручной");
+        else
+            messageBody.append("Режим: рандом");
+        messageBody.append("\n\n");
+        messageBody.append(Callbacks.CHOOSE_GROUP_RANDOM_COMMAND);
+
         groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
         groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
         setHostGroupsKeyboard(groupChooseMessage);
