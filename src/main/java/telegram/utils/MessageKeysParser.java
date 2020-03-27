@@ -52,19 +52,4 @@ public class MessageKeysParser {
 
         return map;
     }
-
-    public static void main(String[] args) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Режим: Ручной")
-                .append("\n")
-                .append("Группа: -1231231245 (коты и эмо)")
-                .append("\n")
-                .append("Трек: attachments_audio12312 (Корж)")
-                .append("\n")
-                .append("Пикча: attachments_photo1212312");
-
-        HashMap<String,String> map = parseMessageKeysBody(builder.toString());
-
-        System.out.println();
-    }
 }
