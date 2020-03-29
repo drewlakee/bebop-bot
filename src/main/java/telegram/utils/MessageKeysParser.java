@@ -35,7 +35,7 @@ public class MessageKeysParser {
      *          textBody = "key1: value1\nkey2: some value2\nkey3: some value3 (not used value)"
      *
      * @param textBody
-     * @return @see HashMap<String, String>
+     * @return HashMap<String, String>
      */
     public static HashMap<String, String> parseMessageKeysBody(String textBody) {
         String[] lines = textBody.split("\n");
