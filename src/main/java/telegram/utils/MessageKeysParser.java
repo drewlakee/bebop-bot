@@ -1,6 +1,7 @@
 package telegram.utils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,7 @@ public class MessageKeysParser {
      */
     public static HashMap<String, String> parseMessageKeysBody(String textBody) {
         String[] lines = textBody.split("\n");
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> map = new LinkedHashMap<>();
 
         Matcher keyMatcher;
         Matcher valueMatcher;
