@@ -5,20 +5,23 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.photos.PhotoSizes;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import telegram.commands.dialog.RandomCommandDialog;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
 import telegram.commands.keyboards.InlineKeyboardBuilder;
 import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
+import telegram.commands.statics.MessageBodyKeys;
 import telegram.utils.MessageKeysParser;
 import vk.api.VkApi;
 import vk.api.VkUserActor;
@@ -27,26 +30,23 @@ import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.services.VkRandomContentFinder;
 
-import javax.annotation.concurrent.GuardedBy;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    @GuardedBy("this")
-    private final HashMap<Integer, RandomCommandDialog> messageIdToMessageDialogStorage;
-
-    private final static String CANCEL_REQUEST = "0";
-    private final static String SEND_CONSTRUCTED_POST = "1";
+    private final static String CANCEL_REQUEST_CALLBACK = "0";
+    private final static String SEND_CONSTRUCTED_POST_CALLBACK = "1";
     private final static String GROUP_CALLBACK = "2";
-    private final static String CHANGE_PHOTO = "3";
-    private final static String CHANGE_AUDIO = "4";
-    private final static String RANDOM_MODE = "5";
-    private final static String MANUAL_MODE = "6";
+    private final static String CHANGE_PHOTO_CALLBACK = "3";
+    private final static String CHANGE_AUDIO_CALLBACK = "4";
+    private final static String RANDOM_MODE_CALLBACK = "5";
+    private final static String MANUAL_MODE_CALLBACK = "6";
 
     public RandomCommand() {
         super(Commands.RANDOM);
-        messageIdToMessageDialogStorage = new HashMap<>();
     }
 
     @Override
@@ -61,21 +61,21 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         switch (handleWay) {
             case GROUP_CALLBACK:
-                handleChosenMode(sender, callbackQuery);
+                handleChosenGroup(sender, callbackQuery);
                 break;
-            case CHANGE_PHOTO:
+            case CHANGE_PHOTO_CALLBACK:
                 changePhoto(sender, callbackQuery);
                 break;
-            case CHANGE_AUDIO:
+            case CHANGE_AUDIO_CALLBACK:
                 changeAudio(sender, callbackQuery);
                 break;
-            case SEND_CONSTRUCTED_POST:
-                sendConstructedPost(sender, callbackQuery);
-            case CANCEL_REQUEST:
+            case SEND_CONSTRUCTED_POST_CALLBACK:
+                sendTelegramConstructedPost(sender, callbackQuery);
+            case CANCEL_REQUEST_CALLBACK:
                 deleteMessage(sender, callbackQuery);
                 break;
             default:
-                pickMode(sender, callbackQuery);
+                handleChosenMode(sender, callbackQuery);
                 break;
         }
     }
@@ -83,132 +83,174 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     @Override
     public void handle(AbsSender sender, Message message) {
         SendMessage answer = new SendMessage();
-        setAskModeKeyboard(answer);
+        answer.setText(Callbacks.ASK_CHOOSE_POST_RANDOM_COMMAND);
+        answer.setReplyMarkup(buildAskModeKeyboard());
         answer.setChatId(message.getChatId());
 
         send(sender, answer);
     }
 
-    private void handleChosenMode(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-        String data = callbackQuery.getData();
-        HashMap<String, String> params = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+    private void handleChosenGroup(AbsSender sender, CallbackQuery callbackQuery) {
+        deleteMessage(sender, callbackQuery);
 
+        String groupId = callbackQuery.getData();
+        HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+        String mode = messageBodyParams.get(MessageBodyKeys.MODE);
+
+        if (mode.equals(MessageBodyKeys.MANUAL))
+            constructTelegramPost(sender, callbackQuery, messageBodyParams);
+
+        if (mode.equals(MessageBodyKeys.RANDOM))
+            constructRandomVkPost(sender, callbackQuery, groupId);
+    }
+
+    private void constructRandomVkPost(AbsSender sender, CallbackQuery callbackQuery, String groupId) {
+        VkGroup group = VkGroupPool.getHostGroup(Integer.parseInt(groupId));
+        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
+        List<String> attachments = List.of(
+                "photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId(),
+                "audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId()
+        );
+
+        sendVkPost(sender, callbackQuery, group, attachments);
+    }
+
+    private void constructTelegramPost(AbsSender sender, CallbackQuery callbackQuery, Map<String, String> messageBodyKeys) {
+        SendPhoto telegramPost = new SendPhoto();
+        telegramPost.setChatId(callbackQuery.getMessage().getChatId());
+        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
+        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+
+        PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
+        telegramPost.setPhoto(largestResolution.getUrl().toString());
+
+        VkGroup chosenGroup = VkGroupPool.getHostGroup(Integer.parseInt(callbackQuery.getData()));
+
+        StringBuilder messageBody = new StringBuilder();
+        messageBody.append(MessageBodyKeys.MODE + ": " + messageBodyKeys.get(MessageBodyKeys.MODE))
+                .append("\n");
+        messageBody.append(MessageBodyKeys.GROUP + ": " + chosenGroup.getGroupId() + " (" + chosenGroup.getName() + ")")
+                .append("\n");
+        messageBody.append("Пикча: ")
+                .append("photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId())
+                .append("\n");
+        messageBody.append("Трек: ")
+                .append("audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId() + " (" + randomAudio.toPrettyString() + ")")
+                .append("\n");
+
+        telegramPost.setCaption(messageBody.toString());
+        telegramPost.setReplyMarkup(buildPostConstructKeyboard());
+
+        send(sender, telegramPost);
     }
 
     private void changePhoto(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-        boolean isContain;
+        EditMessageMedia changePhotoMessage = new EditMessageMedia();
+        changePhotoMessage.setChatId(callbackQuery.getMessage().getChatId());
+        changePhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
-        synchronized (this) {
-            isContain = isStorageContainsMessageId(messageId);
-            if (isContain) {
-                RandomCommandDialog dialog = messageIdToMessageDialogStorage.get(messageId);
-                Photo anotherPhoto = VkRandomContentFinder.findRandomPhoto();
-                dialog.setPhoto(anotherPhoto);
-                sendTelegramPost(sender, callbackQuery, dialog);
-            }
-        }
+        InputMediaPhoto newPhoto = new InputMediaPhoto();
+        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+        PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
+        newPhoto.setMedia(largestResolution.getUrl().toString());
 
-        if (!isContain)
-            sendNotificationAboutOldMessage(sender, callbackQuery);
+        String newPhotoAttachment = "photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId();
+        String[] params = callbackQuery.getMessage().getCaption().split("\n");
+        for (int i = 0; i < params.length; i++)
+            if (params[i].startsWith(MessageBodyKeys.PHOTO))
+                params[i] = MessageBodyKeys.PHOTO + ": " + newPhotoAttachment;
+        newPhoto.setCaption(String.join("\n", params));
+
+        changePhotoMessage.setMedia(newPhoto);
+        changePhotoMessage.setReplyMarkup(buildPostConstructKeyboard());
+
+        send(sender, changePhotoMessage);
     }
 
     private void changeAudio(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-        boolean isContain;
+        EditMessageMedia changeAudioMessage = new EditMessageMedia();
+        changeAudioMessage.setChatId(callbackQuery.getMessage().getChatId());
+        changeAudioMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
-        synchronized (this) {
-            isContain = isStorageContainsMessageId(messageId);
-            if (isContain) {
-                RandomCommandDialog dialog = messageIdToMessageDialogStorage.get(messageId);
-                VkCustomAudio anotherAudio = VkRandomContentFinder.findRandomAudio();
-                dialog.setAudio(anotherAudio);
-                sendTelegramPost(sender, callbackQuery, dialog);
-            }
-        }
+        InputMediaPhoto newTrackWithOldPhoto = new InputMediaPhoto();
+        newTrackWithOldPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
 
-        if (!isContain)
-            sendNotificationAboutOldMessage(sender, callbackQuery);
+        VkCustomAudio newAudio = VkRandomContentFinder.findRandomAudio();
+        String newAudioAttachment = "audio" + newAudio.getOwnerId() + "_" + newAudio.getId() + " (" + newAudio.toPrettyString() + ")";
+        String[] params = callbackQuery.getMessage().getCaption().split("\n");
+        for (int i = 0; i < params.length; i++)
+            if (params[i].startsWith(MessageBodyKeys.AUDIO))
+                params[i] = MessageBodyKeys.AUDIO + ": " + newAudioAttachment;
+        newTrackWithOldPhoto.setCaption(String.join("\n", params));
+
+        changeAudioMessage.setMedia(newTrackWithOldPhoto);
+        changeAudioMessage.setReplyMarkup(buildPostConstructKeyboard());
+
+        send(sender, changeAudioMessage);
     }
 
-    private void sendConstructedPost(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-        boolean isContain;
+    private void sendTelegramConstructedPost(AbsSender sender, CallbackQuery callbackQuery) {
+        deleteMessage(sender, callbackQuery);
 
-        synchronized (this) {
-            isContain = isStorageContainsMessageId(messageId);
-            if (isContain) {
-                RandomCommandDialog dialog = messageIdToMessageDialogStorage.get(messageId);
-                sendVkPost(sender, callbackQuery, dialog);
-            }
-        }
+        Map<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getCaption());
+        int groupId = Integer.parseInt(messageBodyParams.get(MessageBodyKeys.GROUP));
+        VkGroup group = VkGroupPool.getHostGroup(groupId);
+        List<String> attachments = List.of(
+                messageBodyParams.get(MessageBodyKeys.PHOTO),
+                messageBodyParams.get(MessageBodyKeys.AUDIO)
+        );
 
-        if (!isContain)
-            sendNotificationAboutOldMessage(sender, callbackQuery);
+        sendVkPost(sender, callbackQuery, group, attachments);
     }
 
-    private void pickMode(AbsSender sender, CallbackQuery callbackQuery) {
+    private void handleChosenMode(AbsSender sender, CallbackQuery callbackQuery) {
         EditMessageText groupChooseMessage = new EditMessageText();
         StringBuilder messageBody = new StringBuilder();
 
-        if (callbackQuery.getData().equals(MANUAL_MODE))
-            messageBody.append("Режим: ручной");
+        if (callbackQuery.getData().equals(MANUAL_MODE_CALLBACK))
+            messageBody.append(MessageBodyKeys.MANUAL_MODE);
         else
-            messageBody.append("Режим: рандом");
+            messageBody.append(MessageBodyKeys.RANDOM_MODE);
         messageBody.append("\n\n");
         messageBody.append(Callbacks.CHOOSE_GROUP_RANDOM_COMMAND);
 
+        groupChooseMessage.setText(messageBody.toString());
         groupChooseMessage.setChatId(callbackQuery.getMessage().getChatId());
         groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-        setHostGroupsKeyboard(groupChooseMessage);
+        groupChooseMessage.setReplyMarkup(buildHostGroupsKeyboard());
 
         send(sender, groupChooseMessage);
     }
 
-    private void setHostGroupsKeyboard(EditMessageText message) {
+    private InlineKeyboardMarkup buildHostGroupsKeyboard() {
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
 
         for (VkGroup group : VkGroupPool.getHostGroups())
             keyboardBuilder
                     .addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId())))
                     .nextLine();
-        keyboardBuilder.addButton(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL_REQUEST));
+        keyboardBuilder.addButton(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL_REQUEST_CALLBACK));
 
-        InlineKeyboardMarkup keyboardMarkup = keyboardBuilder.build();
-        message.setReplyMarkup(keyboardMarkup);
-        message.setText(Callbacks.CHOOSE_GROUP_RANDOM_COMMAND);
+        return keyboardBuilder.build();
     }
 
-    private void setAskModeKeyboard(SendMessage message) {
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Да").setCallbackData(MANUAL_MODE))
-                .addButton(new InlineKeyboardButton().setText("Нет").setCallbackData(RANDOM_MODE))
+    private InlineKeyboardMarkup buildAskModeKeyboard() {
+        return new InlineKeyboardBuilder()
+                .addButton(new InlineKeyboardButton().setText("Да").setCallbackData(MANUAL_MODE_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Нет").setCallbackData(RANDOM_MODE_CALLBACK))
                 .build();
-
-        message.setText(Callbacks.ASK_CHOOSE_POST_RANDOM_COMMAND);
-        message.setReplyMarkup(markupKeyboard);
     }
 
-    private void constructRandomPost(CallbackQuery callbackQuery, RandomCommandDialog dialog) {
-        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
-        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
-        dialog.setAudio(randomAudio);
-        dialog.setPhoto(randomPhoto);
-        messageIdToMessageDialogStorage.put(callbackQuery.getMessage().getMessageId(), dialog);
-    }
-
-    private void setPostConstructKeyboard(EditMessageText postMessage) {
-        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Поменять пикчу").setCallbackData(CHANGE_PHOTO))
-                .addButton(new InlineKeyboardButton().setText("Поменять трек").setCallbackData(CHANGE_AUDIO))
+    private InlineKeyboardMarkup buildPostConstructKeyboard() {
+        return new InlineKeyboardBuilder()
+                .addButton(new InlineKeyboardButton().setText("Поменять пикчу").setCallbackData(CHANGE_PHOTO_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Поменять трек").setCallbackData(CHANGE_AUDIO_CALLBACK))
                 .nextLine()
-                .addButton(new InlineKeyboardButton().setText("Запостить").setCallbackData(SEND_CONSTRUCTED_POST))
+                .addButton(new InlineKeyboardButton().setText("Запостить").setCallbackData(SEND_CONSTRUCTED_POST_CALLBACK))
                 .nextLine()
-                .addButton(new InlineKeyboardButton().setText("Отменить запрос").setCallbackData(CANCEL_REQUEST))
+                .addButton(new InlineKeyboardButton().setText("Отменить запрос").setCallbackData(CANCEL_REQUEST_CALLBACK))
                 .build();
-
-        postMessage.setReplyMarkup(keyboardMarkup);
     }
 
     private void deleteMessage(AbsSender sender, CallbackQuery callbackQuery) {
@@ -219,72 +261,23 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         send(sender, deleteMessage);
     }
 
-    private void sendNotificationAboutOldMessage(AbsSender sender, CallbackQuery callbackQuery) {
-        int messageId = callbackQuery.getMessage().getMessageId();
-
-        if (!isStorageContainsMessageId(messageId)) {
-            EditMessageText oldMessage = new EditMessageText();
-            oldMessage.setChatId(callbackQuery.getMessage().getChatId());
-            oldMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-            oldMessage.setText("Запрос на отправку случайного поста устарел.");
-
-            send(sender, oldMessage);
-        }
-    }
-
-    private void sendTelegramPost(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
-        EditMessageText constructedPost = new EditMessageText();
-        constructedPost.setChatId(callbackQuery.getMessage().getChatId());
-        constructedPost.setMessageId(callbackQuery.getMessage().getMessageId());
-
-        StringBuilder messageBody = new StringBuilder();
-        PhotoSizes bigResolutionPhoto = dialog.getPhoto().getSizes().get(dialog.getPhoto().getSizes().size() - 1);
-        URL imageUrl = bigResolutionPhoto.getUrl();
-        messageBody.append("Пикча: \n").append(imageUrl.toString())
-                .append("\n")
-                .append("Трек: \n").append(dialog.getAudio().toPrettyString());
-        constructedPost.setText(messageBody.toString());
-        setPostConstructKeyboard(constructedPost);
-
-        send(sender, constructedPost);
-    }
-
-    private void sendVkPost(AbsSender sender, CallbackQuery callbackQuery, RandomCommandDialog dialog) {
-        endMessageDialog(sender, callbackQuery);
-
+    private void sendVkPost(AbsSender sender, CallbackQuery callbackQuery, VkGroup group, List<String> attachments) {
         SendMessage sendMessage = new SendMessage();
-        VkGroup group = dialog.getVkGroup();
-        Photo photo = dialog.getPhoto();
-        VkCustomAudio audio = dialog.getAudio();
-
         sendMessage.setChatId(callbackQuery.getMessage().getChatId());
-        sendMessage.setText("Готово, чекай группу \uD83D\uDE38\n" + group.getUrl());
+        sendMessage.setText("Готово, чекай группу!\n" + group.getUrl());
         sendMessage.disableWebPagePreview();
 
         try {
-            String photoAttachment = "photo" + photo.getOwnerId() + "_" + photo.getId();
-            String audioAttachment = "audio" + audio.getOwnerId() + "_" + audio.getId();
             VkApi.instance()
                     .wall()
                     .post(VkUserActor.instance())
                     .ownerId(group.getGroupId())
-                    .attachments(photoAttachment, audioAttachment)
+                    .attachments(attachments)
                     .execute();
         } catch (ClientException | ApiException e) {
             sendMessage.setText("Что-то по пути сломалось...");
         }
 
         send(sender, sendMessage);
-    }
-
-    private void endMessageDialog(AbsSender sender, CallbackQuery callbackQuery) {
-        synchronized (this) {
-            messageIdToMessageDialogStorage.remove(callbackQuery.getMessage().getMessageId());
-            deleteMessage(sender, callbackQuery);
-        }
-    }
-
-    private boolean isStorageContainsMessageId(int messageId) {
-        return messageIdToMessageDialogStorage.containsKey(messageId);
     }
 }
