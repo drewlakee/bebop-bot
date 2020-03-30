@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import telegram.commands.CommandsPool;
 import telegram.commands.MyGroupsCommand;
 import telegram.commands.RandomCommand;
-import telegram.commands.StatusCommand;
 
 public class TelegramBot {
 
@@ -21,7 +20,6 @@ public class TelegramBot {
         try {
             CommandsPool.register(new MyGroupsCommand());
             CommandsPool.register(new RandomCommand());
-            CommandsPool.register(new StatusCommand());
             botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
             e.printStackTrace();
