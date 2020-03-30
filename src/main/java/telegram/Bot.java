@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import telegram.commands.CommandsPool;
 import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
+import telegram.commands.statics.MessageBodyKeys;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -47,9 +48,6 @@ public class Bot extends TelegramLongPollingBot {
             case Commands.RANDOM:
                 CommandsPool.handleCommand(Commands.RANDOM, this, message);
                 break;
-            case Commands.STATUS:
-                CommandsPool.handleCommand(Commands.STATUS, this, message);
-                break;
             case Commands.MY_GROUPS:
                 CommandsPool.handleCommand(Commands.MY_GROUPS, this, message);
                 break;
@@ -57,18 +55,28 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
-        String recentMessage = callbackQuery.getMessage().getText();
+        String messageBody;
+        String handleCommand = Commands.UNKNOWN;
 
-        if (recentMessage.contains("Пикча") && recentMessage.contains("Трек"))
-            recentMessage = Callbacks.CHOOSE_POST_RANDOM_COMMAND;
+        if (callbackQuery.getMessage().getText() == null)
+            messageBody = callbackQuery.getMessage().getCaption();
+        else
+            messageBody = callbackQuery.getMessage().getText();
 
-        switch (recentMessage) {
-            case Callbacks.ASK_CHOOSE_POST_RANDOM_COMMAND:
-            case Callbacks.CHOOSE_GROUP_RANDOM_COMMAND:
-            case Callbacks.CHOOSE_POST_RANDOM_COMMAND:
+        if (isContainsRandomCommandCallbacks(messageBody))
+            handleCommand = Commands.RANDOM;
+
+        switch (handleCommand) {
+            case Commands.RANDOM:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
+    }
+
+    private boolean isContainsRandomCommandCallbacks(String messageBody) {
+        return messageBody.contains(Callbacks.CHOOSE_MODE_RANDOM_POST)
+                || messageBody.contains(Callbacks.CHOOSE_GROUP_RANDOM_POST)
+                || messageBody.contains(MessageBodyKeys.MODE);
     }
 
     @Override
