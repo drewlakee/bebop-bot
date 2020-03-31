@@ -37,11 +37,10 @@ public class VkFileLoaderTest {
         HashMap<String, VkGroup> groupsFromFile = VkFileLoader.loadGroups(testFile);
         VkGroup group = groupsFromFile.get(name);
 
+        testFile.delete();
         Assert.assertEquals(groupObjective, group.getGroupObjective());
         Assert.assertEquals(name, group.getName());
         Assert.assertEquals(groupId, group.getGroupId());
         Assert.assertEquals(url, group.getUrl());
     }
-
-
 }
