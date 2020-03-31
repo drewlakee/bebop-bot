@@ -12,8 +12,9 @@ repositories {
 
 dependencies {
     compile 'com.vk.api:sdk:1.0.6'
-    compile "org.telegram:telegrambots:4.6"
+    compile 'org.telegram:telegrambots:4.6'
     compile 'com.google.guava:guava:28.2-jre'
+    testCompile 'junit:junit:4.13'
 }
 
 task stage(type: Copy, dependsOn: build) {
