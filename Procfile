@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -cp build/staging:build/staging/* app.Application
+web: java $JAVA_OPTS -Dserver.port=35201 -cp build/staging:build/staging/* app.Application

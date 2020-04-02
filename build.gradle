@@ -6,20 +6,18 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
 }
 
-group 'vk'
-version '1.0'
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
     compile 'com.vk.api:sdk:1.0.6'
-    compile "org.telegram:telegrambots:4.6"
+    compile 'org.telegram:telegrambots:4.6'
+    compile 'com.google.guava:guava:28.2-jre'
+    testCompile 'junit:junit:4.13'
 }
 
-task stage(type: Copy) {
+task stage(type: Copy, dependsOn: build) {
     from sourceSets.main.runtimeClasspath
     into 'build/staging'
 }
-stage.dependsOn build

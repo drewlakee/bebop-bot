@@ -20,20 +20,13 @@ public class CommandsPool {
         pool.put(command.getCommandName(), command);
     }
 
-    public static void handleCommand(String command, AbsSender sender, Message message) {
-        handleCommand(command, sender, message, null);
-    }
-
-    public static void handleCommand(String command, AbsSender sender, CallbackQuery callbackQuery) {
-        handleCommand(command, sender, null, callbackQuery);
-    }
-
-    private static void handleCommand(String command, AbsSender sender, Message message, CallbackQuery callbackQuery) {
+    public static void handleCommand(String command, AbsSender sender, Object method) {
         try {
-            if (message == null)
-                ((CallbackQueryHandler) pool.get(command)).handle(sender, callbackQuery);
-            else
-                ((MessageHandler) pool.get(command)).handle(sender, message);
+            if (method instanceof CallbackQuery)
+                ((CallbackQueryHandler) pool.get(command)).handle(sender, ((CallbackQuery) method));
+
+            if (method instanceof Message)
+                ((MessageHandler) pool.get(command)).handle(sender, ((Message) method));
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
