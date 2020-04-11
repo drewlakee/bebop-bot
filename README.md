@@ -1,7 +1,7 @@
 # Telegram бот-помощник в VK сообществе
 
 - [Команды](#команды)
-- [VM аргументы](#vm-аргументы)
+- [Пользовательские переменные окружения](#пользовательские-переменные-окружения)
 
 #### Команды:
 
@@ -17,26 +17,33 @@
 
 ###### Список групп формируется в файле [groups](src/main/resources/groups).      
 
-#### VM аргументы:
+#### Пользовательские переменные окружения:
+
+Telegram:
 
 ```` 
-telegram bot:
--Dhost_username=username
--Dbot_username=username
--Dbot_token=token
-[-Dbot_proxy_type=type]
-[-Dbot_proxy_host=ip]
-[-Dbot_proxy_port=port]
-[-Dbot_threads=count]
+host_username=username
+bot_username=username
+bot_token=token
+[bot_proxy_type=type]
+[bot_proxy_host=ip]
+[bot_proxy_port=port]
+[bot_threads=count]
+````
 
-[-D...] - опционально
+[...] - опционально
+
 host_username - пользователь в telegram, от лица которого бот будет взаимодействоать с VK API
+
 bot_proxy_type - тип протокола: HTTP, SOCKS4, SOCKS5
+
 bot_threads - количество потоков, которые обрабатывают запросы к боту
 
-vk api:
--Dvk_token=token
--Dvk_user_id=user_id
+VK API:
+
+````
+vk_token=token
+vk_user_id=user_id
 ````
 
 Ключ доступа получается через Implicit Flow для доступа к VK от лица пользователя.
