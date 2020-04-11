@@ -41,17 +41,13 @@ public class MessageKeysParser {
         String[] lines = textBody.split("\n");
         HashMap<String, String> map = new LinkedHashMap<>();
 
-        Matcher keyMatcher;
-        Matcher valueMatcher;
         for (String line : lines) {
-            keyMatcher = keyPattern.matcher(line);
-            valueMatcher = valuePattern.matcher(line);
+            Matcher keyMatcher = keyPattern.matcher(line);
+            Matcher valueMatcher = valuePattern.matcher(line);
 
-            String key;
-            String value;
             if (keyMatcher.find() && valueMatcher.find()) {
-                key = keyMatcher.group();
-                value = valueMatcher.group().strip();
+                String key = keyMatcher.group();
+                String value = valueMatcher.group().strip();
 
                 if (!key.isEmpty() && !value.isEmpty())
                     map.put(key, value);
