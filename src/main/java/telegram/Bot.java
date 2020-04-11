@@ -1,6 +1,5 @@
 package telegram;
 
-import app.AppEnvironmentProperties;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -31,7 +30,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private boolean isHostRequest(Update update) {
-        String hostUsername = AppEnvironmentProperties.getAppProperty("host_username");
+        String hostUsername = System.getenv("host_username");
 
         if (update.hasMessage())
             return update.getMessage().getChat().getUserName().equals(hostUsername);
@@ -81,11 +80,11 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return AppEnvironmentProperties.getAppProperty("bot_username");
+        return System.getenv("bot_username");
     }
 
     @Override
     public String getBotToken() {
-        return AppEnvironmentProperties.getAppProperty(("bot_token"));
+        return System.getenv(("bot_token"));
     }
 }

@@ -1,6 +1,5 @@
 package telegram;
 
-import app.AppEnvironmentProperties;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -29,17 +28,17 @@ public class TelegramBot {
     private static DefaultBotOptions initializeCustomOptions() {
         DefaultBotOptions customOptions = new DefaultBotOptions();
 
-        if (AppEnvironmentProperties.containsProperty("bot_threads")) {
-            customOptions.setMaxThreads(Integer.parseInt(AppEnvironmentProperties.getAppProperty("bot_threads")));
+        if (System.getenv().containsKey("bot_threads")) {
+            customOptions.setMaxThreads(Integer.parseInt(System.getenv("bot_threads")));
         } else
             customOptions.setMaxThreads(1);
 
-        if (AppEnvironmentProperties.containsProperty("bot_proxy_type") &&
-                AppEnvironmentProperties.containsProperty("bot_proxy_host") &&
-                AppEnvironmentProperties.containsProperty("bot_proxy_port")) {
-            customOptions.setProxyType(DefaultBotOptions.ProxyType.valueOf(AppEnvironmentProperties.getAppProperty("bot_proxy_type")));
-            customOptions.setProxyHost(AppEnvironmentProperties.getAppProperty("bot_proxy_host"));
-            customOptions.setProxyPort(Integer.parseInt(AppEnvironmentProperties.getAppProperty("bot_proxy_port")));
+        if (System.getenv().containsKey("bot_proxy_type") &&
+                System.getenv().containsKey("bot_proxy_host") &&
+                System.getenv().containsKey("bot_proxy_port")) {
+            customOptions.setProxyType(DefaultBotOptions.ProxyType.valueOf(System.getenv("bot_proxy_type")));
+            customOptions.setProxyHost(System.getenv("bot_proxy_host"));
+            customOptions.setProxyPort(Integer.parseInt(System.getenv("bot_proxy_port")));
         }
 
         return customOptions;
