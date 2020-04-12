@@ -26,7 +26,7 @@ public class MessageKeysParser {
      *          2. text = "some_key: value0 value1 (hello there)"
      *          pattern will match string " value0 value1 ", but have whitespaces.
      */
-    private final static Pattern valuePattern = Pattern.compile("(?<=:)((\\s*)?([\\w\\p{IsCyrillic}-+]*))*");
+    private final static Pattern valuePattern = Pattern.compile("(?<=:)((\\s*)?([\\w\\p{IsCyrillic}-+]*))");
 
     /**
      *  Message body parser
