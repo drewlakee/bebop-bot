@@ -14,7 +14,7 @@ public class MessageKeysParser {
      *          text = "some_key: some value"
      *          pattern will match string "some_key"
      */
-    private final static Pattern keyPattern = Pattern.compile("[\\w\\p{IsCyrillic}].+(?=:)");
+    private final static Pattern keyPattern = Pattern.compile("[\\w\\p{IsCyrillic}]*.(?=:)");
 
     /**
      * Pattern for value matching in message body
