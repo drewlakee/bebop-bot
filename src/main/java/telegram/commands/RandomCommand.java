@@ -1,7 +1,10 @@
 package telegram.commands;
 
+import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.photos.PhotoSizes;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -15,6 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
+import telegram.ResponseMessageDispatcher;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
@@ -23,12 +27,11 @@ import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
 import telegram.commands.statics.MessageBodyKeys;
 import telegram.utils.MessageKeysParser;
-import vk.api.VkApi;
-import vk.api.VkUserActor;
-import vk.domain.groups.VkGroup;
+import vk.api.VkDefaultApiCredentials;
+import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
-import vk.services.VkRandomContentFinder;
+import vk.services.VkRandomContent;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,9 +56,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         String data = callbackQuery.getData();
         String handleWay = callbackQuery.getData();
 
-        // VK Community id looks like "-123456789" and always start with "-"
-        boolean isDataHaveGroup = Integer.parseInt(data) < 0;
-        if (isDataHaveGroup)
+        boolean isDataHaveVkGroupId = Integer.parseInt(data) < 0;
+        if (isDataHaveVkGroupId)
             handleWay = GROUP_CALLBACK;
 
         switch (handleWay) {
@@ -87,7 +89,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         responseMessage.setReplyMarkup(buildAskModeKeyboard());
         responseMessage.setChatId(message.getChatId());
 
-        send(sender, responseMessage);
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(responseMessage);
     }
 
     private void handleChosenGroup(AbsSender sender, CallbackQuery callbackQuery) {
@@ -105,9 +108,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     }
 
     private void constructRandomVkPost(AbsSender sender, CallbackQuery callbackQuery, String groupId) {
-        VkGroup group = VkGroupPool.getHostGroup(Integer.parseInt(groupId));
-        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
-        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
+        VkCustomGroup group = VkGroupPool.getHostGroup(Integer.parseInt(groupId));
+        Photo randomPhoto = VkRandomContent.findRandomPhoto();
+        VkCustomAudio randomAudio = VkRandomContent.findRandomAudio();
         List<String> attachments = List.of(
                 "photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId(),
                 "audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId()
@@ -119,30 +122,34 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void constructTelegramPost(AbsSender sender, CallbackQuery callbackQuery, Map<String, String> messageBodyKeys) {
         SendPhoto telegramPostMessage = new SendPhoto();
         telegramPostMessage.setChatId(callbackQuery.getMessage().getChatId());
-        VkCustomAudio randomAudio = VkRandomContentFinder.findRandomAudio();
-        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+        VkCustomAudio randomAudio = VkRandomContent.findRandomAudio();
+        Photo randomPhoto = VkRandomContent.findRandomPhoto();
 
         PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
         telegramPostMessage.setPhoto(largestResolution.getUrl().toString());
 
-        VkGroup chosenGroup = VkGroupPool.getHostGroup(Integer.parseInt(callbackQuery.getData()));
+        VkCustomGroup chosenGroup = VkGroupPool.getHostGroup(Integer.parseInt(callbackQuery.getData()));
 
         StringBuilder messageBody = new StringBuilder();
-        messageBody.append(MessageBodyKeys.MODE + ": " + messageBodyKeys.get(MessageBodyKeys.MODE))
+        messageBody.append(MessageBodyKeys.MODE + ": ").append(messageBodyKeys.get(MessageBodyKeys.MODE))
                 .append("\n");
-        messageBody.append(MessageBodyKeys.GROUP + ": " + chosenGroup.getGroupId() + " (" + chosenGroup.getName() + ")")
+        messageBody.append(MessageBodyKeys.GROUP + ": ")
+                .append(chosenGroup.getId())
+                .append(" (").append(chosenGroup.getName()).append(")")
                 .append("\n");
-        messageBody.append("Пикча: ")
-                .append("photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId())
+        messageBody.append(MessageBodyKeys.PHOTO + ": ")
+                .append("photo").append(randomPhoto.getOwnerId()).append("_").append(randomPhoto.getId())
                 .append("\n");
-        messageBody.append("Трек: ")
-                .append("audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId() + " (" + randomAudio.toPrettyString() + ")")
+        messageBody.append(MessageBodyKeys.AUDIO + ": ")
+                .append("audio").append(randomAudio.getOwnerId()).append("_").append(randomAudio.getId())
+                .append(" (").append(randomAudio.toPrettyString()).append(")")
                 .append("\n");
 
         telegramPostMessage.setCaption(messageBody.toString());
         telegramPostMessage.setReplyMarkup(buildPostConstructKeyboard());
 
-        send(sender, telegramPostMessage);
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(telegramPostMessage);
     }
 
     private void changePhoto(AbsSender sender, CallbackQuery callbackQuery) {
@@ -151,7 +158,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changePhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
         InputMediaPhoto newPhoto = new InputMediaPhoto();
-        Photo randomPhoto = VkRandomContentFinder.findRandomPhoto();
+        Photo randomPhoto = VkRandomContent.findRandomPhoto();
         PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
         newPhoto.setMedia(largestResolution.getUrl().toString());
 
@@ -165,7 +172,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changePhotoMessage.setMedia(newPhoto);
         changePhotoMessage.setReplyMarkup(buildPostConstructKeyboard());
 
-        send(sender, changePhotoMessage);
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(changePhotoMessage);
     }
 
     private void changeAudio(AbsSender sender, CallbackQuery callbackQuery) {
@@ -176,7 +184,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InputMediaPhoto newTrackWithOldPhoto = new InputMediaPhoto();
         newTrackWithOldPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
 
-        VkCustomAudio newAudio = VkRandomContentFinder.findRandomAudio();
+        VkCustomAudio newAudio = VkRandomContent.findRandomAudio();
         String newAudioAttachment = "audio" + newAudio.getOwnerId() + "_" + newAudio.getId() + " (" + newAudio.toPrettyString() + ")";
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
@@ -187,13 +195,14 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changeAudioMessage.setMedia(newTrackWithOldPhoto);
         changeAudioMessage.setReplyMarkup(buildPostConstructKeyboard());
 
-        send(sender, changeAudioMessage);
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(changeAudioMessage);
     }
 
     private void sendTelegramConstructedPost(AbsSender sender, CallbackQuery callbackQuery) {
         Map<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getCaption());
         int groupId = Integer.parseInt(messageBodyParams.get(MessageBodyKeys.GROUP));
-        VkGroup group = VkGroupPool.getHostGroup(groupId);
+        VkCustomGroup group = VkGroupPool.getHostGroup(groupId);
         List<String> attachments = List.of(
                 messageBodyParams.get(MessageBodyKeys.PHOTO),
                 messageBodyParams.get(MessageBodyKeys.AUDIO)
@@ -218,14 +227,98 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         groupChooseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
         groupChooseMessage.setReplyMarkup(buildHostGroupsKeyboard());
 
-        send(sender, groupChooseMessage);
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(groupChooseMessage);
+    }
+
+    private void sendVkPost(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, List<String> attachments) {
+        boolean isSend = sendVk(group, attachments);
+
+        if (isTelegramConstructedPost(callbackQuery))
+            sendConstructedPostResponse(sender, callbackQuery, group, isSend);
+        else
+            sendRandomPostResponse(sender, callbackQuery, group, isSend);
+    }
+
+    private boolean sendVk(VkCustomGroup group, List<String> attachments) {
+        boolean isOk = true;
+        VkApiClient api = new VkApiClient(new HttpTransportClient());
+        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+
+        try {
+            api.wall()
+                    .post(userActor)
+                    .ownerId(group.getId())
+                    .attachments(attachments)
+                    .execute();
+        } catch (ClientException | ApiException e) {
+            isOk = false;
+        }
+
+        return isOk;
+    }
+
+    private boolean isTelegramConstructedPost(CallbackQuery callbackQuery) {
+        return callbackQuery.getMessage().getPhoto() != null
+                && callbackQuery.getMessage().getCaption() != null;
+    }
+
+    private void sendConstructedPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, boolean isSend) {
+        EditMessageMedia responseMessage = new EditMessageMedia();
+        responseMessage.setChatId(callbackQuery.getMessage().getChatId());
+        responseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+
+        String messageResponseBody;
+        if (isSend)
+            messageResponseBody = callbackQuery.getMessage().getCaption() + "\n\nПост отправлен в группу!";
+        else
+            messageResponseBody = "Что-то по пути сломалось...";
+
+        InputMediaPhoto postPhoto = new InputMediaPhoto();
+        postPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
+        postPhoto.setCaption(messageResponseBody);
+        responseMessage.setMedia(postPhoto);
+        responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
+
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(responseMessage);
+    }
+
+    private void sendRandomPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, boolean isSend) {
+        deleteMessage(sender, callbackQuery);
+
+        SendMessage responseMessage = new SendMessage();
+        responseMessage.setChatId(callbackQuery.getMessage().getChatId());
+        if (isSend)
+            responseMessage.setText("Слуйчайный пост отправлен в группу!");
+        else
+            responseMessage.setText("Что-то по пути сломалось...");
+        responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
+
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(responseMessage);
+    }
+
+    private void deleteMessage(AbsSender sender, CallbackQuery callbackQuery) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
+        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+
+        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
+        dispatcher.send(deleteMessage);
+    }
+
+    private InlineKeyboardMarkup buildKeyboardWithGroupUrl(String url) {
+        return new InlineKeyboardBuilder()
+                .addButton(new InlineKeyboardButton().setText("Перейти в группу").setUrl(url))
+                .build();
     }
 
     private InlineKeyboardMarkup buildHostGroupsKeyboard() {
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
 
-        for (VkGroup group : VkGroupPool.getHostGroups())
-            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getGroupId()))).nextLine();
+        for (VkCustomGroup group : VkGroupPool.getHostGroups())
+            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getId()))).nextLine();
         keyboardBuilder.addButton(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL_REQUEST_CALLBACK));
 
         return keyboardBuilder.build();
@@ -246,85 +339,6 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 .addButton(new InlineKeyboardButton().setText("Запостить").setCallbackData(SEND_CONSTRUCTED_POST_CALLBACK))
                 .nextLine()
                 .addButton(new InlineKeyboardButton().setText("Отменить запрос").setCallbackData(CANCEL_REQUEST_CALLBACK))
-                .build();
-    }
-
-    private void sendVkPost(AbsSender sender, CallbackQuery callbackQuery, VkGroup group, List<String> attachments) {
-        boolean isSend = sendVk(group, attachments);
-
-        if (isTelegramConstructedPost(callbackQuery))
-            sendConstructedPostResponse(sender, callbackQuery, group, isSend);
-        else
-            sendRandomPostResponse(sender, callbackQuery, group, isSend);
-    }
-
-    private boolean sendVk(VkGroup group, List<String> attachments) {
-        boolean isOk = true;
-
-        try {
-            VkApi.instance()
-                    .wall()
-                    .post(VkUserActor.instance())
-                    .ownerId(group.getGroupId())
-                    .attachments(attachments)
-                    .execute();
-        } catch (ClientException | ApiException e) {
-            isOk = false;
-        }
-
-        return isOk;
-    }
-
-    private boolean isTelegramConstructedPost(CallbackQuery callbackQuery) {
-        return callbackQuery.getMessage().getPhoto() != null
-                && callbackQuery.getMessage().getCaption() != null;
-    }
-
-    private void sendConstructedPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkGroup group, boolean isSend) {
-        EditMessageMedia responseMessage = new EditMessageMedia();
-        responseMessage.setChatId(callbackQuery.getMessage().getChatId());
-        responseMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-
-        String messageResponseBody;
-        if (isSend)
-            messageResponseBody = callbackQuery.getMessage().getCaption() + "\n\nПост отправлен в группу!";
-        else
-            messageResponseBody = "Что-то по пути сломалось...";
-
-        InputMediaPhoto postPhoto = new InputMediaPhoto();
-        postPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
-        postPhoto.setCaption(messageResponseBody);
-        responseMessage.setMedia(postPhoto);
-        responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
-
-        send(sender, responseMessage);
-    }
-
-    private void sendRandomPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkGroup group, boolean isSend) {
-        deleteMessage(sender, callbackQuery);
-
-        SendMessage responseMessage = new SendMessage();
-        responseMessage.setChatId(callbackQuery.getMessage().getChatId());
-        if (isSend)
-            responseMessage.setText("Слуйчайный пост отправлен в группу!");
-        else
-            responseMessage.setText("Что-то по пути сломалось...");
-        responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
-
-        send(sender, responseMessage);
-    }
-
-    private void deleteMessage(AbsSender sender, CallbackQuery callbackQuery) {
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
-        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-
-        send(sender, deleteMessage);
-    }
-
-    private InlineKeyboardMarkup buildKeyboardWithGroupUrl(String url) {
-        return new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Перейти в группу").setUrl(url))
                 .build();
     }
 }

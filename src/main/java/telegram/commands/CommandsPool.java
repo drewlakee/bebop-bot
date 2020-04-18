@@ -23,10 +23,10 @@ public class CommandsPool {
     public static void handleCommand(String command, AbsSender sender, Object method) {
         try {
             if (method instanceof CallbackQuery)
-                ((CallbackQueryHandler) pool.get(command)).handle(sender, ((CallbackQuery) method));
+                ((CallbackQueryHandler) pool.get(command)).handle(sender, (CallbackQuery) method);
 
             if (method instanceof Message)
-                ((MessageHandler) pool.get(command)).handle(sender, ((Message) method));
+                ((MessageHandler) pool.get(command)).handle(sender, (Message) method);
         } catch (NullPointerException e) {
             e.printStackTrace();
         }

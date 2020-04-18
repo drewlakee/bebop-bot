@@ -1,7 +1,7 @@
 package vk.services;
 
 import vk.domain.groups.GroupObjective;
-import vk.domain.groups.VkGroup;
+import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupPool;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class VkFileLoader {
+public class VkGroupsConfiguration {
 
     /**
      *  Regexp for String.split(): group attributes from files
@@ -27,16 +27,16 @@ public class VkFileLoader {
         VkGroupPool.add(loadGroups("groups"));
     }
 
-    public static HashMap<String, VkGroup> loadGroups(String filename) {
+    public static HashMap<String, VkCustomGroup> loadGroups(String filename) {
         return loadGroups(filename, null);
     }
 
-    public static HashMap<String, VkGroup> loadGroups(File file) {
+    public static HashMap<String, VkCustomGroup> loadGroups(File file) {
         return loadGroups(null, file);
     }
 
-    private static HashMap<String, VkGroup> loadGroups(String filename, File file) {
-        HashMap<String, VkGroup> groups;
+    private static HashMap<String, VkCustomGroup> loadGroups(String filename, File file) {
+        HashMap<String, VkCustomGroup> groups;
 
         if (file == null) {
             groups = filterLoadFile(filename);
@@ -46,20 +46,20 @@ public class VkFileLoader {
         return groups;
     }
 
-    private static HashMap<String, VkGroup> filterLoadFile(String filename) {
+    private static HashMap<String, VkCustomGroup> filterLoadFile(String filename) {
         return filterLoadFile(null, filename);
     }
 
-    private static HashMap<String, VkGroup> filterLoadFile(File file) {
+    private static HashMap<String, VkCustomGroup> filterLoadFile(File file) {
         return filterLoadFile(file, null);
     }
 
-    private static HashMap<String, VkGroup> filterLoadFile(File file, String filename) {
-        HashMap<String, VkGroup> groups;
+    private static HashMap<String, VkCustomGroup> filterLoadFile(File file, String filename) {
+        HashMap<String, VkCustomGroup> groups;
 
         if (file == null) {
             File projectFile = new File(
-                    VkFileLoader.class.getClassLoader().getResource(filename).getFile()
+                    VkGroupsConfiguration.class.getClassLoader().getResource(filename).getFile()
             );
             groups = readGroupsFile(projectFile);
         } else
@@ -68,15 +68,15 @@ public class VkFileLoader {
         return groups;
     }
 
-    private static HashMap<String, VkGroup> readGroupsFile(File file) {
-        HashMap<String, VkGroup> groups = new HashMap<>();
+    private static HashMap<String, VkCustomGroup> readGroupsFile(File file) {
+        HashMap<String, VkCustomGroup> groups = new HashMap<>();
         List<String> allLinesOfFile = readLines(file);
 
         for(String attributes : allLinesOfFile) {
             String[] groupAttributes = attributes.split(groupAttributesSplitRegexp);
 
             if (groupAttributes.length == 5) {
-                groups.put(groupAttributes[2], new VkGroup(
+                groups.put(groupAttributes[2], new VkCustomGroup(
                         GroupObjective.valueOf(groupAttributes[1]),
                         groupAttributes[2],
                         Integer.parseInt(groupAttributes[3]),
