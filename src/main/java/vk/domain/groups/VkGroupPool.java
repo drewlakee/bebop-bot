@@ -7,49 +7,49 @@ import java.util.stream.Collectors;
 
 public class VkGroupPool {
 
-    private static HashMap<String, VkGroup> pool;
+    private static HashMap<String, VkCustomGroup> pool;
 
-    public static void add(VkGroup vkGroup) {
+    public static void add(VkCustomGroup vkCustomGroup) {
         if (isEmpty())
             pool = new HashMap<>();
 
-        pool.put(vkGroup.getName(), vkGroup);
+        pool.put(vkCustomGroup.getName(), vkCustomGroup);
     }
 
-    public static void add(HashMap<String, VkGroup> groups) {
-        for (VkGroup group : groups.values())
+    public static void add(HashMap<String, VkCustomGroup> groups) {
+        for (VkCustomGroup group : groups.values())
             add(group);
     }
 
-    public static VkGroup getRandomAudioGroup() {
+    public static VkCustomGroup getRandomAudioGroup() {
         Object[] audioGroups = pool.values()
                 .stream()
                 .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.AUDIO))
                 .toArray();
         int randomIndex = new Random().nextInt(audioGroups.length);
-        return (VkGroup) audioGroups[randomIndex];
+        return (VkCustomGroup) audioGroups[randomIndex];
     }
 
-    public static VkGroup getRandomPhotoGroup() {
+    public static VkCustomGroup getRandomPhotoGroup() {
         Object[] photoGroups = pool.values()
                 .stream()
                 .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.PHOTO))
                 .toArray();
         int randomIndex = new Random().nextInt(photoGroups.length);
-        return (VkGroup) photoGroups[randomIndex];
+        return (VkCustomGroup) photoGroups[randomIndex];
     }
 
-    public static List<VkGroup> getHostGroups() {
+    public static List<VkCustomGroup> getHostGroups() {
         return pool.values()
                 .stream()
                 .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.HOST))
                 .collect(Collectors.toList());
     }
 
-    public static VkGroup getHostGroup(int id) {
+    public static VkCustomGroup getHostGroup(int id) {
         return pool.values()
                 .stream()
-                .filter(group -> group.getGroupId() == id)
+                .filter(group -> group.getId() == id)
                 .findAny()
                 .orElseThrow();
     }

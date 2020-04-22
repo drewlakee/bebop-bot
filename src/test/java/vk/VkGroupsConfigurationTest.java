@@ -4,8 +4,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import vk.domain.groups.GroupObjective;
-import vk.domain.groups.VkGroup;
-import vk.services.VkFileLoader;
+import vk.domain.groups.VkCustomGroup;
+import vk.services.VkGroupsConfigurationService;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,7 +14,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class VkFileLoaderTest {
+public class VkGroupsConfigurationTest {
 
     @Test
     public void testGroupLoadingFromFile() throws IOException {
@@ -34,13 +34,14 @@ public class VkFileLoaderTest {
         in.write(String.join(" ", groupAttributes));
         in.close();
 
-        HashMap<String, VkGroup> groupsFromFile = VkFileLoader.loadGroups(testFile);
-        VkGroup group = groupsFromFile.get(name);
+        HashMap<String, VkCustomGroup> groupsFromFile = VkGroupsConfigurationService.loadGroups(testFile);
+        VkCustomGroup group = groupsFromFile.get(name);
+        boolean isFileDeleted = testFile.delete();
 
-        testFile.delete();
+        Assert.assertTrue(isFileDeleted);
         Assert.assertEquals(groupObjective, group.getGroupObjective());
         Assert.assertEquals(name, group.getName());
-        Assert.assertEquals(groupId, group.getGroupId());
+        Assert.assertEquals(groupId, group.getId().intValue());
         Assert.assertEquals(url, group.getUrl());
     }
 }

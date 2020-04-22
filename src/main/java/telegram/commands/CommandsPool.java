@@ -8,6 +8,7 @@ import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class CommandsPool {
 
@@ -23,13 +24,17 @@ public class CommandsPool {
     public static void handleCommand(String command, AbsSender sender, Object method) {
         try {
             if (method instanceof CallbackQuery)
-                ((CallbackQueryHandler) pool.get(command)).handle(sender, ((CallbackQuery) method));
+                ((CallbackQueryHandler) pool.get(command)).handle(sender, (CallbackQuery) method);
 
             if (method instanceof Message)
-                ((MessageHandler) pool.get(command)).handle(sender, ((Message) method));
+                ((MessageHandler) pool.get(command)).handle(sender, (Message) method);
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Set<String> getRegisteredCommandsSet() {
+        return pool.keySet();
     }
 
     private static boolean isEmpty() {

@@ -1,5 +1,7 @@
 package telegram;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -12,6 +14,8 @@ import telegram.commands.statics.MessageBodyKeys;
 
 public class Bot extends TelegramLongPollingBot {
 
+    private static final Logger log = LoggerFactory.getLogger(Bot.class);
+
     public Bot(DefaultBotOptions options) {
         super(options);
     }
@@ -22,11 +26,19 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleUpdate(Update update) {
-        if (isHostRequest(update))
-            if (update.hasMessage() && update.getMessage().hasText())
+        if (isHostRequest(update)) {
+            if (update.hasMessage() && update.getMessage().hasText()) {
+                log.info("[TELEGRAM BOT] User [{}] request: {}", update.getMessage().getFrom().getUserName(),
+                        "[message text] " + update.getMessage().getText());
+
                 handleReceivedMessage(update.getMessage());
-            else if (update.hasCallbackQuery())
+            } else if (update.hasCallbackQuery()) {
+                log.info("[TELEGRAM BOT] User [{}] request: {}", update.getCallbackQuery().getFrom().getUserName(),
+                        "[callback data] " + update.getCallbackQuery().getData());
+
                 handleReceivedCallbackQuery(update.getCallbackQuery());
+            }
+        }
     }
 
     private boolean isHostRequest(Update update) {
