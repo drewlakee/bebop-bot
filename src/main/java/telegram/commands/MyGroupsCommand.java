@@ -20,7 +20,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
     public void handle(AbsSender sender, Message message) {
         SendMessage response = new SendMessage();
         response.setChatId(message.getChatId());
-        response.setText("Твои группы: " + buildGroupsDesk());
+        response.setText("Your groups: " + buildGroupsDesk());
         response.disableWebPagePreview();
 
         ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
@@ -39,7 +39,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
             count++;
         }
-        desk.append("\n\n").append("Всего - ").append(count).append(".");
+        desk.append("\n\n").append("Total - ").append(count).append(".");
 
         return desk.toString();
     }

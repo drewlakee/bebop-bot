@@ -270,9 +270,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         String messageResponseBody;
         if (isSend)
-            messageResponseBody = callbackQuery.getMessage().getCaption() + "\n\nПост отправлен в группу!";
+            messageResponseBody = callbackQuery.getMessage().getCaption() + "\n\nPost was send to group!";
         else
-            messageResponseBody = "Что-то по пути сломалось...";
+            messageResponseBody = "Something goes wrong...";
 
         InputMediaPhoto postPhoto = new InputMediaPhoto();
         postPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
@@ -285,14 +285,12 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     }
 
     private void sendRandomPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, boolean isSend) {
-        deleteMessage(sender, callbackQuery);
-
         SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(callbackQuery.getMessage().getChatId());
         if (isSend)
-            responseMessage.setText("Слуйчайный пост отправлен в группу!");
+            responseMessage.setText("Post was send to group!");
         else
-            responseMessage.setText("Что-то по пути сломалось...");
+            responseMessage.setText("Something goes wrong...");
         responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
 
         ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
@@ -310,7 +308,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
     private InlineKeyboardMarkup buildKeyboardWithGroupUrl(String url) {
         return new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Перейти в группу").setUrl(url))
+                .addButton(new InlineKeyboardButton().setText("Link to group").setUrl(url))
                 .build();
     }
 
@@ -319,26 +317,26 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         for (VkCustomGroup group : VkGroupPool.getHostGroups())
             keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getId()))).nextLine();
-        keyboardBuilder.addButton(new InlineKeyboardButton().setText("Отмена").setCallbackData(CANCEL_REQUEST_CALLBACK));
+        keyboardBuilder.addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(CANCEL_REQUEST_CALLBACK));
 
         return keyboardBuilder.build();
     }
 
     private InlineKeyboardMarkup buildAskModeKeyboard() {
         return new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Да").setCallbackData(MANUAL_MODE_CALLBACK))
-                .addButton(new InlineKeyboardButton().setText("Нет").setCallbackData(RANDOM_MODE_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Yes").setCallbackData(MANUAL_MODE_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("No").setCallbackData(RANDOM_MODE_CALLBACK))
                 .build();
     }
 
     private InlineKeyboardMarkup buildPostConstructKeyboard() {
         return new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton().setText("Поменять пикчу").setCallbackData(CHANGE_PHOTO_CALLBACK))
-                .addButton(new InlineKeyboardButton().setText("Поменять трек").setCallbackData(CHANGE_AUDIO_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Change picture").setCallbackData(CHANGE_PHOTO_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Change track").setCallbackData(CHANGE_AUDIO_CALLBACK))
                 .nextLine()
-                .addButton(new InlineKeyboardButton().setText("Запостить").setCallbackData(SEND_CONSTRUCTED_POST_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Send post").setCallbackData(SEND_CONSTRUCTED_POST_CALLBACK))
                 .nextLine()
-                .addButton(new InlineKeyboardButton().setText("Отменить запрос").setCallbackData(CANCEL_REQUEST_CALLBACK))
+                .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(CANCEL_REQUEST_CALLBACK))
                 .build();
     }
 }
