@@ -21,7 +21,6 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
         SendMessage response = new SendMessage();
         response.setChatId(message.getChatId());
         response.setText("Your groups: " + buildGroupsDesk());
-        response.disableWebPagePreview();
 
         ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
         dispatcher.send(response);

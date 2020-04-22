@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import vk.domain.groups.GroupObjective;
 import vk.domain.groups.VkCustomGroup;
-import vk.services.VkGroupsConfiguration;
+import vk.services.VkGroupsConfigurationService;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,7 +34,7 @@ public class VkGroupsConfigurationTest {
         in.write(String.join(" ", groupAttributes));
         in.close();
 
-        HashMap<String, VkCustomGroup> groupsFromFile = VkGroupsConfiguration.loadGroups(testFile);
+        HashMap<String, VkCustomGroup> groupsFromFile = VkGroupsConfigurationService.loadGroups(testFile);
         VkCustomGroup group = groupsFromFile.get(name);
         boolean isFileDeleted = testFile.delete();
 

@@ -10,6 +10,8 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.wall.WallpostAttachment;
 import com.vk.api.sdk.objects.wall.WallpostFull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vk.api.VkDefaultApiCredentials;
 import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
@@ -19,12 +21,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class VkRandomContent {
+public class VkContentService {
+
+    private static final Logger log = LoggerFactory.getLogger(VkContentService.class);
 
     public static VkCustomAudio findRandomAudio() {
         Random random = new Random();
         int randomGroupId = VkGroupPool.getRandomAudioGroup().getId();
-        int randomOffset = random.nextInt(VkInformation.getGroupPostsCount(randomGroupId));
+        int randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
         int postsCount = 10;
         int requestLimit = 5;
         int requestCount = 0;
@@ -42,7 +46,7 @@ public class VkRandomContent {
             if (jsonWallAudioObjects.isEmpty()) {
                 requestDelay();
                 randomGroupId = VkGroupPool.getRandomAudioGroup().getId();
-                randomOffset = random.nextInt(VkInformation.getGroupPostsCount(randomGroupId));
+                randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
             }
         } while (jsonWallAudioObjects.isEmpty());
 
@@ -62,16 +66,18 @@ public class VkRandomContent {
     }
 
     private static JsonElement getJsonWallPosts(int postsCount, int offset, int ownerId) {
-        JsonElement postsAttachments = new JsonObject();
-
         VkApiClient api = new VkApiClient(new HttpTransportClient());
         UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+        String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", postsCount, offset, ownerId);
+
+        JsonElement postsAttachments = new JsonObject();
         try {
-            String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", postsCount, offset, ownerId);
+            log.info("[VK] Request: " + request);
             postsAttachments = api.execute()
                     .code(userActor, request)
                     .execute();
         } catch (ClientException | ApiException e) {
+            log.info("[VK] Request response: " + request + " failed.");
             e.printStackTrace();
         }
 
@@ -100,9 +106,9 @@ public class VkRandomContent {
         int requestCount = 0;
         int requestLimit = 5;
         int randomGroupId = VkGroupPool.getRandomPhotoGroup().getId();
-        int randomOffset = random.nextInt(VkInformation.getGroupPostsCount(randomGroupId));
-        List<WallpostFull> wallPosts;
+        int randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
 
+        List<WallpostFull> wallPosts;
         do {
             wallPosts = getWallPosts(postsCount, randomOffset, randomGroupId);
             wallPosts = getPostsWithPhoto(wallPosts);
@@ -114,7 +120,7 @@ public class VkRandomContent {
             if (wallPosts.isEmpty()) {
                 requestDelay();
                 randomGroupId = VkGroupPool.getRandomPhotoGroup().getId();
-                randomOffset = random.nextInt(VkInformation.getGroupPostsCount(randomGroupId));
+                randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
             }
         } while (wallPosts.isEmpty());
 
@@ -136,11 +142,12 @@ public class VkRandomContent {
     }
 
     private static List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
-        List<WallpostFull> wallPosts = new ArrayList<>();
-
         VkApiClient api = new VkApiClient(new HttpTransportClient());
         UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+
+        List<WallpostFull> wallPosts = new ArrayList<>();
         try {
+            log.info("[VK] Request API: get wall posts with count: {}, offset: {}, ownerId: {}", postsCount, offset, ownerId);
             wallPosts = api.wall()
                     .get(userActor)
                     .count(postsCount)
@@ -149,6 +156,7 @@ public class VkRandomContent {
                     .execute()
                     .getItems();
         } catch (ClientException | ApiException e) {
+            log.info("[VK] Request API response: get wall posts with count: {}, offset: {}, ownerId: {} - failed.", postsCount, offset, ownerId);
             e.printStackTrace();
         }
 

@@ -1,10 +1,5 @@
 package telegram.commands;
 
-import com.vk.api.sdk.client.VkApiClient;
-import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.photos.PhotoSizes;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,11 +22,11 @@ import telegram.commands.statics.Callbacks;
 import telegram.commands.statics.Commands;
 import telegram.commands.statics.MessageBodyKeys;
 import telegram.utils.MessageKeysParser;
-import vk.api.VkDefaultApiCredentials;
 import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
-import vk.services.VkRandomContent;
+import vk.services.VkContentService;
+import vk.services.VkWallPostService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,17 +95,19 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         String mode = messageBodyParams.get(MessageBodyKeys.MODE);
 
-        if (mode.equals(MessageBodyKeys.MANUAL))
-            constructTelegramPost(sender, callbackQuery, messageBodyParams);
-
-        if (mode.equals(MessageBodyKeys.RANDOM))
-            constructRandomVkPost(sender, callbackQuery, groupId);
+        switch (mode) {
+            case MessageBodyKeys.MANUAL:
+                constructTelegramPost(sender, callbackQuery, messageBodyParams);
+                break;
+            case MessageBodyKeys.RANDOM:
+                constructRandomVkPost(sender, callbackQuery, groupId);
+        }
     }
 
     private void constructRandomVkPost(AbsSender sender, CallbackQuery callbackQuery, String groupId) {
         VkCustomGroup group = VkGroupPool.getHostGroup(Integer.parseInt(groupId));
-        Photo randomPhoto = VkRandomContent.findRandomPhoto();
-        VkCustomAudio randomAudio = VkRandomContent.findRandomAudio();
+        Photo randomPhoto = VkContentService.findRandomPhoto();
+        VkCustomAudio randomAudio = VkContentService.findRandomAudio();
         List<String> attachments = List.of(
                 "photo" + randomPhoto.getOwnerId() + "_" + randomPhoto.getId(),
                 "audio" + randomAudio.getOwnerId() + "_" + randomAudio.getId()
@@ -122,8 +119,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void constructTelegramPost(AbsSender sender, CallbackQuery callbackQuery, Map<String, String> messageBodyKeys) {
         SendPhoto telegramPostMessage = new SendPhoto();
         telegramPostMessage.setChatId(callbackQuery.getMessage().getChatId());
-        VkCustomAudio randomAudio = VkRandomContent.findRandomAudio();
-        Photo randomPhoto = VkRandomContent.findRandomPhoto();
+        VkCustomAudio randomAudio = VkContentService.findRandomAudio();
+        Photo randomPhoto = VkContentService.findRandomPhoto();
 
         PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
         telegramPostMessage.setPhoto(largestResolution.getUrl().toString());
@@ -158,7 +155,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changePhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
         InputMediaPhoto newPhoto = new InputMediaPhoto();
-        Photo randomPhoto = VkRandomContent.findRandomPhoto();
+        Photo randomPhoto = VkContentService.findRandomPhoto();
         PhotoSizes largestResolution = randomPhoto.getSizes().get(randomPhoto.getSizes().size() - 1);
         newPhoto.setMedia(largestResolution.getUrl().toString());
 
@@ -184,7 +181,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InputMediaPhoto newTrackWithOldPhoto = new InputMediaPhoto();
         newTrackWithOldPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
 
-        VkCustomAudio newAudio = VkRandomContent.findRandomAudio();
+        VkCustomAudio newAudio = VkContentService.findRandomAudio();
         String newAudioAttachment = "audio" + newAudio.getOwnerId() + "_" + newAudio.getId() + " (" + newAudio.toPrettyString() + ")";
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
@@ -232,30 +229,13 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     }
 
     private void sendVkPost(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, List<String> attachments) {
-        boolean isSend = sendVk(group, attachments);
+        VkWallPostService postService = new VkWallPostService();
+        boolean isSend = postService.sendWallPost(group, attachments);
 
         if (isTelegramConstructedPost(callbackQuery))
             sendConstructedPostResponse(sender, callbackQuery, group, isSend);
         else
             sendRandomPostResponse(sender, callbackQuery, group, isSend);
-    }
-
-    private boolean sendVk(VkCustomGroup group, List<String> attachments) {
-        boolean isOk = true;
-        VkApiClient api = new VkApiClient(new HttpTransportClient());
-        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
-
-        try {
-            api.wall()
-                    .post(userActor)
-                    .ownerId(group.getId())
-                    .attachments(attachments)
-                    .execute();
-        } catch (ClientException | ApiException e) {
-            isOk = false;
-        }
-
-        return isOk;
     }
 
     private boolean isTelegramConstructedPost(CallbackQuery callbackQuery) {

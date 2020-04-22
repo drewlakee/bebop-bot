@@ -8,6 +8,7 @@ import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class CommandsPool {
 
@@ -30,6 +31,10 @@ public class CommandsPool {
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Set<String> getRegisteredCommandsSet() {
+        return pool.keySet();
     }
 
     private static boolean isEmpty() {

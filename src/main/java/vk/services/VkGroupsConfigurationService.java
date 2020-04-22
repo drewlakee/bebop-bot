@@ -1,5 +1,7 @@
 package vk.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vk.domain.groups.GroupObjective;
 import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupPool;
@@ -12,7 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class VkGroupsConfiguration {
+public class VkGroupsConfigurationService {
+
+    private static final Logger log = LoggerFactory.getLogger(VkGroupsConfigurationService.class);
 
     /**
      *  Regexp for String.split(): group attributes from files
@@ -43,6 +47,7 @@ public class VkGroupsConfiguration {
         } else
             groups = filterLoadFile(file);
 
+        log.info("[VK] VkGroups founded [" + ((file == null) ? filename : file.getName()) + "]: {}", groups);
         return groups;
     }
 
@@ -59,7 +64,7 @@ public class VkGroupsConfiguration {
 
         if (file == null) {
             File projectFile = new File(
-                    VkGroupsConfiguration.class.getClassLoader().getResource(filename).getFile()
+                    VkGroupsConfigurationService.class.getClassLoader().getResource(filename).getFile()
             );
             groups = readGroupsFile(projectFile);
         } else
@@ -94,6 +99,7 @@ public class VkGroupsConfiguration {
         try {
             allLinesOfFile = Files.readAllLines(Path.of(file.toURI()));
         } catch (IOException e) {
+            log.error("ERROR [FILE READ]: " + file.getName() + " - read failed.");
             e.printStackTrace();
         }
 
