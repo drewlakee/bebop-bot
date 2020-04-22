@@ -29,7 +29,7 @@ public class VkWallPostService {
                     .attachments(attachments)
                     .execute();
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request response: wall post with params: group: {}, attachments: {} - failed.", group, attachments);
+            log.info("[VK] Request: wall post with params: group: {}, attachments: {} - failed.", group, attachments);
             e.printStackTrace();
 
             isOk = false;

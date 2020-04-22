@@ -76,8 +76,9 @@ public class VkContentService {
             postsAttachments = api.execute()
                     .code(userActor, request)
                     .execute();
+            log.info("[VK] Response: request - {}, response - {}", request, postsAttachments);
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request response: " + request + " failed.");
+            log.info("[VK] FAILED Request: {}", request);
             e.printStackTrace();
         }
 
@@ -155,8 +156,9 @@ public class VkContentService {
                     .ownerId(ownerId)
                     .execute()
                     .getItems();
+            log.info("[VK] Response API: get wall posts with count: {}, offset: {}, ownerId: {}, response - {}", postsCount, offset, ownerId, wallPosts);
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request API response: get wall posts with count: {}, offset: {}, ownerId: {} - failed.", postsCount, offset, ownerId);
+            log.info("[VK] FAILED Request API: get wall posts with count: {}, offset: {}, ownerId: {}.", postsCount, offset, ownerId);
             e.printStackTrace();
         }
 

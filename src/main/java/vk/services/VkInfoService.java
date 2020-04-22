@@ -21,13 +21,14 @@ public class VkInfoService {
 
         int postsCount = 0;
         try {
-            log.info("[VK] Request: " + request);
+            log.info("[VK] Request: {}", request);
             JsonElement responseCount = api.execute()
                     .code(userActor, request)
                     .execute();
             postsCount = responseCount.getAsInt();
+            log.info("[VK] Response: request - {}, response - {}", request, postsCount);
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request response: " + request + " failed.");
+            log.info("[VK] FAILED Request: {}", request);
             e.printStackTrace();
         }
 

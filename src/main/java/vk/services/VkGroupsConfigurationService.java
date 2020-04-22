@@ -99,7 +99,7 @@ public class VkGroupsConfigurationService {
         try {
             allLinesOfFile = Files.readAllLines(Path.of(file.toURI()));
         } catch (IOException e) {
-            log.error("ERROR [FILE READ]: " + file.getName() + " - read failed.");
+            log.error("[FILE READ] ERROR: " + file.getName() + " - read failed.");
             e.printStackTrace();
         }
 
