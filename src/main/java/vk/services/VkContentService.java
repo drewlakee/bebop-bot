@@ -126,7 +126,8 @@ public class VkContentService {
             }
         } while (wallPosts.isEmpty());
 
-        VkCustomPhoto randomPhoto = new VkCustomPhoto();
+        VkCustomPhoto customRandomPhoto = new VkCustomPhoto();
+        Photo randomPhoto;
         int randomPostIndex;
         int randomPhotoIndex;
         if (requestCount < requestLimit) {
@@ -137,10 +138,13 @@ public class VkContentService {
                     .filter(attachment -> attachment.getPhoto() != null)
                     .collect(Collectors.toList());
             randomPhotoIndex = random.nextInt(photos.size());
-            randomPhoto = (VkCustomPhoto) photos.get(randomPhotoIndex).getPhoto();
+            randomPhoto = photos.get(randomPhotoIndex).getPhoto();
+            customRandomPhoto.setId(randomPhoto.getId());
+            customRandomPhoto.setOwnerId(randomPhoto.getOwnerId());
+            customRandomPhoto.setSizes(randomPhoto.getSizes());
         }
 
-        return randomPhoto;
+        return customRandomPhoto;
     }
 
     private static List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
