@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import vk.api.VkDefaultApiCredentials;
 import vk.domain.groups.VkGroupPool;
 import vk.domain.vkObjects.VkCustomAudio;
+import vk.domain.vkObjects.VkCustomPhoto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +102,7 @@ public class VkContentService {
         return audios;
     }
 
-    public static Photo findRandomPhoto() {
+    public static VkCustomPhoto findRandomPhoto() {
         Random random = new Random();
         int postsCount = 10;
         int requestCount = 0;
@@ -125,7 +126,7 @@ public class VkContentService {
             }
         } while (wallPosts.isEmpty());
 
-        Photo randomPhoto = new Photo();
+        VkCustomPhoto randomPhoto = new VkCustomPhoto();
         int randomPostIndex;
         int randomPhotoIndex;
         if (requestCount < requestLimit) {
@@ -136,7 +137,7 @@ public class VkContentService {
                     .filter(attachment -> attachment.getPhoto() != null)
                     .collect(Collectors.toList());
             randomPhotoIndex = random.nextInt(photos.size());
-            randomPhoto = photos.get(randomPhotoIndex).getPhoto();
+            randomPhoto = (VkCustomPhoto) photos.get(randomPhotoIndex).getPhoto();
         }
 
         return randomPhoto;
