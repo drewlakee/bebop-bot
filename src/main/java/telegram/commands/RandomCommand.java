@@ -183,7 +183,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
             if (params[i].startsWith(MessageBodyKeys.AUDIO))
-                params[i] = MessageBodyKeys.AUDIO + ": " + randomAudio.toAttachmentString();
+                params[i] = MessageBodyKeys.AUDIO + ": "
+                        + randomAudio.toAttachmentString()
+                        + " (" + randomAudio.toPrettyString() + ")";
         newTrackWithOldPhoto.setCaption(String.join("\n", params));
 
         changeAudioMessage.setMedia(newTrackWithOldPhoto);
