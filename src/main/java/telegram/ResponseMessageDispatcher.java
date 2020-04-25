@@ -10,13 +10,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class ResponseMessageDispatcher {
 
-    private final AbsSender sender;
-
-    public ResponseMessageDispatcher(AbsSender sender) {
-        this.sender = sender;
-    }
-
-    public void send(SendMessage sendMessage) {
+    public static void send(AbsSender sender, SendMessage sendMessage) {
         try {
             sender.execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -24,7 +18,7 @@ public class ResponseMessageDispatcher {
         }
     }
 
-    public void send(SendPhoto photoMessage) {
+    public static void send(AbsSender sender, SendPhoto photoMessage) {
         try {
             sender.execute(photoMessage);
         } catch (TelegramApiException e) {
@@ -32,7 +26,7 @@ public class ResponseMessageDispatcher {
         }
     }
 
-    public void send(EditMessageMedia editMessageMedia) {
+    public static void send(AbsSender sender, EditMessageMedia editMessageMedia) {
         try {
             sender.execute(editMessageMedia);
         } catch (TelegramApiException e) {
@@ -40,7 +34,7 @@ public class ResponseMessageDispatcher {
         }
     }
 
-    public void send(EditMessageText editMessageText) {
+    public static void send(AbsSender sender, EditMessageText editMessageText) {
         try {
             sender.execute(editMessageText);
         } catch (TelegramApiException e) {
@@ -48,7 +42,7 @@ public class ResponseMessageDispatcher {
         }
     }
 
-    public void send(DeleteMessage deleteMessage) {
+    public static void send(AbsSender sender, DeleteMessage deleteMessage) {
         try {
             sender.execute(deleteMessage);
         } catch (TelegramApiException e) {
