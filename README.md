@@ -19,10 +19,9 @@
 
 #### Пользовательские переменные окружения:
 
-Telegram:
+Telegram bot:
 
 ```` 
-host_username=username
 bot_username=username
 bot_token=token
 [bot_proxy_type=type]
@@ -32,8 +31,6 @@ bot_token=token
 ````
 
 [...] - опционально
-
-host_username - пользователь в telegram, от лица которого бот будет взаимодействоать с VK API
 
 bot_proxy_type - тип протокола: HTTP, SOCKS4, SOCKS5
 
