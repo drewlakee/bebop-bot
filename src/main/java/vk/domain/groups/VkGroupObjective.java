@@ -1,6 +1,6 @@
 package vk.domain.groups;
 
-public enum GroupObjective {
+public enum VkGroupObjective {
 
     AUDIO,
     PHOTO,

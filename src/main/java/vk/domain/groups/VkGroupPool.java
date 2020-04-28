@@ -24,7 +24,7 @@ public class VkGroupPool {
     public static VkCustomGroup getRandomAudioGroup() {
         Object[] audioGroups = pool.values()
                 .stream()
-                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.AUDIO))
+                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.AUDIO))
                 .toArray();
         int randomIndex = new Random().nextInt(audioGroups.length);
         return (VkCustomGroup) audioGroups[randomIndex];
@@ -33,7 +33,7 @@ public class VkGroupPool {
     public static VkCustomGroup getRandomPhotoGroup() {
         Object[] photoGroups = pool.values()
                 .stream()
-                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.PHOTO))
+                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.PHOTO))
                 .toArray();
         int randomIndex = new Random().nextInt(photoGroups.length);
         return (VkCustomGroup) photoGroups[randomIndex];
@@ -42,7 +42,7 @@ public class VkGroupPool {
     public static List<VkCustomGroup> getHostGroups() {
         return pool.values()
                 .stream()
-                .filter(vkGroup -> vkGroup.getGroupObjective().equals(GroupObjective.HOST))
+                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.HOST))
                 .collect(Collectors.toList());
     }
 
