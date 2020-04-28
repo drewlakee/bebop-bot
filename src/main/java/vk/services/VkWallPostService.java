@@ -16,7 +16,7 @@ public class VkWallPostService {
 
     private static final Logger log = LoggerFactory.getLogger(VkWallPostService.class);
 
-    public boolean sendWallPost(VkCustomGroup group, List<String> attachments) {
+    public boolean makePost(VkCustomGroup group, List<String> attachments) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
         UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
         boolean isOk = true;
