@@ -1,8 +1,9 @@
 package telegram.commands;
 
-import com.vk.api.sdk.objects.photos.PhotoSizes;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -33,13 +34,11 @@ import vk.domain.vkObjects.VkCustomPhoto;
 import vk.services.VkContentService;
 import vk.services.VkWallPostService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class RandomCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(RandomCommand.class);
 
     private final static String CANCEL_REQUEST_CALLBACK = "0";
     private final static String SEND_CONSTRUCTED_POST_CALLBACK = "1";
@@ -103,17 +102,21 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         VkContentService audioService = new VkContentService(new VkRandomAudioContent());
         VkContentService photoService = new VkContentService(new VkRandomPhotoContent());
-
-        Observable<VkAttachment> asyncRandomContentRequests = Observable.merge(
-                Observable.fromCallable(() -> audioService.find(1).get(0))
+        Observable<List<VkAttachment>> asyncRandomContentRequests = Observable.merge(
+                Observable.fromCallable(() -> audioService.find(1))
                         .subscribeOn(Schedulers.io()),
-                Observable.fromCallable(() -> photoService.find(1).get(0))
+                Observable.fromCallable(() -> photoService.find(1))
                         .subscribeOn(Schedulers.io())
         );
 
         List<VkAttachment> randomVkAttachments = asyncRandomContentRequests
-                .collectInto(new ArrayList<VkAttachment>(), ArrayList::add)
+                .collectInto(new ArrayList<VkAttachment>(), ArrayList::addAll)
                 .blockingGet();
+
+        if (randomVkAttachments.size() != 2) {
+            log.info("[VK] Error: Some information for post is missed");
+            mode = "error";
+        }
 
         switch (mode) {
             case MessageBodyKeys.MANUAL:
@@ -121,6 +124,9 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 break;
             case MessageBodyKeys.RANDOM:
                 constructRandomVkPost(sender, callbackQuery, groupId, randomVkAttachments);
+                break;
+            default:
+                sendErrorResponse(sender, callbackQuery);
         }
     }
 
@@ -168,6 +174,14 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         }
 
         sendVkPost(sender, callbackQuery, group, stringAttachments);
+    }
+
+    private void sendErrorResponse(AbsSender sender, CallbackQuery callbackQuery) {
+        SendMessage errorResponse = new SendMessage();
+        errorResponse.setChatId(callbackQuery.getMessage().getChatId());
+        errorResponse.setText("Opps... something goes wrong.\nTry again!");
+
+        ResponseMessageDispatcher.send(sender, errorResponse);
     }
 
     private void changePhoto(AbsSender sender, CallbackQuery callbackQuery) {
@@ -322,6 +336,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton().setText("Yes").setCallbackData(MANUAL_MODE_CALLBACK))
                 .addButton(new InlineKeyboardButton().setText("No").setCallbackData(RANDOM_MODE_CALLBACK))
+                .nextLine()
+                .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(CANCEL_REQUEST_CALLBACK))
                 .build();
     }
 
