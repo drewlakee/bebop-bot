@@ -23,8 +23,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
         response.setText("Your groups: " + buildGroupsDesk());
         response.disableWebPagePreview();
 
-        ResponseMessageDispatcher dispatcher = new ResponseMessageDispatcher(sender);
-        dispatcher.send(response);
+        ResponseMessageDispatcher.send(sender, response);
     }
 
     private String buildGroupsDesk() {

@@ -14,7 +14,7 @@ public class VkInfoService {
 
     private static final Logger log = LoggerFactory.getLogger(VkInfoService.class);
 
-    static int getGroupPostsCount(int groupId) {
+    public static int getGroupPostsCount(int groupId) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
         UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
         String request = String.format("return API.wall.get({\"owner_id\": %d}).count;", groupId);

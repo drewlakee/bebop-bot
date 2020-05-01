@@ -26,30 +26,17 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleUpdate(Update update) {
-        if (isHostRequest(update)) {
-            if (update.hasMessage() && update.getMessage().hasText()) {
-                log.info("[TELEGRAM BOT] User [{}] request: {}", update.getMessage().getFrom().getUserName(),
-                        "[message text] " + update.getMessage().getText());
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            log.info("[TELEGRAM BOT] User [{}] request: {}", update.getMessage().getFrom().getUserName(),
+                    "[message text] " + update.getMessage().getText());
 
-                handleReceivedMessage(update.getMessage());
-            } else if (update.hasCallbackQuery()) {
-                log.info("[TELEGRAM BOT] User [{}] request: {}", update.getCallbackQuery().getFrom().getUserName(),
-                        "[callback data] " + update.getCallbackQuery().getData());
+            handleReceivedMessage(update.getMessage());
+        } else if (update.hasCallbackQuery()) {
+            log.info("[TELEGRAM BOT] User [{}] request: {}", update.getCallbackQuery().getFrom().getUserName(),
+                    "[callback data] " + update.getCallbackQuery().getData());
 
-                handleReceivedCallbackQuery(update.getCallbackQuery());
-            }
+            handleReceivedCallbackQuery(update.getCallbackQuery());
         }
-    }
-
-    private boolean isHostRequest(Update update) {
-        String hostUsername = System.getenv("host_username");
-
-        if (update.hasMessage())
-            return update.getMessage().getChat().getUserName().equals(hostUsername);
-        else if (update.hasCallbackQuery())
-            return update.getCallbackQuery().getMessage().getChat().getUserName().equals(hostUsername);
-
-        return false;
     }
 
     private void handleReceivedMessage(Message message) {

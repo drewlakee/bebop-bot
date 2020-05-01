@@ -4,13 +4,13 @@ import com.vk.api.sdk.objects.groups.Group;
 
 public class VkCustomGroup extends Group {
 
-    private final GroupObjective groupObjective;
+    private final VkGroupObjective vkGroupObjective;
     private final String url;
 
-    public VkCustomGroup(GroupObjective groupObjective, String name, int groupId, String url) {
+    public VkCustomGroup(VkGroupObjective vkGroupObjective, String name, int groupId, String url) {
         setName(name);
         setId(groupId);
-        this.groupObjective = groupObjective;
+        this.vkGroupObjective = vkGroupObjective;
         this.url = url;
     }
 
@@ -18,7 +18,7 @@ public class VkCustomGroup extends Group {
         return url;
     }
 
-    public GroupObjective getGroupObjective() {
-        return groupObjective;
+    public VkGroupObjective getVkGroupObjective() {
+        return vkGroupObjective;
     }
 }

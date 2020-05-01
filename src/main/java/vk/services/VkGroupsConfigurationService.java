@@ -2,7 +2,7 @@ package vk.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vk.domain.groups.GroupObjective;
+import vk.domain.groups.VkGroupObjective;
 import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupPool;
 
@@ -82,7 +82,7 @@ public class VkGroupsConfigurationService {
 
             if (groupAttributes.length == 5) {
                 groups.put(groupAttributes[2], new VkCustomGroup(
-                        GroupObjective.valueOf(groupAttributes[1]),
+                        VkGroupObjective.valueOf(groupAttributes[1]),
                         groupAttributes[2],
                         Integer.parseInt(groupAttributes[3]),
                         groupAttributes[4]

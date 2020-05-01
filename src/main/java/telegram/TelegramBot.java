@@ -1,5 +1,6 @@
 package telegram;
 
+import com.google.common.collect.ComparisonChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -41,9 +42,13 @@ public class TelegramBot {
             customOptions.setMaxThreads(1);
         log.info(TELEGRAM_CONFIG_ADD + "maximum threads - " + customOptions.getMaxThreads());
 
-        if (System.getenv().containsKey("bot_proxy_type") &&
-                System.getenv().containsKey("bot_proxy_host") &&
-                System.getenv().containsKey("bot_proxy_port")) {
+        int hasProxyConfigs = ComparisonChain.start()
+                .compareTrueFirst(true, System.getenv().containsKey("bot_proxy_type"))
+                .compareTrueFirst(true, System.getenv().containsKey("bot_proxy_host"))
+                .compareTrueFirst(true, System.getenv().containsKey("bot_proxy_port"))
+                .result();
+
+        if (hasProxyConfigs == 0) {
             log.info(TELEGRAM_CONFIG_ADD + "bot proxy - " + System.getenv("bot_proxy_type"));
             customOptions.setProxyType(DefaultBotOptions.ProxyType.valueOf(System.getenv("bot_proxy_type")));
             log.info(TELEGRAM_CONFIG_ADD + "bot proxy host - " + System.getenv("bot_proxy_host"));
