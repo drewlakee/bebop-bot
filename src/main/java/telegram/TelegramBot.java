@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import telegram.commands.CommandsPool;
 import telegram.commands.MyGroupsCommand;
 import telegram.commands.RandomCommand;
+import telegram.commands.callbacks.CallbacksPool;
+import telegram.commands.callbacks.RandomCommandCallback;
 
 public class TelegramBot {
 
@@ -22,11 +24,14 @@ public class TelegramBot {
         Bot bot = new Bot(customOptions);
         TelegramBotsApi botsApi = new TelegramBotsApi();
 
+        CommandsPool.register(new MyGroupsCommand());
+        CommandsPool.register(new RandomCommand());
+        log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getRegisteredCommandsSet());
+
+        CallbacksPool.register(RandomCommandCallback.callbacks);
+
         try {
-            CommandsPool.register(new MyGroupsCommand());
-            CommandsPool.register(new RandomCommand());
             botsApi.registerBot(bot);
-            log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getRegisteredCommandsSet());
         } catch (TelegramApiException e) {
             log.error("[TELEGRAM BOT] ERROR: Launch failed.");
             e.printStackTrace();

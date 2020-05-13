@@ -8,9 +8,8 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import telegram.commands.CommandsPool;
-import telegram.commands.statics.Callbacks;
-import telegram.commands.statics.Commands;
-import telegram.commands.statics.MessageBodyKeys;
+import telegram.commands.callbacks.CallbacksPool;
+import telegram.commands.handlers.Commands;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -53,28 +52,23 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
-        String messageBody;
-        String handleCommand = Commands.UNKNOWN;
-
-        if (callbackQuery.getMessage().getText() == null)
-            messageBody = callbackQuery.getMessage().getCaption();
-        else
-            messageBody = callbackQuery.getMessage().getText();
-
-        if (isContainsRandomCommandCallbacks(messageBody))
-            handleCommand = Commands.RANDOM;
+        String handleCommand = CallbacksPool.defineHandler(callbackQuery.getData());
 
         switch (handleCommand) {
             case Commands.RANDOM:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
                 break;
         }
+
+        if (callbackQuery.getData().matches("^-[0-9]*")) {
+            handleReceivedIdCallbackQuery(callbackQuery);
+        }
     }
 
-    private boolean isContainsRandomCommandCallbacks(String messageBody) {
-        return messageBody.contains(Callbacks.CHOOSE_MODE_RANDOM_POST)
-                || messageBody.contains(Callbacks.CHOOSE_GROUP_RANDOM_POST)
-                || messageBody.contains(MessageBodyKeys.MODE);
+    private void handleReceivedIdCallbackQuery(CallbackQuery callbackQuery) {
+        if (callbackQuery.getMessage().getText().contains("random")) {
+            CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
+        }
     }
 
     @Override
