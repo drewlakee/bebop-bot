@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import vk.domain.groups.VkGroupObjective;
 import vk.domain.groups.VkCustomGroup;
-import vk.services.VkGroupsConfigurationService;
+import vk.domain.groups.VkGroupsFileConfiguration;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -36,7 +36,8 @@ public class VkGroupsConfigurationTest {
         in.write(String.join(" ", groupAttributes));
         in.close();
 
-        HashMap<String, VkCustomGroup> groupsFromFile = VkGroupsConfigurationService.loadGroups(testFile);
+        VkGroupsFileConfiguration vkGroupsFileConfiguration = new VkGroupsFileConfiguration();
+        HashMap<String, VkCustomGroup> groupsFromFile = vkGroupsFileConfiguration.loadGroups(testFile);
         VkCustomGroup group = groupsFromFile.get(name);
 
         Assert.assertEquals(0, ComparisonChain.start()
