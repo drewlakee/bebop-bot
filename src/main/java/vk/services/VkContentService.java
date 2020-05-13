@@ -7,9 +7,13 @@ import java.util.List;
 
 public class VkContentService {
 
-    private final VkRandomContent content;
+    private VkRandomContent content;
 
     public VkContentService(VkRandomContent content) {
+        this.content = content;
+    }
+
+    public void setContent(VkRandomContent content) {
         this.content = content;
     }
 
