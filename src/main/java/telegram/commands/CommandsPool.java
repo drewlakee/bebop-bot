@@ -1,5 +1,7 @@
 package telegram.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
@@ -12,6 +14,8 @@ import java.util.Set;
 
 public class CommandsPool {
 
+    private static final Logger log = LoggerFactory.getLogger(CommandsPool.class);
+
     private static HashMap<String, BotCommand> pool;
 
     public static void register(BotCommand command) {
@@ -21,14 +25,20 @@ public class CommandsPool {
         pool.put(command.getCommandName(), command);
     }
 
-    public static void handleCommand(String command, AbsSender sender, Object method) {
+    public static void handleCommand(String command, AbsSender sender, CallbackQuery method) {
         try {
-            if (method instanceof CallbackQuery)
-                ((CallbackQueryHandler) pool.get(command)).handle(sender, (CallbackQuery) method);
-
-            if (method instanceof Message)
-                ((MessageHandler) pool.get(command)).handle(sender, (Message) method);
+            ((CallbackQueryHandler) pool.get(command)).handle(sender, method);
         } catch (NullPointerException e) {
+            log.error("ERROR: COMMAND HANDLER NOT FOUND FOR CALLBACK QUERY!!!");
+            e.printStackTrace();
+        }
+    }
+
+    public static void handleCommand(String command, AbsSender sender, Message method) {
+        try {
+            ((MessageHandler) pool.get(command)).handle(sender, method);
+        } catch (NullPointerException e) {
+            log.error("ERROR: COMMAND HANDLER NOT FOUND FOR MESSAGE!!!");
             e.printStackTrace();
         }
     }
