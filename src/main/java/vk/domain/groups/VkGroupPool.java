@@ -2,12 +2,13 @@ package vk.domain.groups;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 public class VkGroupPool {
 
-    private static HashMap<String, VkCustomGroup> pool;
+    private static Map<String, VkCustomGroup> pool;
 
     public static void add(VkCustomGroup vkCustomGroup) {
         if (isEmpty())
@@ -16,7 +17,7 @@ public class VkGroupPool {
         pool.put(vkCustomGroup.getName(), vkCustomGroup);
     }
 
-    public static void add(HashMap<String, VkCustomGroup> groups) {
+    public static void add(Map<String, VkCustomGroup> groups) {
         for (VkCustomGroup group : groups.values())
             add(group);
     }
