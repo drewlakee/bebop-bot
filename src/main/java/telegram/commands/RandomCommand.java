@@ -31,7 +31,7 @@ import vk.domain.random.VkRandomPhotoContent;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.domain.vkObjects.VkCustomPhoto;
-import vk.services.VkContentFinder;
+import vk.services.VkContentService;
 import vk.services.VkWallPostService;
 
 import java.util.*;
@@ -92,8 +92,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         String mode = messageBodyParams.get(MessageBodyKeys.MODE);
 
-        VkContentFinder audioService = new VkContentFinder(new VkRandomAudioContent());
-        VkContentFinder photoService = new VkContentFinder(new VkRandomPhotoContent());
+        VkContentService audioService = new VkContentService(new VkRandomAudioContent());
+        VkContentService photoService = new VkContentService(new VkRandomPhotoContent());
         Observable<List<VkAttachment>> asyncRandomContentRequests = Observable.merge(
                 Observable.fromCallable(() -> audioService.find(1))
                         .subscribeOn(Schedulers.io()),
@@ -182,7 +182,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changePhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
         InputMediaPhoto newPhoto = new InputMediaPhoto();
-        VkContentFinder photoService = new VkContentFinder(new VkRandomPhotoContent());
+        VkContentService photoService = new VkContentService(new VkRandomPhotoContent());
         VkCustomPhoto randomPhoto = (VkCustomPhoto) photoService.find(1).get(0);
         newPhoto.setMedia(randomPhoto.getLargestSize().getUrl().toString());
 
@@ -206,7 +206,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InputMediaPhoto newTrackWithOldPhoto = new InputMediaPhoto();
         newTrackWithOldPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
 
-        VkContentFinder audioService = new VkContentFinder(new VkRandomAudioContent());
+        VkContentService audioService = new VkContentService(new VkRandomAudioContent());
         VkCustomAudio randomAudio = (VkCustomAudio) audioService.find(1).get(0);
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
