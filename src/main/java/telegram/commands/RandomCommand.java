@@ -47,7 +47,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     @Override
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         RandomCommandCallback callback;
-        if (callbackQuery.getData().matches("^-[0-9]*")) {
+        if (callbackQuery.getData().matches("^RC-[0-9]*")) {
             callback = RandomCommandCallback.RC_GROUP_CALLBACK;
         } else {
             callback = RandomCommandCallback.valueOf(callbackQuery.getData());
@@ -88,7 +88,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void handleChosenGroup(AbsSender sender, CallbackQuery callbackQuery) {
         deleteMessage(sender, callbackQuery);
 
-        String groupId = callbackQuery.getData();
+        String groupId = callbackQuery.getData().substring(2); // RC-123456 [-123456]
         HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         String mode = messageBodyParams.get(MessageBodyKeys.MODE);
 
@@ -291,11 +291,12 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
     private void sendRandomPostResponse(AbsSender sender, CallbackQuery callbackQuery, VkCustomGroup group, boolean isSend) {
         SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(callbackQuery.getMessage().getChatId());
-        if (isSend)
+        if (isSend) {
             responseMessage.setText("Post was send to group!");
-        else
+            responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
+        } else {
             responseMessage.setText("Something goes wrong...");
-        responseMessage.setReplyMarkup(buildKeyboardWithGroupUrl(group.getUrl()));
+        }
 
         ResponseMessageDispatcher.send(sender, responseMessage);
     }
@@ -318,7 +319,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
 
         for (VkCustomGroup group : VkGroupPool.getHostGroups())
-            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(String.valueOf(group.getId())))
+            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData("RC" + group.getId()))
                     .nextLine();
         keyboardBuilder.addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(RandomCommandCallback.RC_CANCEL_REQUEST_CALLBACK.name()));
 

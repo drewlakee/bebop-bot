@@ -10,12 +10,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import telegram.commands.singletons.CommandsPool;
 import telegram.commands.MyGroupsCommand;
 import telegram.commands.RandomCommand;
-import telegram.commands.singletons.CallbacksPool;
-import telegram.commands.callbacks.RandomCommandCallback;
 
 public class TelegramBot {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
+
     private static final String TELEGRAM_CONFIG_ADD = "[TELEGRAM BOT] TELEGRAM CONFIG: ADD ";
 
     public static void run() {
@@ -27,8 +26,6 @@ public class TelegramBot {
         CommandsPool.register(new MyGroupsCommand());
         CommandsPool.register(new RandomCommand());
         log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getRegisteredCommandsSet());
-
-        CallbacksPool.register(RandomCommandCallback.callbacks);
 
         try {
             botsApi.registerBot(bot);

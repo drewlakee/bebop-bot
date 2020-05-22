@@ -7,8 +7,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import telegram.commands.callbacks.RandomCommandCallback;
 import telegram.commands.singletons.CommandsPool;
-import telegram.commands.singletons.CallbacksPool;
 import telegram.commands.statics.Commands;
 
 public class Bot extends TelegramLongPollingBot {
@@ -47,29 +47,22 @@ public class Bot extends TelegramLongPollingBot {
                 break;
             case Commands.MY_GROUPS:
                 CommandsPool.handleCommand(Commands.MY_GROUPS, this, message);
-                break;
         }
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
-        String handleCommand = CallbacksPool.defineHandler(callbackQuery.getData());
+        String handleCommand = callbackQuery.getData();
+
+        if (handleCommand.startsWith("RC")) {
+            handleCommand = Commands.RANDOM;
+        }
 
         switch (handleCommand) {
             case Commands.RANDOM:
                 CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
-                break;
-        }
-
-        if (callbackQuery.getData().matches("^-[0-9]*")) {
-            handleReceivedIdCallbackQuery(callbackQuery);
         }
     }
 
-    private void handleReceivedIdCallbackQuery(CallbackQuery callbackQuery) {
-        if (callbackQuery.getMessage().getText().contains("random")) {
-            CommandsPool.handleCommand(Commands.RANDOM, this, callbackQuery);
-        }
-    }
 
     @Override
     public String getBotUsername() {
