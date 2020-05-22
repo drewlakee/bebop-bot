@@ -1,4 +1,4 @@
-package vk.domain.random;
+package vk.services.random;
 
 import vk.domain.vkObjects.VkAttachment;
 

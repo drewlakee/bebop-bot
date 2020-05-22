@@ -1,4 +1,4 @@
-package vk.domain.random;
+package vk.services.random;
 
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;

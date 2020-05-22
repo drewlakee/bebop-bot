@@ -1,6 +1,6 @@
 package vk.services;
 
-import vk.domain.random.VkRandomContent;
+import vk.services.random.VkRandomContent;
 import vk.domain.vkObjects.VkAttachment;
 
 import java.util.List;

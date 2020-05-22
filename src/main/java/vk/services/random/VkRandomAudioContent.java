@@ -1,4 +1,4 @@
-package vk.domain.random;
+package vk.services.random;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,10 +13,10 @@ import vk.api.VkApiCredentials;
 import vk.api.VkApiDefaultCredentials;
 import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupObjective;
-import vk.singletons.VkGroupPool;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.services.VkMetaInformationService;
+import vk.singletons.VkGroupPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class VkRandomAudioContent implements VkRandomContent {
             int randomGroupId = audioGroups.get(randomIndex).getId();
             int randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
 
-            JsonElement jsonWallPostsAttachments = getJsonWallPost(quantity, randomOffset, randomGroupId);
+            JsonElement jsonWallPostsAttachments = getJsonWallPostAttachments(quantity, randomOffset, randomGroupId);
             jsonAudioAttachments.addAll(getJsonAudioAttachments(jsonWallPostsAttachments));
 
             if (requestCount > requestLimit) {
@@ -69,7 +69,7 @@ public class VkRandomAudioContent implements VkRandomContent {
         return responseAudios;
     }
 
-    private static JsonElement getJsonWallPost(int quantity, int offset, int ownerId) {
+    private static JsonElement getJsonWallPostAttachments(int quantity, int offset, int ownerId) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
         VkApiCredentials credentials = new VkApiDefaultCredentials();
         UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
