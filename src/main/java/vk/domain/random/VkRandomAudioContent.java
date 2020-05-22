@@ -9,11 +9,12 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vk.api.VkDefaultApiCredentials;
-import vk.domain.groups.VkGroupPool;
+import vk.api.VkApiCredentials;
+import vk.api.VkApiDefaultCredentials;
+import vk.singletons.VkGroupPool;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomAudio;
-import vk.services.VkInfoService;
+import vk.services.VkMetaInformationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class VkRandomAudioContent implements VkRandomContent {
 
         do {
             randomGroupId = VkGroupPool.getRandomAudioGroup().getId();
-            randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
+            randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
 
             JsonElement jsonWallPostsAttachments = getJsonWallPost(quantity, randomOffset, randomGroupId);
             jsonAudioAttachments.addAll(getJsonAudioAttachments(jsonWallPostsAttachments));
@@ -60,7 +61,7 @@ public class VkRandomAudioContent implements VkRandomContent {
                 responseAudios.add(audio);
             }
         } else {
-            log.info("[VK] Request-audios: Requests limit is exhausted");
+            log.info("[VK] Request [AUDIO]: Requests limit is exhausted");
         }
 
         return responseAudios;
@@ -68,7 +69,8 @@ public class VkRandomAudioContent implements VkRandomContent {
 
     private static JsonElement getJsonWallPost(int quantity, int offset, int ownerId) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
-        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+        VkApiCredentials credentials = new VkApiDefaultCredentials();
+        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
         String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", quantity, offset, ownerId);
 
         JsonElement postAttachments = new JsonObject();
@@ -79,7 +81,7 @@ public class VkRandomAudioContent implements VkRandomContent {
                     .execute();
             log.info("[VK] Response: request - {}, response - {}", request, postAttachments);
         } catch (ClientException | ApiException e) {
-            log.info("[VK] FAILED Request: {}", request);
+            log.info("[VK] Request [FAILED]: {}", request);
             e.printStackTrace();
         }
 
