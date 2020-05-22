@@ -10,11 +10,12 @@ import com.vk.api.sdk.objects.wall.WallpostAttachment;
 import com.vk.api.sdk.objects.wall.WallpostFull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vk.api.VkDefaultApiCredentials;
-import vk.domain.groups.VkGroupPool;
+import vk.api.VkApiCredentials;
+import vk.api.VkApiDefaultCredentials;
+import vk.singletons.VkGroupPool;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomPhoto;
-import vk.services.VkInfoService;
+import vk.services.VkMetaInformationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class VkRandomPhotoContent implements VkRandomContent {
 
         do {
             randomGroupId = VkGroupPool.getRandomPhotoGroup().getId();
-            randomOffset = random.nextInt(VkInfoService.getGroupPostsCount(randomGroupId));
+            randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
 
             wallPosts = getWallPosts(quantity, randomOffset, randomGroupId);
             photoAttachments.addAll(getPhotoAttachments(wallPosts));
@@ -67,11 +68,12 @@ public class VkRandomPhotoContent implements VkRandomContent {
 
     private static List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
-        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+        VkApiCredentials credentials = new VkApiDefaultCredentials();
+        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
 
         List<WallpostFull> wallPosts = new ArrayList<>();
         try {
-            log.info("[VK] Request API: get wall posts with count: {}, offset: {}, ownerId: {}", postsCount, offset, ownerId);
+            log.info("[VK] Request API: count: {}, offset: {}, ownerId: {}", postsCount, offset, ownerId);
             wallPosts = api.wall()
                     .get(userActor)
                     .count(postsCount)
@@ -79,9 +81,9 @@ public class VkRandomPhotoContent implements VkRandomContent {
                     .ownerId(ownerId)
                     .execute()
                     .getItems();
-            log.info("[VK] Response API: get wall posts with count: {}, offset: {}, ownerId: {}, response - {}", postsCount, offset, ownerId, wallPosts);
+            log.info("[VK] Response API: count: {}, offset: {}, ownerId: {}, response - {}", postsCount, offset, ownerId, wallPosts);
         } catch (ClientException | ApiException e) {
-            log.info("[VK] FAILED Request API: get wall posts with count: {}, offset: {}, ownerId: {}.", postsCount, offset, ownerId);
+            log.info("[VK] Request [API FAILED]: get wall posts with count: {}, offset: {}, ownerId: {}.", postsCount, offset, ownerId);
             e.printStackTrace();
         }
 
@@ -91,16 +93,18 @@ public class VkRandomPhotoContent implements VkRandomContent {
     private static List<Photo> getPhotoAttachments(List<WallpostFull> posts) {
         List<Photo> postsWithPhoto = new ArrayList<>();
 
-        for (WallpostFull post : posts) {
-            if (post.getAttachments() != null) {
-                for (WallpostAttachment attachment : post.getAttachments()) {
-                    if (attachment.getPhoto() != null) {
-                        postsWithPhoto.add(attachment.getPhoto());
-                        break; // get one photo from every post
+        posts.stream()
+                .filter(post -> !post.getAttachments().isEmpty() && post.getAttachments().stream()
+                        .anyMatch(attachment -> attachment.getPhoto() != null))
+                .forEach(post -> {
+                    for (WallpostAttachment attachment : post.getAttachments()) {
+                        // (ownerId < 0) means that owner is a group
+                        if (attachment.getPhoto().getOwnerId() < 0) {
+                            postsWithPhoto.add(attachment.getPhoto());
+                            break; // get one photo from every post
+                        }
                     }
-                }
-            }
-        }
+                });
 
         return postsWithPhoto;
     }
