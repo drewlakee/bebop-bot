@@ -8,15 +8,17 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vk.api.VkDefaultApiCredentials;
+import vk.api.VkApiCredentials;
+import vk.api.VkApiDefaultCredentials;
 
-public class VkInfoService {
+public class VkMetaInformationService {
 
-    private static final Logger log = LoggerFactory.getLogger(VkInfoService.class);
+    private static final Logger log = LoggerFactory.getLogger(VkMetaInformationService.class);
 
     public static int getGroupPostsCount(int groupId) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
-        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+        VkApiCredentials credentials = new VkApiDefaultCredentials();
+        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
         String request = String.format("return API.wall.get({\"owner_id\": %d}).count;", groupId);
 
         int postsCount = 0;
@@ -26,7 +28,7 @@ public class VkInfoService {
                     .code(userActor, request)
                     .execute();
             postsCount = responseCount.getAsInt();
-            log.info("[VK] Response: request - {}, response - {}", request, postsCount);
+            log.info("[VK] Response: request - {}, response count - {}", request, postsCount);
         } catch (ClientException | ApiException e) {
             log.info("[VK] FAILED Request: {}", request);
             e.printStackTrace();

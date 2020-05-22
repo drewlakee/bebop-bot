@@ -7,7 +7,8 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vk.api.VkDefaultApiCredentials;
+import vk.api.VkApiCredentials;
+import vk.api.VkApiDefaultCredentials;
 import vk.domain.groups.VkCustomGroup;
 
 import java.util.List;
@@ -18,18 +19,19 @@ public class VkWallPostService {
 
     public boolean makePost(VkCustomGroup group, List<String> attachments) {
         VkApiClient api = new VkApiClient(new HttpTransportClient());
-        UserActor userActor = new UserActor(VkDefaultApiCredentials.userId, VkDefaultApiCredentials.token);
+        VkApiCredentials credentials = new VkApiDefaultCredentials();
+        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
         boolean isOk = true;
 
         try {
-            log.info("[VK] Request: wall post with params: groupId: {}, attachments: {}", group, attachments);
+            log.info("[VK] Request: groupId: {}, attachments: {}", group, attachments);
             api.wall()
                     .post(userActor)
                     .ownerId(group.getId())
                     .attachments(attachments)
                     .execute();
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request: wall post with params: group: {}, attachments: {} - failed.", group, attachments);
+            log.info("[VK] Request FAILED: group: {}, attachments: {}.", group, attachments);
             e.printStackTrace();
 
             isOk = false;
