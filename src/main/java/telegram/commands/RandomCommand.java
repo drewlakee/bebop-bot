@@ -113,7 +113,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
 
         switch (mode) {
             case MessageBodyKeys.MANUAL:
-                constructTelegramPost(sender, callbackQuery, messageBodyParams, randomVkAttachments);
+                constructTelegramPost(sender, callbackQuery, groupId, messageBodyParams, randomVkAttachments);
                 break;
             case MessageBodyKeys.RANDOM:
                 constructRandomVkPost(sender, callbackQuery, groupId, randomVkAttachments);
@@ -123,7 +123,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         }
     }
 
-    private void constructTelegramPost(AbsSender sender, CallbackQuery callbackQuery, Map<String, String> messageBodyKeys, List<VkAttachment> attachments) {
+    private void constructTelegramPost(AbsSender sender, CallbackQuery callbackQuery, String groupId, Map<String, String> messageBodyKeys, List<VkAttachment> attachments) {
         SendPhoto telegramPostMessage = new SendPhoto();
         telegramPostMessage.setChatId(callbackQuery.getMessage().getChatId());
 
@@ -137,7 +137,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
                 .get();
 
         VkCustomGroup chosenGroup = VkGroupPool.getConcreteGroups(VkGroupObjective.HOST).stream()
-                .filter(group -> group.getId() == Integer.parseInt(callbackQuery.getData()))
+                .filter(group -> group.getId() == Integer.parseInt(groupId))
                 .findFirst()
                 .get();
 
