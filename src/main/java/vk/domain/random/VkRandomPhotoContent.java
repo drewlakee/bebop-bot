@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vk.api.VkApiCredentials;
 import vk.api.VkApiDefaultCredentials;
+import vk.domain.groups.VkCustomGroup;
+import vk.domain.groups.VkGroupObjective;
 import vk.singletons.VkGroupPool;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomPhoto;
@@ -30,14 +32,14 @@ public class VkRandomPhotoContent implements VkRandomContent {
         Random random = new Random();
         int requestLimit = (quantity == 1) ? 5 : quantity;
         int requestCount = 0;
-        int randomGroupId;
-        int randomOffset;
         List<WallpostFull> wallPosts;
         List<Photo> photoAttachments = new ArrayList<>();
+        List<VkCustomGroup> photoGroups = VkGroupPool.getConcreteGroups(VkGroupObjective.PHOTO);
 
         do {
-            randomGroupId = VkGroupPool.getRandomPhotoGroup().getId();
-            randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
+            int randomIndex = random.nextInt(photoGroups.size());
+            int randomGroupId = photoGroups.get(randomIndex).getId();
+            int randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
 
             wallPosts = getWallPosts(quantity, randomOffset, randomGroupId);
             photoAttachments.addAll(getPhotoAttachments(wallPosts));

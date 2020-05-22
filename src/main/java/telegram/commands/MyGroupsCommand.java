@@ -8,6 +8,7 @@ import telegram.commands.statics.Commands;
 import telegram.utils.ResponseMessageDispatcher;
 import telegram.commands.handlers.MessageHandler;
 import vk.domain.groups.VkCustomGroup;
+import vk.domain.groups.VkGroupObjective;
 import vk.singletons.VkGroupPool;
 
 public class MyGroupsCommand extends BotCommand implements MessageHandler {
@@ -30,7 +31,7 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
         StringBuilder desk = new StringBuilder();
         int count = 0;
 
-        for (VkCustomGroup group : VkGroupPool.getHostGroups()) {
+        for (VkCustomGroup group : VkGroupPool.getConcreteGroups(VkGroupObjective.HOST)) {
             desk.append(String.format("\n\n%d: %s (%d)\n%s", count, group.getName(), group.getId(), group.getUrl()));
             count++;
         }

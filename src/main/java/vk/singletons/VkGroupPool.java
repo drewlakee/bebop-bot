@@ -3,10 +3,7 @@ package vk.singletons;
 import vk.domain.groups.VkCustomGroup;
 import vk.domain.groups.VkGroupObjective;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VkGroupPool {
@@ -21,41 +18,15 @@ public class VkGroupPool {
     }
 
     public static void add(Map<String, VkCustomGroup> groups) {
-        for (VkCustomGroup group : groups.values())
+        for (VkCustomGroup group : groups.values()) {
             add(group);
+        }
     }
 
-    public static VkCustomGroup getRandomAudioGroup() {
-        Object[] audioGroups = pool.values()
-                .stream()
-                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.AUDIO))
-                .toArray();
-        int randomIndex = new Random().nextInt(audioGroups.length);
-        return (VkCustomGroup) audioGroups[randomIndex];
-    }
-
-    public static VkCustomGroup getRandomPhotoGroup() {
-        Object[] photoGroups = pool.values()
-                .stream()
-                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.PHOTO))
-                .toArray();
-        int randomIndex = new Random().nextInt(photoGroups.length);
-        return (VkCustomGroup) photoGroups[randomIndex];
-    }
-
-    public static List<VkCustomGroup> getHostGroups() {
-        return pool.values()
-                .stream()
-                .filter(vkGroup -> vkGroup.getVkGroupObjective().equals(VkGroupObjective.HOST))
-                .collect(Collectors.toList());
-    }
-
-    public static VkCustomGroup getHostGroup(int id) {
-        return pool.values()
-                .stream()
-                .filter(group -> group.getId() == id)
-                .findAny()
-                .orElseThrow();
+    public static List<VkCustomGroup> getConcreteGroups(VkGroupObjective objective) {
+        return pool.values().stream()
+                .filter(group -> group.getVkGroupObjective().equals(objective))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private static boolean isEmpty() {

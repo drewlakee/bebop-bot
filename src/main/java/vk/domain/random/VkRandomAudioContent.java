@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vk.api.VkApiCredentials;
 import vk.api.VkApiDefaultCredentials;
+import vk.domain.groups.VkCustomGroup;
+import vk.domain.groups.VkGroupObjective;
 import vk.singletons.VkGroupPool;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomAudio;
@@ -27,15 +29,15 @@ public class VkRandomAudioContent implements VkRandomContent {
     @Override
     public List<VkAttachment> find(int quantity) {
         Random random = new Random();
-        int randomGroupId;
-        int randomOffset;
         int requestLimit = (quantity == 1) ? 5 : quantity;
         int requestCount = 0;
         List<JsonObject> jsonAudioAttachments = new ArrayList<>();
+        List<VkCustomGroup> audioGroups = VkGroupPool.getConcreteGroups(VkGroupObjective.AUDIO);
 
         do {
-            randomGroupId = VkGroupPool.getRandomAudioGroup().getId();
-            randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
+            int randomIndex = random.nextInt(audioGroups.size());
+            int randomGroupId = audioGroups.get(randomIndex).getId();
+            int randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
 
             JsonElement jsonWallPostsAttachments = getJsonWallPost(quantity, randomOffset, randomGroupId);
             jsonAudioAttachments.addAll(getJsonAudioAttachments(jsonWallPostsAttachments));
