@@ -1,5 +1,8 @@
 package telegram.commands.callbacks;
 
+import lombok.Getter;
+
+@Getter
 public class Callback {
 
     private final String name;
@@ -8,14 +11,6 @@ public class Callback {
     public Callback(String name, String command) {
         this.name = name;
         this.command = command;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getCommand() {
-        return command;
     }
 
     @Override
