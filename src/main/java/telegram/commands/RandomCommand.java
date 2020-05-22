@@ -15,23 +15,23 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import telegram.ResponseMessageDispatcher;
+import telegram.commands.statics.Commands;
+import telegram.utils.ResponseMessageDispatcher;
 import telegram.commands.callbacks.RandomCommandCallback;
 import telegram.commands.handlers.BotCommand;
 import telegram.commands.handlers.CallbackQueryHandler;
 import telegram.commands.handlers.MessageHandler;
 import telegram.commands.keyboards.InlineKeyboardBuilder;
-import telegram.commands.handlers.Commands;
 import telegram.commands.statics.MessageBodyKeys;
 import telegram.utils.MessageKeysParser;
 import vk.domain.groups.VkCustomGroup;
-import vk.domain.groups.VkGroupPool;
+import vk.singletons.VkGroupPool;
 import vk.domain.random.VkRandomAudioContent;
 import vk.domain.random.VkRandomPhotoContent;
 import vk.domain.vkObjects.VkAttachment;
 import vk.domain.vkObjects.VkCustomAudio;
 import vk.domain.vkObjects.VkCustomPhoto;
-import vk.services.VkContentService;
+import vk.services.VkContentStrategyService;
 import vk.services.VkWallPostService;
 
 import java.util.*;
@@ -92,8 +92,8 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         String mode = messageBodyParams.get(MessageBodyKeys.MODE);
 
-        VkContentService audioService = new VkContentService(new VkRandomAudioContent());
-        VkContentService photoService = new VkContentService(new VkRandomPhotoContent());
+        VkContentStrategyService audioService = new VkContentStrategyService(new VkRandomAudioContent());
+        VkContentStrategyService photoService = new VkContentStrategyService(new VkRandomPhotoContent());
         Observable<List<VkAttachment>> asyncRandomContentRequests = Observable.merge(
                 Observable.fromCallable(() -> audioService.find(1))
                         .subscribeOn(Schedulers.io()),
@@ -182,7 +182,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         changePhotoMessage.setMessageId(callbackQuery.getMessage().getMessageId());
 
         InputMediaPhoto newPhoto = new InputMediaPhoto();
-        VkContentService photoService = new VkContentService(new VkRandomPhotoContent());
+        VkContentStrategyService photoService = new VkContentStrategyService(new VkRandomPhotoContent());
         VkCustomPhoto randomPhoto = (VkCustomPhoto) photoService.find(1).get(0);
         newPhoto.setMedia(randomPhoto.getLargestSize().getUrl().toString());
 
@@ -206,7 +206,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         InputMediaPhoto newTrackWithOldPhoto = new InputMediaPhoto();
         newTrackWithOldPhoto.setMedia(callbackQuery.getMessage().getPhoto().get(0).getFileId());
 
-        VkContentService audioService = new VkContentService(new VkRandomAudioContent());
+        VkContentStrategyService audioService = new VkContentStrategyService(new VkRandomAudioContent());
         VkCustomAudio randomAudio = (VkCustomAudio) audioService.find(1).get(0);
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)

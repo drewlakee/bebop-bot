@@ -1,6 +1,7 @@
-package telegram.commands.callbacks;
+package telegram.commands.singletons;
 
-import telegram.commands.handlers.Commands;
+import telegram.commands.callbacks.Callback;
+import telegram.commands.statics.Commands;
 
 import java.util.HashMap;
 import java.util.List;

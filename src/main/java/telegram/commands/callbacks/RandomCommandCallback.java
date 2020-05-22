@@ -1,6 +1,6 @@
 package telegram.commands.callbacks;
 
-import telegram.commands.handlers.Commands;
+import telegram.commands.statics.Commands;
 
 import java.util.Arrays;
 import java.util.List;

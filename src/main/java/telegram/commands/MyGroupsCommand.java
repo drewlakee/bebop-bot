@@ -4,11 +4,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import telegram.commands.handlers.BotCommand;
-import telegram.ResponseMessageDispatcher;
+import telegram.commands.statics.Commands;
+import telegram.utils.ResponseMessageDispatcher;
 import telegram.commands.handlers.MessageHandler;
-import telegram.commands.handlers.Commands;
 import vk.domain.groups.VkCustomGroup;
-import vk.domain.groups.VkGroupPool;
+import vk.singletons.VkGroupPool;
 
 public class MyGroupsCommand extends BotCommand implements MessageHandler {
 

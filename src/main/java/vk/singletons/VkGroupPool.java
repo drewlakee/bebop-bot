@@ -1,4 +1,7 @@
-package vk.domain.groups;
+package vk.singletons;
+
+import vk.domain.groups.VkCustomGroup;
+import vk.domain.groups.VkGroupObjective;
 
 import java.util.HashMap;
 import java.util.List;
