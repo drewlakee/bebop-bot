@@ -6,6 +6,7 @@ import org.junit.Test;
 import telegram.utils.MessageKeysParser;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MessageKeysParserTest {
@@ -24,7 +25,7 @@ public class MessageKeysParserTest {
 
         StringBuilder messageBody = new StringBuilder();
         sourceMap.forEach((keyMap, valueMap) -> messageBody.append(keyMap).append(": ").append(valueMap).append("\n"));
-        HashMap<String, String> parsedMap = MessageKeysParser.parseMessageKeysBody(messageBody.toString());
+        Map<String, String> parsedMap = MessageKeysParser.parseMessageKeysBody(messageBody.toString());
 
         Assert.assertEquals(sourceMap, parsedMap);
     }

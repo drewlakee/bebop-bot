@@ -90,7 +90,7 @@ public class RandomCommand extends BotCommand implements CallbackQueryHandler, M
         deleteMessage(sender, callbackQuery);
 
         String groupId = callbackQuery.getData().substring(2); // RC-123456 [-123456]
-        HashMap<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+        Map<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         String mode = messageBodyParams.get(MessageBodyKeys.MODE);
 
         VkContentStrategyService audioService = new VkContentStrategyService(new VkRandomAudioContent());

@@ -1,7 +1,7 @@
 package telegram.utils;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,18 +28,9 @@ public class MessageKeysParser {
      */
     private final static Pattern valuePattern = Pattern.compile("(?<=:)((\\s*)?([\\w\\p{IsCyrillic}-+]*))*");
 
-    /**
-     *  Message body parser
-     *
-     *  Example:
-     *          textBody = "key1: value1\nkey2: some value2\nkey3: some value3 (not used value)"
-     *
-     * @param textBody
-     * @return HashMap<String, String>
-     */
-    public static HashMap<String, String> parseMessageKeysBody(String textBody) {
+    public static Map<String, String> parseMessageKeysBody(String textBody) {
         String[] lines = textBody.split("\n");
-        HashMap<String, String> map = new LinkedHashMap<>();
+        Map<String, String> map = new HashMap<>();
 
         for (String line : lines) {
             Matcher keyMatcher = keyPattern.matcher(line);
