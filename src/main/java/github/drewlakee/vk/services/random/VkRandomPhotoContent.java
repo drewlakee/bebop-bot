@@ -95,8 +95,9 @@ public class VkRandomPhotoContent implements VkRandomContent {
     private static List<Photo> getPhotoAttachments(List<WallpostFull> posts) {
         List<Photo> postsWithPhoto = new ArrayList<>();
 
+        // TODO: FIX BUG - NULL sometime happens
         posts.stream()
-                .filter(post -> post != null && !post.getAttachments().isEmpty() && post.getAttachments().stream()
+                .filter(post -> !post.getAttachments().isEmpty() && post.getAttachments().stream()
                         .anyMatch(attachment -> attachment.getPhoto() != null))
                 .forEach(post -> {
                     for (WallpostAttachment attachment : post.getAttachments()) {

@@ -1,6 +1,6 @@
 package github.drewlakee.telegram.commands;
 
-import github.drewlakee.telegram.commands.callbacks.ConstructCommonCallback;
+import github.drewlakee.telegram.commands.callbacks.ConstructCallback;
 import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
@@ -54,29 +54,29 @@ public class ConstructOnlyAudiosCommand extends BotCommand implements CallbackQu
     @Override
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
-        ConstructCommonCallback handleCallback = ConstructCommonCallback.UNKNOWN;
+        ConstructCallback handleCallback = ConstructCallback.DEFAULT;
         int audiosQuantity = 0;
 
         if (data.contains(COMMAND_NAME + "_numpad")) {
             audiosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "_numpad", ""));
         }
 
-        if (data.contains(ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
-            handleCallback = ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK;
+        if (data.contains(ConstructCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = ConstructCallback.CHANGE_QUANTITY_CALLBACK;
         }
 
-        if (data.contains(ConstructCommonCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(ConstructCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             audiosQuantity = Integer.parseInt(keys.get("quantity"));
         }
 
-        if (data.contains(ConstructCommonCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
-            handleCallback = ConstructCommonCallback.SEND_CALLBACK;
+        if (data.contains(ConstructCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = ConstructCallback.SEND_CALLBACK;
         }
 
         int groupId = 0;
         if (data.contains(COMMAND_NAME + "_group_id")) {
-            handleCallback = ConstructCommonCallback.GROUP_CALLBACK;
+            handleCallback = ConstructCallback.GROUP_CALLBACK;
             groupId = Integer.parseInt(data.replace(COMMAND_NAME + "_group_id", ""));
         }
 
@@ -177,14 +177,14 @@ public class ConstructOnlyAudiosCommand extends BotCommand implements CallbackQu
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton()
                         .setText("Change quantity")
-                        .setCallbackData(ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(ConstructCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .addButton(new InlineKeyboardButton()
                         .setText("Change set")
-                        .setCallbackData(ConstructCommonCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(ConstructCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Send")
-                        .setCallbackData(ConstructCommonCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(ConstructCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")

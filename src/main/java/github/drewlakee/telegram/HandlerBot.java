@@ -1,5 +1,6 @@
 package github.drewlakee.telegram;
 
+import github.drewlakee.telegram.commands.ConstructCommand;
 import github.drewlakee.telegram.commands.ConstructOnlyAudiosCommand;
 import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
 import github.drewlakee.telegram.commands.MyGroupsCommand;
@@ -53,6 +54,9 @@ public class HandlerBot extends TelegramLongPollingBot {
             case ConstructOnlyAudiosCommand.COMMAND_NAME:
                 CommandsPool.handleCommand(ConstructOnlyAudiosCommand.COMMAND_NAME, this, message);
                 break;
+            case ConstructCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, message);
+                break;
             case MyGroupsCommand.COMMAND_NAME:
                 CommandsPool.handleCommand(MyGroupsCommand.COMMAND_NAME, this, message);
         }
@@ -69,6 +73,10 @@ public class HandlerBot extends TelegramLongPollingBot {
             handleCommand = ConstructOnlyAudiosCommand.COMMAND_NAME;
         }
 
+        if (handleCommand.startsWith(ConstructCommand.COMMAND_NAME)) {
+            handleCommand = ConstructCommand.COMMAND_NAME;
+        }
+
         if (handleCommand.equals(GlobalCallback.DELETE_MESSAGE.name())) {
            handleCommand = "delete_message";
         }
@@ -79,6 +87,9 @@ public class HandlerBot extends TelegramLongPollingBot {
                 break;
             case ConstructOnlyAudiosCommand.COMMAND_NAME:
                 CommandsPool.handleCommand(ConstructOnlyAudiosCommand.COMMAND_NAME, this, callbackQuery);
+                break;
+            case ConstructCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, callbackQuery);
                 break;
             case "delete_message":
                 deleteMessage(this, callbackQuery);
