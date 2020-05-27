@@ -55,7 +55,7 @@ public class VkRandomPhotoContent implements VkRandomContent {
         } while (photoAttachments.size() < quantity);
 
         List<VkAttachment> photosResponse = new ArrayList<>();
-        if (requestCount < requestLimit) {
+        if (requestCount < requestLimit || photoAttachments.size() >= quantity) {
             for (int i = 0; i < quantity; i++) {
                 VkCustomPhoto photo = new VkCustomPhoto();
                 photo.setId(photoAttachments.get(i).getId());
@@ -96,7 +96,7 @@ public class VkRandomPhotoContent implements VkRandomContent {
         List<Photo> postsWithPhoto = new ArrayList<>();
 
         posts.stream()
-                .filter(post -> !post.getAttachments().isEmpty() && post.getAttachments().stream()
+                .filter(post -> post != null && !post.getAttachments().isEmpty() && post.getAttachments().stream()
                         .anyMatch(attachment -> attachment.getPhoto() != null))
                 .forEach(post -> {
                     for (WallpostAttachment attachment : post.getAttachments()) {
