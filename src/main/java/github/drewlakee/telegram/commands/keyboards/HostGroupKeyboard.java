@@ -13,15 +13,22 @@ public class HostGroupKeyboard {
 
     private final InlineKeyboardBuilder keyboard;
 
-    public HostGroupKeyboard(String callbackCommand, boolean withCancel) {
+    public HostGroupKeyboard() {
         this.keyboard = new InlineKeyboardBuilder();
+    }
+
+    public InlineKeyboardMarkup build(String callbackCommand) {
+        return build(callbackCommand, false);
+    }
+
+    public InlineKeyboardMarkup build(String callbackCommand, boolean withCancel) {
         List<VkCustomGroup> hosts = VkGroupPool.getConcreteGroups(VkGroupObjective.HOST);
 
         for (VkCustomGroup host : hosts) {
             this.keyboard.addButton(new InlineKeyboardButton()
-            .setText(host.getName())
-            .setCallbackData(callbackCommand + "_group_id" + host.getId()))
-            .nextLine();
+                    .setText(host.getName())
+                    .setCallbackData(callbackCommand + "_group_id" + host.getId()))
+                    .nextLine();
         }
 
         if (withCancel) {
@@ -30,9 +37,7 @@ public class HostGroupKeyboard {
                             .setText("Cancel")
                             .setCallbackData(GlobalCallback.DELETE_MESSAGE.name()));
         }
-    }
 
-    public InlineKeyboardMarkup build() {
         return this.keyboard.build();
     }
 }
