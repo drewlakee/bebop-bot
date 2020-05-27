@@ -41,6 +41,7 @@ public class NumpadKeyboardBuilder {
 
         if (withCancel) {
             this.keyboardMarkup
+                    .nextLine()
                     .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(GlobalCallback.DELETE_MESSAGE.name()));
         }
 
