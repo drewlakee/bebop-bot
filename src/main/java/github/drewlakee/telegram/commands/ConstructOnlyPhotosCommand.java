@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// TODO: REFACTOR - decompose that class
 public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
     public ConstructOnlyPhotosCommand() {
@@ -47,8 +46,8 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId());
         sendMessage.setText("Choose quantity of photos: ");
-        NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4);
-        sendMessage.setReplyMarkup(numpad.build(10, Commands.CONSTRUCT_ONLY_PHOTOS, true));
+        NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, 10);
+        sendMessage.setReplyMarkup(numpad.build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
         ResponseMessageDispatcher.send(sender, sendMessage);
     }
 
@@ -101,8 +100,8 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
         response.setText("Change quantity: ");
-        NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4);
-        response.setReplyMarkup(numpad.build(10, Commands.CONSTRUCT_ONLY_PHOTOS, true));
+        NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, 10);
+        response.setReplyMarkup(numpad.build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
         ResponseMessageDispatcher.send(sender, response);
     }
 

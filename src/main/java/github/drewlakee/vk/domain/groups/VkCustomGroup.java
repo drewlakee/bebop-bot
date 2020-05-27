@@ -10,8 +10,8 @@ public class VkCustomGroup extends Group {
 
     public static final VkCustomGroup EMPTY_INSTANCE = new VkCustomGroup(VkGroupObjective.EMPTY, "empty", 0, "empty_url");
 
-    private VkGroupObjective vkGroupObjective;
-    private String url;
+    private final VkGroupObjective vkGroupObjective;
+    private final String url;
 
     public VkCustomGroup(VkGroupObjective vkGroupObjective, String name, int groupId, String url) {
         setName(name);
