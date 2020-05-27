@@ -1,7 +1,7 @@
 package github.drewlakee.telegram.commands;
 
 import github.drewlakee.telegram.commands.callbacks.ConstructCallback;
-import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
+import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
@@ -292,7 +292,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")
-                        .setCallbackData(GlobalCallback.DELETE_MESSAGE.name()))
+                        .setCallbackData(HandlerBotCallback.DELETE_MESSAGE.name()))
                 .build();
     }
 }

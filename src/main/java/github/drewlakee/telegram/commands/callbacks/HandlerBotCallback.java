@@ -1,6 +1,6 @@
 package github.drewlakee.telegram.commands.callbacks;
 
-public enum GlobalCallback {
+public enum HandlerBotCallback {
 
     DELETE_MESSAGE
 }

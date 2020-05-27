@@ -1,10 +1,8 @@
 package github.drewlakee.telegram;
 
 import github.drewlakee.telegram.commands.ConstructCommand;
-import github.drewlakee.telegram.commands.ConstructOnlyAudiosCommand;
-import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
 import github.drewlakee.telegram.commands.MyGroupsCommand;
-import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
+import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +46,6 @@ public class HandlerBot extends TelegramLongPollingBot {
         String handleCommand = message.getText();
 
         switch (handleCommand) {
-            case ConstructOnlyPhotosCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructOnlyPhotosCommand.COMMAND_NAME, this, message);
-                break;
-            case ConstructOnlyAudiosCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructOnlyAudiosCommand.COMMAND_NAME, this, message);
-                break;
             case ConstructCommand.COMMAND_NAME:
                 CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, message);
                 break;
@@ -65,29 +57,15 @@ public class HandlerBot extends TelegramLongPollingBot {
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String handleCommand = callbackQuery.getData();
 
-        if (handleCommand.startsWith(ConstructOnlyPhotosCommand.COMMAND_NAME)) {
-            handleCommand = ConstructOnlyPhotosCommand.COMMAND_NAME;
-        }
-
-        if (handleCommand.startsWith(ConstructOnlyAudiosCommand.COMMAND_NAME)) {
-            handleCommand = ConstructOnlyAudiosCommand.COMMAND_NAME;
-        }
-
         if (handleCommand.startsWith(ConstructCommand.COMMAND_NAME)) {
             handleCommand = ConstructCommand.COMMAND_NAME;
         }
 
-        if (handleCommand.equals(GlobalCallback.DELETE_MESSAGE.name())) {
+        if (handleCommand.equals(HandlerBotCallback.DELETE_MESSAGE.name())) {
            handleCommand = "delete_message";
         }
 
         switch (handleCommand) {
-            case ConstructOnlyPhotosCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructOnlyPhotosCommand.COMMAND_NAME, this, callbackQuery);
-                break;
-            case ConstructOnlyAudiosCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructOnlyAudiosCommand.COMMAND_NAME, this, callbackQuery);
-                break;
             case ConstructCommand.COMMAND_NAME:
                 CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, callbackQuery);
                 break;
