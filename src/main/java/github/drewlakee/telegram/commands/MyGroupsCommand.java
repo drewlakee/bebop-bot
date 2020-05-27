@@ -1,5 +1,6 @@
 package github.drewlakee.telegram.commands;
 
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
@@ -22,7 +23,8 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
     public void handle(AbsSender sender, Message message) {
         SendMessage response = new SendMessage();
         response.setChatId(message.getChatId());
-        response.setText("Your groups: " + buildGroupsDesk());
+        response.setParseMode(ParseMode.HTML);
+        response.setText(buildGroupsDesk());
         response.disableWebPagePreview();
 
         ResponseMessageDispatcher.send(sender, response);
@@ -31,13 +33,14 @@ public class MyGroupsCommand extends BotCommand implements MessageHandler {
     private String buildGroupsDesk() {
         StringBuilder desk = new StringBuilder();
         int count = 0;
-
+        desk.append("Your groups: \n\n");
         for (VkCustomGroup group : VkGroupPool.getConcreteGroups(VkGroupObjective.HOST)) {
-            desk.append(String.format("\n\n%d: %s (%d)\n%s", count, group.getName(), group.getId(), group.getUrl()));
+            desk.append(count).append(": ")
+                    .append("<a href=\"").append(group.getUrl()).append("\">").append(group.getName()).append("</a>")
+                    .append(" (id: ").append(group.getId()).append(")").append("\n\n");
             count++;
         }
-        desk.append("\n\n").append("Total - ").append(count).append(".");
-
+        desk.append("Total - ").append(count).append(".");
         return desk.toString();
     }
 }
