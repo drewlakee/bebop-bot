@@ -109,7 +109,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setReplyMarkup(new HostGroupKeyboard(Commands.CONSTRUCT_ONLY_PHOTOS, true).build());
+        response.setReplyMarkup(new HostGroupKeyboard().build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
         ResponseMessageDispatcher.send(sender, response);
     }
 

@@ -14,11 +14,11 @@ import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import github.drewlakee.telegram.commands.statics.Commands;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-public class Bot extends TelegramLongPollingBot {
+public class HandlerBot extends TelegramLongPollingBot {
 
-    private static final Logger log = LoggerFactory.getLogger(Bot.class);
+    private static final Logger log = LoggerFactory.getLogger(HandlerBot.class);
 
-    public Bot(DefaultBotOptions options) {
+    public HandlerBot(DefaultBotOptions options) {
         super(options);
     }
 

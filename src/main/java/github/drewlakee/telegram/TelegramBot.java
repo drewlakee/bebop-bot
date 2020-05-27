@@ -2,7 +2,6 @@ package github.drewlakee.telegram;
 
 import com.google.common.collect.ComparisonChain;
 import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
-import github.drewlakee.telegram.commands.statics.Commands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -22,7 +21,7 @@ public class TelegramBot {
     public static void run() {
         ApiContextInitializer.init();
         DefaultBotOptions customOptions = initializeCustomOptions();
-        Bot bot = new Bot(customOptions);
+        HandlerBot bot = new HandlerBot(customOptions);
         TelegramBotsApi botsApi = new TelegramBotsApi();
 
         CommandsPool.register(new MyGroupsCommand());
