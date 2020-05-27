@@ -3,7 +3,7 @@ package github.drewlakee.telegram.commands;
 import github.drewlakee.telegram.commands.keyboards.HostGroupKeyboard;
 import github.drewlakee.telegram.commands.keyboards.InlineKeyboardBuilder;
 import github.drewlakee.telegram.commands.keyboards.NumpadKeyboardBuilder;
-import github.drewlakee.telegram.commands.callbacks.ConstructOnlyPhotosCommandCallback;
+import github.drewlakee.telegram.commands.callbacks.ConstructCommonCallback;
 import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
@@ -55,14 +55,14 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
     @Override
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
-        ConstructOnlyPhotosCommandCallback handleCallback = ConstructOnlyPhotosCommandCallback.UNKNOWN;
+        ConstructCommonCallback handleCallback = ConstructCommonCallback.UNKNOWN;
         int photosQuantity = 0;
 
-        if (data.contains(ConstructOnlyPhotosCommandCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString())) {
-            handleCallback = ConstructOnlyPhotosCommandCallback.CHANGE_QUANTITY_CALLBACK;
+        if (data.contains(ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK;
         }
 
-        if (data.contains(ConstructOnlyPhotosCommandCallback.CHANGE_SET_CALLBACK.toCallbackString())) {
+        if (data.contains(ConstructCommonCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("quantity"));
         }
@@ -71,13 +71,13 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
             photosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "_numpad", ""));
         }
 
-        if (data.contains(ConstructOnlyPhotosCommandCallback.SEND_CALLBACK.toCallbackString())) {
-            handleCallback = ConstructOnlyPhotosCommandCallback.SEND_CALLBACK;
+        if (data.contains(ConstructCommonCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = ConstructCommonCallback.SEND_CALLBACK;
         }
 
         int groupId = 0;
         if (data.contains(COMMAND_NAME + "_group_id")) {
-            handleCallback = ConstructOnlyPhotosCommandCallback.GROUP_CALLBACK;
+            handleCallback = ConstructCommonCallback.GROUP_CALLBACK;
             groupId = Integer.parseInt(data.replace(COMMAND_NAME + "_group_id", ""));
         }
 
@@ -89,7 +89,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
                 sendGroupKeyboard(sender, callbackQuery);
                 break;
             case GROUP_CALLBACK:
-                sendSetOfPhotosToGroup(sender, callbackQuery, groupId);
+                sendSetToGroup(sender, callbackQuery, groupId);
                 break;
             default:
                 sendSetOfPhotos(sender, callbackQuery, photosQuantity);
@@ -114,7 +114,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         ResponseMessageDispatcher.send(sender, response);
     }
 
-    private void sendSetOfPhotosToGroup(AbsSender sender, CallbackQuery callbackQuery, int groupId) {
+    private void sendSetToGroup(AbsSender sender, CallbackQuery callbackQuery, int groupId) {
         Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
         List<String> photosKeys = keys.keySet().stream().filter(key -> key.startsWith("photo")).collect(Collectors.toList());
         List<String> vkAttachments = new ArrayList<>();
@@ -126,16 +126,22 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
                 .findFirst()
                 .orElse(VkCustomGroup.EMPTY_INSTANCE);
 
-        EditMessageText response = new EditMessageText();
+        EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setParseMode(ParseMode.HTML);
         VkWallPostService service = new VkWallPostService();
-        if (service.makePost(vkGroup, vkAttachments)) {
-            response.setText("Post was send to " + "<a href=\"" + vkGroup.getUrl() + "\">" + vkGroup.getName() + "</a> group!");
+        InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
+        boolean isRequestSuccessful = service.makePost(vkGroup, vkAttachments);
+        if (isRequestSuccessful) {
+            keyboardBuilder.addButton(new InlineKeyboardButton()
+                    .setText("Post was send to " + vkGroup.getName() + " group!")
+                    .setUrl(vkGroup.getUrl()));
         } else {
-            response.setText("Oops... something was broken on the way!");
+            keyboardBuilder.addButton(new InlineKeyboardButton()
+                    .setText("Oops... something was broken on the way!"));
         }
+        response.setReplyMarkup(keyboardBuilder.build());
+
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -171,14 +177,14 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton()
                         .setText("Change quantity")
-                        .setCallbackData(ConstructOnlyPhotosCommandCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString()))
+                        .setCallbackData(ConstructCommonCallback.CHANGE_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .addButton(new InlineKeyboardButton()
                         .setText("Change set")
-                        .setCallbackData(ConstructOnlyPhotosCommandCallback.CHANGE_SET_CALLBACK.toCallbackString()))
+                        .setCallbackData(ConstructCommonCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Send")
-                        .setCallbackData(ConstructOnlyPhotosCommandCallback.SEND_CALLBACK.toCallbackString()))
+                        .setCallbackData(ConstructCommonCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")

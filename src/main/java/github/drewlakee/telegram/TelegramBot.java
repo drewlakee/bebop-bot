@@ -1,16 +1,16 @@
 package github.drewlakee.telegram;
 
 import com.google.common.collect.ComparisonChain;
+import github.drewlakee.telegram.commands.ConstructOnlyAudiosCommand;
 import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
+import github.drewlakee.telegram.commands.MyGroupsCommand;
+import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import github.drewlakee.telegram.commands.singletons.CommandsPool;
-import github.drewlakee.telegram.commands.MyGroupsCommand;
-import github.drewlakee.telegram.commands.ConstructCommand;
 
 public class TelegramBot {
 
@@ -25,8 +25,8 @@ public class TelegramBot {
         TelegramBotsApi botsApi = new TelegramBotsApi();
 
         CommandsPool.register(new MyGroupsCommand());
-        CommandsPool.register(new ConstructCommand());
         CommandsPool.register(new ConstructOnlyPhotosCommand());
+        CommandsPool.register(new ConstructOnlyAudiosCommand());
         log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getRegisteredCommandsSet());
 
         try {
