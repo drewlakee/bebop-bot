@@ -9,11 +9,15 @@
 
 Команда подборки фотографий из групп типа *PHOTO*
 
-- /mygroups
+- /constructOnlyAudios
+
+Команда подборки аудиозаписей из групп типа *AUDIO*
+
+- /myGroups
 
 Команда вывода текущих групп типа *HOST*
 
-###### Список групп формируется в файле [groups](src/main/resources/groups).      
+###### Список групп формируется в файле [groups](src/main/resources/groups), модель группы - [VkCustomGroup](src/main/java/github/drewlakee/vk/domain/groups/VkCustomGroup.java).      
 
 #### Пользовательские переменные окружения:
 
