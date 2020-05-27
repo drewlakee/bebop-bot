@@ -1,7 +1,5 @@
 package github.drewlakee.telegram.commands.callbacks;
 
-import github.drewlakee.telegram.commands.statics.Commands;
-
 public enum ConstructCommandCallback {
 
     SEND_CONSTRUCTED_POST_CALLBACK,
@@ -13,6 +11,6 @@ public enum ConstructCommandCallback {
     MULTI_MEDIA_CALLBACK;
 
     public String toCallbackString() {
-        return Commands.CONSTRUCT_ONLY_PHOTOS + "_" + this.name();
+        return "TEST" + "_" + this.name();
     }
 }

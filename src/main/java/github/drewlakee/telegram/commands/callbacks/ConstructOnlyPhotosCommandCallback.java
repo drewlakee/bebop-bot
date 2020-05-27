@@ -1,6 +1,6 @@
 package github.drewlakee.telegram.commands.callbacks;
 
-import github.drewlakee.telegram.commands.statics.Commands;
+import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
 
 public enum  ConstructOnlyPhotosCommandCallback {
 
@@ -11,6 +11,6 @@ public enum  ConstructOnlyPhotosCommandCallback {
     UNKNOWN;
 
     public String toCallbackString() {
-        return Commands.CONSTRUCT_ONLY_PHOTOS + "_" + this.name();
+        return ConstructOnlyPhotosCommand.COMMAND_NAME + "_" + this.name();
     }
 }

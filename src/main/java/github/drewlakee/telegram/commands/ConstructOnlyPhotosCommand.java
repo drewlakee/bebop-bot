@@ -8,7 +8,6 @@ import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
-import github.drewlakee.telegram.commands.statics.Commands;
 import github.drewlakee.telegram.utils.MessageKeysParser;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.vk.domain.groups.VkCustomGroup;
@@ -37,8 +36,10 @@ import java.util.stream.Collectors;
 
 public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
+    public static final String COMMAND_NAME = "/constructOnlyPhotos";
+
     public ConstructOnlyPhotosCommand() {
-        super(Commands.CONSTRUCT_ONLY_PHOTOS);
+        super(COMMAND_NAME);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         sendMessage.setChatId(message.getChatId());
         sendMessage.setText("Choose quantity of photos: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, 10);
-        sendMessage.setReplyMarkup(numpad.build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
+        sendMessage.setReplyMarkup(numpad.build(COMMAND_NAME, true));
         ResponseMessageDispatcher.send(sender, sendMessage);
     }
 
@@ -66,8 +67,8 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
             photosQuantity = Integer.parseInt(keys.get("quantity"));
         }
 
-        if (data.contains(Commands.CONSTRUCT_ONLY_PHOTOS + "_numpad")) {
-            photosQuantity = Integer.parseInt(data.replace(Commands.CONSTRUCT_ONLY_PHOTOS + "_numpad", ""));
+        if (data.contains(COMMAND_NAME + "_numpad")) {
+            photosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "_numpad", ""));
         }
 
         if (data.contains(ConstructOnlyPhotosCommandCallback.SEND_CALLBACK.toCallbackString())) {
@@ -75,9 +76,9 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         }
 
         int groupId = 0;
-        if (data.contains(Commands.CONSTRUCT_ONLY_PHOTOS + "_group_id")) {
+        if (data.contains(COMMAND_NAME + "_group_id")) {
             handleCallback = ConstructOnlyPhotosCommandCallback.GROUP_CALLBACK;
-            groupId = Integer.parseInt(data.replace(Commands.CONSTRUCT_ONLY_PHOTOS + "_group_id", ""));
+            groupId = Integer.parseInt(data.replace(COMMAND_NAME + "_group_id", ""));
         }
 
         switch (handleCallback) {
@@ -101,7 +102,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         response.setMessageId(callbackQuery.getMessage().getMessageId());
         response.setText("Change quantity: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, 10);
-        response.setReplyMarkup(numpad.build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
+        response.setReplyMarkup(numpad.build(COMMAND_NAME, true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -109,7 +110,7 @@ public class ConstructOnlyPhotosCommand extends BotCommand implements CallbackQu
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setReplyMarkup(new HostGroupKeyboard().build(Commands.CONSTRUCT_ONLY_PHOTOS, true));
+        response.setReplyMarkup(new HostGroupKeyboard().build(COMMAND_NAME, true));
         ResponseMessageDispatcher.send(sender, response);
     }
 

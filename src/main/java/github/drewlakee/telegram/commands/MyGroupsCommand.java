@@ -4,7 +4,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
-import github.drewlakee.telegram.commands.statics.Commands;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.vk.domain.groups.VkCustomGroup;
@@ -13,8 +12,10 @@ import github.drewlakee.vk.singletons.VkGroupPool;
 
 public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
+    public static final String COMMAND_NAME = "/myGroups";
+
     public MyGroupsCommand() {
-        super(Commands.MY_GROUPS);
+        super(COMMAND_NAME);
     }
 
     @Override

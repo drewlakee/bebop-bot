@@ -1,5 +1,7 @@
 package github.drewlakee.telegram;
 
+import github.drewlakee.telegram.commands.ConstructOnlyPhotosCommand;
+import github.drewlakee.telegram.commands.MyGroupsCommand;
 import github.drewlakee.telegram.commands.callbacks.GlobalCallback;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import org.slf4j.Logger;
@@ -11,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import github.drewlakee.telegram.commands.singletons.CommandsPool;
-import github.drewlakee.telegram.commands.statics.Commands;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 public class HandlerBot extends TelegramLongPollingBot {
@@ -45,19 +46,19 @@ public class HandlerBot extends TelegramLongPollingBot {
         String handleCommand = message.getText();
 
         switch (handleCommand) {
-            case Commands.CONSTRUCT_ONLY_PHOTOS:
-                CommandsPool.handleCommand(Commands.CONSTRUCT_ONLY_PHOTOS, this, message);
+            case ConstructOnlyPhotosCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(ConstructOnlyPhotosCommand.COMMAND_NAME, this, message);
                 break;
-            case Commands.MY_GROUPS:
-                CommandsPool.handleCommand(Commands.MY_GROUPS, this, message);
+            case MyGroupsCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(MyGroupsCommand.COMMAND_NAME, this, message);
         }
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String handleCommand = callbackQuery.getData();
 
-        if (handleCommand.startsWith(Commands.CONSTRUCT_ONLY_PHOTOS)) {
-            handleCommand = Commands.CONSTRUCT_ONLY_PHOTOS;
+        if (handleCommand.startsWith(ConstructOnlyPhotosCommand.COMMAND_NAME)) {
+            handleCommand = ConstructOnlyPhotosCommand.COMMAND_NAME;
         }
 
         if (handleCommand.equals(GlobalCallback.DELETE_MESSAGE.name())) {
@@ -65,8 +66,8 @@ public class HandlerBot extends TelegramLongPollingBot {
         }
 
         switch (handleCommand) {
-            case Commands.CONSTRUCT_ONLY_PHOTOS:
-                CommandsPool.handleCommand(Commands.CONSTRUCT_ONLY_PHOTOS, this, callbackQuery);
+            case ConstructOnlyPhotosCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(ConstructOnlyPhotosCommand.COMMAND_NAME, this, callbackQuery);
                 break;
             case "delete_message":
                 deleteMessage(this, callbackQuery);

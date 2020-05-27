@@ -6,8 +6,6 @@ import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.telegram.commands.keyboards.InlineKeyboardBuilder;
-import github.drewlakee.telegram.commands.statics.Commands;
-import github.drewlakee.telegram.commands.statics.MessageBodyKeys;
 import github.drewlakee.telegram.utils.MessageKeysParser;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.vk.domain.groups.VkCustomGroup;
@@ -35,7 +33,7 @@ import java.util.Map;
 public class ConstructCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
     public ConstructCommand() {
-        super(Commands.CONSTRUCT_ONLY_PHOTOS);
+        super(ConstructOnlyPhotosCommand.COMMAND_NAME);
     }
 
     private static final String ONLY_PHOTOS = "only photos";
@@ -44,7 +42,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         ConstructCommandCallback callback;
 
-        if (callbackQuery.getData().matches("^" + Commands.CONSTRUCT_ONLY_PHOTOS + "_group_id-[0-9]*")) {
+        if (callbackQuery.getData().matches("^" + "TEST" + "_group_id-[0-9]*")) {
             callback = ConstructCommandCallback.GROUP_CALLBACK;
         }
 
@@ -74,7 +72,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         EditMessageText onlyPhotoMessageWithNumpad = new EditMessageText();
         onlyPhotoMessageWithNumpad.setChatId(callbackQuery.getMessage().getChatId());
         onlyPhotoMessageWithNumpad.setMessageId(callbackQuery.getMessage().getMessageId());
-        String bodyText = MessageBodyKeys.MODE + ": " + ONLY_PHOTOS + "\n\nChoose photos quantity:";
+        String bodyText =  "mode: " + ONLY_PHOTOS + "\n\nChoose photos quantity:";
         onlyPhotoMessageWithNumpad.setText(bodyText);
         onlyPhotoMessageWithNumpad.setReplyMarkup(buildNumpad(10));
         ResponseMessageDispatcher.send(sender, onlyPhotoMessageWithNumpad);
@@ -92,8 +90,8 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
 
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
-            if (params[i].startsWith(MessageBodyKeys.PHOTO))
-                params[i] = MessageBodyKeys.PHOTO + ": " + randomPhoto.toAttachmentString();
+            if (params[i].startsWith("picture"))
+                params[i] = "picture: " + randomPhoto.toAttachmentString();
         newPhoto.setCaption(String.join("\n", params));
 
         changePhotoMessage.setMedia(newPhoto);
@@ -114,8 +112,8 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         VkCustomAudio randomAudio = (VkCustomAudio) audioService.find(1).get(0);
         String[] params = callbackQuery.getMessage().getCaption().split("\n");
         for (int i = 0; i < params.length; i++)
-            if (params[i].startsWith(MessageBodyKeys.AUDIO))
-                params[i] = MessageBodyKeys.AUDIO + ": "
+            if (params[i].startsWith("track"))
+                params[i] = "track: "
                         + randomAudio.toAttachmentString()
                         + " (" + randomAudio.toPrettyString() + ")";
 
@@ -128,15 +126,15 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
 
     private void sendTelegramConstructedPost(AbsSender sender, CallbackQuery callbackQuery) {
         Map<String, String> messageBodyParams = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getCaption());
-        int groupId = Integer.parseInt(messageBodyParams.get(MessageBodyKeys.GROUP));
+        int groupId = Integer.parseInt(messageBodyParams.get("group"));
         VkCustomGroup vkGroup = VkGroupPool.getConcreteGroups(VkGroupObjective.HOST).stream()
                 .filter(group -> group.getId() == groupId)
                 .findFirst()
                 .get();
 
         List<String> attachments = List.of(
-                messageBodyParams.get(MessageBodyKeys.PHOTO),
-                messageBodyParams.get(MessageBodyKeys.AUDIO)
+                messageBodyParams.get("picture"),
+                messageBodyParams.get("track")
         );
 
         sendVkPost(sender, callbackQuery, vkGroup, attachments);
@@ -200,7 +198,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
 
         for (VkCustomGroup group : VkGroupPool.getConcreteGroups(VkGroupObjective.HOST))
-            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData(Commands.CONSTRUCT_ONLY_PHOTOS + "_group_id" + group.getId()))
+            keyboardBuilder.addButton(new InlineKeyboardButton().setText(group.getName()).setCallbackData("TEST" + "_group_id" + group.getId()))
                     .nextLine();
         keyboardBuilder.addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(GlobalCallback.DELETE_MESSAGE.name()));
 
@@ -225,7 +223,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         int count = 1;
         for (int rows = 0; rows < maxRows; rows++) {
             for (int columns = 0; count <= quantity && columns < maxColumns; columns++) {
-                keyboard.addButton(new InlineKeyboardButton().setText(String.valueOf(count)).setCallbackData(Commands.CONSTRUCT_ONLY_PHOTOS + "_numpad" + count));
+                keyboard.addButton(new InlineKeyboardButton().setText(String.valueOf(count)).setCallbackData("TEST" + "_numpad" + count));
                 count++;
             }
             keyboard.nextLine();
