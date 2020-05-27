@@ -27,7 +27,7 @@ public class NumpadKeyboardBuilder {
 
     public InlineKeyboardMarkup build(String commandCallback, boolean withCancel) {
         int maxRows = (numsQuantity % this.maxColumns == 0) ? numsQuantity / this.maxColumns : numsQuantity / this.maxColumns + 1;
-        int count = 1;
+        int count = 0;
         for (int rows = 0; rows < maxRows; rows++) {
             for (int columns = 0; count <= numsQuantity && columns < this.maxColumns; columns++) {
                 this.keyboardMarkup.addButton(new InlineKeyboardButton().setText(String.valueOf(count)).setCallbackData(commandCallback + "_numpad" + count));
