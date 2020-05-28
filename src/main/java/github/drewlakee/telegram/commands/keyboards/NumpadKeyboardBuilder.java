@@ -8,16 +8,16 @@ public class NumpadKeyboardBuilder {
 
     private final InlineKeyboardBuilder keyboardMarkup;
     private final int maxColumns;
-    private final int numsQuantity;
+    private final int toNumber;
 
-    public NumpadKeyboardBuilder(int maxColumns, int numsQuantity) {
+    public NumpadKeyboardBuilder(int maxColumns, int toNumber) {
         this.keyboardMarkup = new InlineKeyboardBuilder();
 
-        if (maxColumns > 10 || maxColumns < 1 || numsQuantity < 1) {
+        if (maxColumns > 10 || maxColumns < 1 || toNumber < 0) {
             throw new IllegalArgumentException("Incorrect arguments for numpad keyboard");
         } else {
             this.maxColumns = maxColumns;
-            this.numsQuantity = numsQuantity;
+            this.toNumber = toNumber;
         }
     }
 
@@ -26,15 +26,15 @@ public class NumpadKeyboardBuilder {
     }
 
     public InlineKeyboardMarkup build(String commandCallback, boolean withCancel) {
-        int maxRows = (numsQuantity % this.maxColumns == 0) ? numsQuantity / this.maxColumns : numsQuantity / this.maxColumns + 1;
+        int maxRows = (toNumber % this.maxColumns == 0) ? toNumber / this.maxColumns : toNumber / this.maxColumns + 1;
         int count = 0;
-        for (int rows = 0; rows < maxRows; rows++) {
-            for (int columns = 0; count <= numsQuantity && columns < this.maxColumns; columns++) {
+        for (int rows = 0; rows <= maxRows; rows++) {
+            for (int columns = 0; count <= toNumber && columns < this.maxColumns; columns++) {
                 this.keyboardMarkup.addButton(new InlineKeyboardButton().setText(String.valueOf(count)).setCallbackData(commandCallback + "_numpad" + count));
                 count++;
             }
 
-            if (rows < maxRows - 1) {
+            if (rows < maxRows) {
                 this.keyboardMarkup.nextLine();
             }
         }
