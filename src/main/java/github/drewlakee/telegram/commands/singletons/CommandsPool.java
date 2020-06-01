@@ -9,6 +9,7 @@ import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -43,8 +44,8 @@ public class CommandsPool {
         }
     }
 
-    public static Set<String> getRegisteredCommandsSet() {
-        return pool.keySet();
+    public static Collection<BotCommand> getCommandsSet() {
+        return pool.values();
     }
 
     private static boolean isEmpty() {

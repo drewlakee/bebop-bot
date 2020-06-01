@@ -15,7 +15,7 @@ public class TelegramBot {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
-    private static final String TELEGRAM_CONFIG_ADD = "[TELEGRAM BOT] TELEGRAM CONFIG: ADD ";
+    private static final String TELEGRAM_CONFIG_ADD = "[TELEGRAM BOT] TELEGRAM CONFIG: ";
 
     public static void run() {
         ApiContextInitializer.init();
@@ -25,7 +25,7 @@ public class TelegramBot {
 
         CommandsPool.register(new MyGroupsCommand());
         CommandsPool.register(new ConstructCommand());
-        log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getRegisteredCommandsSet());
+        log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getCommandsSet());
 
         try {
             botsApi.registerBot(bot);

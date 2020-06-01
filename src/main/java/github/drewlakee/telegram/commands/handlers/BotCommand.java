@@ -11,4 +11,11 @@ public abstract class BotCommand {
     public String getCommandName() {
         return commandName;
     }
+
+    @Override
+    public String toString() {
+        return "BotCommand{" +
+                "commandName='" + commandName + '\'' +
+                '}';
+    }
 }
