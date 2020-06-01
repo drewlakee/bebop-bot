@@ -21,12 +21,9 @@ public class NumpadKeyboardBuilderTest {
         InlineKeyboardMarkup keyboard = numpad.build("test");
         List<List<InlineKeyboardButton>> rows = keyboard.getKeyboard();
 
-        // check rows
-        int checkedRowsCount = (nums % columns == 0) ? nums / columns : nums / columns + 1;
-        checkedRowsCount += 1; // start from zero
-        Assert.assertEquals(checkedRowsCount, rows.size());
+        int correctRowsCount = nums / columns + 1;
+        Assert.assertEquals(correctRowsCount, rows.size());
 
-        // check values in columns
         for (List<InlineKeyboardButton> line : rows) {
             Assert.assertTrue(line.size() <= columns);
         }
