@@ -3,6 +3,8 @@ package github.drewlakee.telegram;
 import com.google.common.collect.ComparisonChain;
 import github.drewlakee.telegram.commands.ConstructCommand;
 import github.drewlakee.telegram.commands.MyGroupsCommand;
+import github.drewlakee.telegram.commands.SomePicCommand;
+import github.drewlakee.telegram.commands.SomeTrackCommand;
 import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,8 @@ public class TelegramBot {
 
         CommandsPool.register(new MyGroupsCommand());
         CommandsPool.register(new ConstructCommand());
+        CommandsPool.register(new SomePicCommand());
+        CommandsPool.register(new SomeTrackCommand());
         log.info("[TELEGRAM BOT] Commands registered pool: {}", CommandsPool.getCommandsSet());
 
         try {
