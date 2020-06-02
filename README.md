@@ -9,11 +9,19 @@
 
 Команда для формирования поста с медиа-контентом из групп типа *PHOTO* и *AUDIO*
 
+- /someTrack
+
+Команда возвращает случайный трек из групп типа *AUDIO*
+
+- /somePic
+
+Команда возвращает случайную фотографию из групп типа *PHOTO*
+
 - /myGroups
 
 Команда вывода текущих групп типа *HOST*
 
-###### Список групп формируется в файле [groups](src/main/resources/groups), модель группы - [VkCustomGroup](src/main/java/github/drewlakee/vk/domain/groups/VkCustomGroup.java).      
+###### Список групп по умолчанию формируется в файле [groups](src/main/resources/groups), модель группы - [VkCustomGroup](src/main/java/github/drewlakee/vk/domain/groups/VkCustomGroup.java).      
 
 #### Пользовательские переменные окружения:
 
