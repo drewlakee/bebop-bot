@@ -13,7 +13,7 @@ import github.drewlakee.vk.singletons.VkGroupPool;
 
 public class MyGroupsCommand extends BotCommand implements MessageHandler {
 
-    public static final String COMMAND_NAME = "/myGroups";
+    public static final String COMMAND_NAME = "/my_groups";
 
     public MyGroupsCommand() {
         super(COMMAND_NAME);

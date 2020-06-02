@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 public class SomePicCommand extends BotCommand implements MessageHandler {
 
-    public static final String COMMAND_NAME = "/somePic";
+    public static final String COMMAND_NAME = "/some_pic";
 
     public SomePicCommand() {
         super(COMMAND_NAME);
