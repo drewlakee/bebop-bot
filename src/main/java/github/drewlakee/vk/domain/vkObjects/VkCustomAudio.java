@@ -9,10 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class VkCustomAudio extends Audio implements VkAttachment {
-
-    /**
-     * Owner ID
-     */
+    
     @SerializedName("owner_id")
     @Required
     private Integer ownerId;
