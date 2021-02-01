@@ -11,17 +11,12 @@ repositories {
 }
 
 dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.4.2'
+
     compile 'com.vk.api:sdk:1.0.6'
     compile 'org.telegram:telegrambots:4.6'
     compile 'com.google.guava:guava:28.2-jre'
 
-    compile 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
     testCompile 'junit:junit:4.13'
-}
-
-task stage(type: Copy, dependsOn: build) {
-    from sourceSets.main.runtimeClasspath
-    into 'build/staging'
 }

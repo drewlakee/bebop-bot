@@ -4,30 +4,36 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
+import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import github.drewlakee.vk.api.VkApiCredentials;
-import github.drewlakee.vk.api.VkApiDefaultCredentials;
-import github.drewlakee.vk.domain.groups.VkCustomGroup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class VkWallPostService {
 
     private static final Logger log = LoggerFactory.getLogger(VkWallPostService.class);
 
-    public boolean makePost(VkCustomGroup group, List<String> attachments) {
-        VkApiClient api = new VkApiClient(new HttpTransportClient());
-        VkApiCredentials credentials = new VkApiDefaultCredentials();
-        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
+    private final VkApiClient api;
+    private final UserActor user;
+
+    @Autowired
+    public VkWallPostService(VkApiClient api, UserActor user) {
+        this.api = api;
+        this.user = user;
+    }
+
+    public boolean makePost(VkGroupFullDecorator group, List<String> attachments) {
         boolean isOk = true;
 
         try {
             log.info("[VK] Request: groupId: {}, attachments: {}", group, attachments);
             api.wall()
-                    .post(userActor)
-                    .ownerId(group.getId())
+                    .post(user)
+                    .ownerId(group.getGroupFull().getId() * -1)
                     .attachments(attachments)
                     .execute();
         } catch (ClientException | ApiException e) {

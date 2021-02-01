@@ -6,25 +6,40 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
+import github.drewlakee.vk.domain.attachments.VkAttachment;
+import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
+import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupObjective;
+import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
+import github.drewlakee.vk.services.VkMetaInformationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import github.drewlakee.vk.api.VkApiCredentials;
-import github.drewlakee.vk.api.VkApiDefaultCredentials;
-import github.drewlakee.vk.domain.groups.VkCustomGroup;
-import github.drewlakee.vk.domain.groups.VkGroupObjective;
-import github.drewlakee.vk.domain.vkObjects.VkAttachment;
-import github.drewlakee.vk.domain.vkObjects.VkCustomAudio;
-import github.drewlakee.vk.services.VkMetaInformationService;
-import github.drewlakee.vk.singletons.VkGroupPool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Service
 public class VkRandomAudioContent implements VkRandomContent {
 
     private static final Logger log = LoggerFactory.getLogger(VkRandomAudioContent.class);
+
+    private final VkGroupsCustodian custodian;
+
+    private final VkApiClient api;
+    private final UserActor user;
+
+    private VkMetaInformationService metaInformationService;
+
+    @Autowired
+    public VkRandomAudioContent(VkGroupsCustodian custodian, VkApiClient api, UserActor user, VkMetaInformationService metaInformationService) {
+        this.custodian = custodian;
+        this.api = api;
+        this.user = user;
+        this.metaInformationService = metaInformationService;
+    }
 
     @Override
     public List<VkAttachment> find(int quantity) {
@@ -32,12 +47,12 @@ public class VkRandomAudioContent implements VkRandomContent {
         int requestLimit = (quantity == 1) ? 5 : quantity;
         int requestCount = 0;
         List<JsonObject> jsonAudioAttachments = new ArrayList<>();
-        List<VkCustomGroup> audioGroups = VkGroupPool.getConcreteGroups(VkGroupObjective.AUDIO);
+        List<VkGroupFullDecorator> audioGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.AUDIO);
 
         do {
             int randomIndex = random.nextInt(audioGroups.size());
-            int randomGroupId = audioGroups.get(randomIndex).getId();
-            int randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
+            int randomGroupId = audioGroups.get(randomIndex).getGroupFull().getId();
+            int randomOffset = random.nextInt(metaInformationService.getGroupPostsCount(randomGroupId));
 
             JsonElement jsonWallPostsAttachments = getJsonWallPostAttachments(quantity, randomOffset, randomGroupId);
             jsonAudioAttachments.addAll(getJsonAudioAttachments(jsonWallPostsAttachments));
@@ -55,7 +70,7 @@ public class VkRandomAudioContent implements VkRandomContent {
         List<VkAttachment> responseAudios = new ArrayList<>();
         if (requestCount < requestLimit) {
             for (int i = 0; i < quantity; i++) {
-                VkCustomAudio audio = new VkCustomAudio();
+                VkAudioAttachment audio = new VkAudioAttachment();
                 audio.setArtist(jsonAudioAttachments.get(i).get("artist").getAsString());
                 audio.setTitle(jsonAudioAttachments.get(i).get("title").getAsString());
                 audio.setOwnerId(jsonAudioAttachments.get(i).get("owner_id").getAsInt());
@@ -69,17 +84,14 @@ public class VkRandomAudioContent implements VkRandomContent {
         return responseAudios;
     }
 
-    private static JsonElement getJsonWallPostAttachments(int quantity, int offset, int ownerId) {
-        VkApiClient api = new VkApiClient(new HttpTransportClient());
-        VkApiCredentials credentials = new VkApiDefaultCredentials();
-        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
-        String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", quantity, offset, ownerId);
+    private JsonElement getJsonWallPostAttachments(int quantity, int offset, int ownerId) {
+        String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", quantity, offset, ownerId * -1);
 
         JsonElement postAttachments = new JsonObject();
         try {
             log.info("[VK] Request: " + request);
             postAttachments = api.execute()
-                    .code(userActor, request)
+                    .code(user, request)
                     .execute();
             log.info("[VK] Response: request - {}, response - {}", request, postAttachments);
         } catch (ClientException | ApiException e) {

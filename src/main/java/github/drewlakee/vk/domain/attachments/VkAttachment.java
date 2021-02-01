@@ -1,4 +1,4 @@
-package github.drewlakee.vk.domain.vkObjects;
+package github.drewlakee.vk.domain.attachments;
 
 public interface VkAttachment {
 

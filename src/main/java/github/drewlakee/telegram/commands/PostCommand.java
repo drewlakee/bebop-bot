@@ -1,7 +1,7 @@
 package github.drewlakee.telegram.commands;
 
-import github.drewlakee.telegram.commands.callbacks.ConstructCallback;
 import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
+import github.drewlakee.telegram.commands.callbacks.PostCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
@@ -10,16 +10,19 @@ import github.drewlakee.telegram.commands.keyboards.InlineKeyboardBuilder;
 import github.drewlakee.telegram.commands.keyboards.NumpadKeyboardBuilder;
 import github.drewlakee.telegram.utils.MessageKeysParser;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
-import github.drewlakee.vk.domain.groups.VkCustomGroup;
-import github.drewlakee.vk.domain.groups.VkGroupObjective;
-import github.drewlakee.vk.domain.vkObjects.VkAttachment;
-import github.drewlakee.vk.domain.vkObjects.VkCustomAudio;
-import github.drewlakee.vk.domain.vkObjects.VkCustomPhoto;
+import github.drewlakee.vk.domain.attachments.VkAttachment;
+import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
+import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
+import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import github.drewlakee.vk.services.VkContentStrategyService;
 import github.drewlakee.vk.services.VkWallPostService;
 import github.drewlakee.vk.services.random.VkRandomAudioContent;
 import github.drewlakee.vk.services.random.VkRandomPhotoContent;
-import github.drewlakee.vk.singletons.VkGroupPool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
@@ -34,15 +37,29 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ConstructCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
+@Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class PostCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
-    public static final String COMMAND_NAME = "/construct";
+    public final VkGroupsCustodian custodian;
+    public final VkWallPostService vkWallPostService;
+    public final VkRandomAudioContent randomAudioContent;
+    public final VkRandomPhotoContent randomPhotoContent;
+
+    public static final String COMMAND_NAME = "/post";
     public static final int MAX_VK_ATTACHMENTS = 10;
 
-    public ConstructCommand() {
+    @Autowired
+    public PostCommand(VkGroupsCustodian custodian, VkWallPostService vkWallPostService,
+                       VkRandomAudioContent randomAudioContent, VkRandomPhotoContent randomPhotoContent) {
         super(COMMAND_NAME);
+        this.custodian = custodian;
+        this.vkWallPostService = vkWallPostService;
+        this.randomAudioContent = randomAudioContent;
+        this.randomPhotoContent = randomPhotoContent;
     }
 
     @Override
@@ -58,7 +75,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
     @Override
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
-        ConstructCallback handleCallback = ConstructCallback.CONSTRUCT_CALLBACK;
+        PostCallback handleCallback = PostCallback.CONSTRUCT_CALLBACK;
         int audiosQuantity = 0;
         int photosQuantity = 0;
 
@@ -66,7 +83,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
             if (data.contains("_first_call_")) {
                 photosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "_first_call_photo_numpad", ""));
                 if (photosQuantity < 10) {
-                    handleCallback = ConstructCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
+                    handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
                 }
             } else {
                 Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
@@ -81,33 +98,33 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
             audiosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "audio_numpad", ""));
         }
 
-        if (data.contains(ConstructCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(ConstructCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
-            handleCallback = ConstructCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
+        if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(ConstructCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
-            handleCallback = ConstructCallback.CHANGE_PHOTO_QUANTITY_CALLBACK;
+        if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(ConstructCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
-            handleCallback = ConstructCallback.SEND_CALLBACK;
+        if (data.contains(PostCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
+            handleCallback = PostCallback.SEND_CALLBACK;
         }
 
         int groupId = 0;
         if (data.contains(COMMAND_NAME + "_group_id")) {
-            handleCallback = ConstructCallback.GROUP_CALLBACK;
+            handleCallback = PostCallback.GROUP_CALLBACK;
             groupId = Integer.parseInt(data.replace(COMMAND_NAME + "_group_id", ""));
         }
 
@@ -138,13 +155,11 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         List<VkAttachment> attachments = new ArrayList<>();
 
         if (photosQuantity > 0) {
-            VkContentStrategyService photoService = new VkContentStrategyService(new VkRandomPhotoContent());
-            attachments.addAll(photoService.find(photosQuantity));
+            attachments.addAll(randomPhotoContent.find(photosQuantity));
         }
 
         if (audiosQuantity > 0) {
-            VkContentStrategyService audioService = new VkContentStrategyService(new VkRandomAudioContent());
-            attachments.addAll(audioService.find(audiosQuantity));
+            attachments.addAll(randomAudioContent.find(audiosQuantity));
         }
 
         response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity));
@@ -167,12 +182,12 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
 
         if (photosQuantity > 0) {
             List<VkAttachment> photos = attachments.stream()
-                    .filter(attach -> attach instanceof VkCustomPhoto)
+                    .filter(attach -> attach instanceof VkPhotoAttachment)
                     .collect(Collectors.toList());
 
             int count = 1;
             for (VkAttachment photo : photos) {
-                VkCustomPhoto vkCustomPhoto = (VkCustomPhoto) photo;
+                VkPhotoAttachment vkCustomPhoto = (VkPhotoAttachment) photo;
                 URL photoURL = vkCustomPhoto.getLargestSize().getUrl();
                 String vkAttachmentFormat = photo.toAttachmentString();
 
@@ -189,13 +204,13 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
 
         if (audiosQuantity > 0) {
             List<VkAttachment> audios = attachments.stream()
-                    .filter(attach -> attach instanceof VkCustomAudio)
+                    .filter(attach -> attach instanceof VkAudioAttachment)
                     .collect(Collectors.toList());
 
             int count = 1;
             for (VkAttachment audio : audios) {
-                VkCustomAudio vkCustomAudio = (VkCustomAudio) audio;
-                String prettyNameOfAudio = vkCustomAudio.toPrettyString();
+                VkAudioAttachment vkAudioAttachment = (VkAudioAttachment) audio;
+                String prettyNameOfAudio = vkAudioAttachment.toPrettyString();
                 String vkAttachmentFormat = audio.toAttachmentString();
 
                 text.append("audio_").append(count).append(": ");
@@ -242,25 +257,25 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
             vkAttachments.add(keys.get(key));
         }
 
-        VkCustomGroup vkGroup = VkGroupPool.getConcreteGroups(VkGroupObjective.HOST).stream()
-                .filter(group -> group.getId() == groupId)
-                .findFirst()
-                .orElse(VkCustomGroup.EMPTY_INSTANCE);
+        Optional<VkGroupFullDecorator> first = custodian.getGroupsWithEditableRights().stream().filter(group -> group.getGroupFull().getId() == groupId).findFirst();
 
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        VkWallPostService service = new VkWallPostService();
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
-        boolean isRequestSuccessful = service.makePost(vkGroup, vkAttachments);
+        boolean isRequestSuccessful = vkWallPostService.makePost(first.orElseThrow(), vkAttachments);
         if (isRequestSuccessful) {
-            keyboardBuilder.addButton(new InlineKeyboardButton()
-                    .setText("Post was send to " + vkGroup.getName() + " group!")
-                    .setUrl(vkGroup.getUrl()));
+            keyboardBuilder.addButton(
+                    new InlineKeyboardButton()
+                            .setText("Post was send to " + first.orElseThrow().getGroupFull().getName() + " group!")
+                            .setUrl("https://vk.com/" + first.orElseThrow().getGroupFull().getScreenName())
+            );
         } else {
             keyboardBuilder.addButton(new InlineKeyboardButton()
-                    .setText("Oops... something was broken on the way!"));
+                    .setText("Oops... something was broken on the way!")
+                    .setUrl("https://vk.com/%20error"));
         }
+
         response.setReplyMarkup(keyboardBuilder.build());
         ResponseMessageDispatcher.send(sender, response);
     }
@@ -269,7 +284,7 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setReplyMarkup(new HostGroupKeyboard().build(COMMAND_NAME, true));
+        response.setReplyMarkup(new HostGroupKeyboard(custodian).build(COMMAND_NAME, true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -277,18 +292,18 @@ public class ConstructCommand extends BotCommand implements CallbackQueryHandler
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton()
                     .setText("Change content set")
-                    .setCallbackData(ConstructCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
+                    .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Change audio quantity")
-                        .setCallbackData(ConstructCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .addButton(new InlineKeyboardButton()
                         .setText("Change photo quantity")
-                        .setCallbackData(ConstructCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Send")
-                        .setCallbackData(ConstructCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")

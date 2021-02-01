@@ -4,6 +4,5 @@ public enum VkGroupObjective {
 
     AUDIO,
     PHOTO,
-    HOST,
     EMPTY
 }
