@@ -1,6 +1,6 @@
 package github.drewlakee.vk.services.random;
 
-import github.drewlakee.vk.domain.vkObjects.VkAttachment;
+import github.drewlakee.vk.domain.attachments.VkAttachment;
 
 import java.util.List;
 

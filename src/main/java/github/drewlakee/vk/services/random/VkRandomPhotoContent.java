@@ -4,28 +4,43 @@ import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.wall.WallpostAttachment;
 import com.vk.api.sdk.objects.wall.WallpostFull;
+import github.drewlakee.vk.domain.attachments.VkAttachment;
+import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
+import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupObjective;
+import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
+import github.drewlakee.vk.services.VkMetaInformationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import github.drewlakee.vk.api.VkApiCredentials;
-import github.drewlakee.vk.api.VkApiDefaultCredentials;
-import github.drewlakee.vk.domain.groups.VkCustomGroup;
-import github.drewlakee.vk.domain.groups.VkGroupObjective;
-import github.drewlakee.vk.singletons.VkGroupPool;
-import github.drewlakee.vk.domain.vkObjects.VkAttachment;
-import github.drewlakee.vk.domain.vkObjects.VkCustomPhoto;
-import github.drewlakee.vk.services.VkMetaInformationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Service
 public class VkRandomPhotoContent implements VkRandomContent {
 
     private static final Logger log = LoggerFactory.getLogger(VkRandomPhotoContent.class);
+
+    private final VkGroupsCustodian custodian;
+
+    private final VkApiClient api;
+    private final UserActor user;
+
+    private VkMetaInformationService metaInformationService;
+
+    @Autowired
+    public VkRandomPhotoContent(VkGroupsCustodian custodian, VkApiClient api, UserActor user, VkMetaInformationService metaInformationService) {
+        this.custodian = custodian;
+        this.api = api;
+        this.user = user;
+        this.metaInformationService = metaInformationService;
+    }
 
     @Override
     public List<VkAttachment> find(int quantity) {
@@ -34,14 +49,14 @@ public class VkRandomPhotoContent implements VkRandomContent {
         int requestCount = 0;
         List<WallpostFull> wallPosts;
         List<Photo> photoAttachments = new ArrayList<>();
-        List<VkCustomGroup> photoGroups = VkGroupPool.getConcreteGroups(VkGroupObjective.PHOTO);
+        List<VkGroupFullDecorator> photoGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.PHOTO);
 
         do {
             int randomIndex = random.nextInt(photoGroups.size());
-            int randomGroupId = photoGroups.get(randomIndex).getId();
-            int randomOffset = random.nextInt(VkMetaInformationService.getGroupPostsCount(randomGroupId));
+            int randomGroupId = photoGroups.get(randomIndex).getGroupFull().getId();
+            int randomOffset = random.nextInt(metaInformationService.getGroupPostsCount(randomGroupId));
 
-            wallPosts = getWallPosts(quantity, randomOffset, randomGroupId);
+            wallPosts = getWallPosts(quantity, randomOffset, randomGroupId * -1);
             photoAttachments.addAll(getPhotoAttachments(wallPosts));
 
             if (requestCount > requestLimit) {
@@ -57,7 +72,7 @@ public class VkRandomPhotoContent implements VkRandomContent {
         List<VkAttachment> photosResponse = new ArrayList<>();
         if (requestCount < requestLimit || photoAttachments.size() >= quantity) {
             for (int i = 0; i < quantity; i++) {
-                VkCustomPhoto photo = new VkCustomPhoto();
+                VkPhotoAttachment photo = new VkPhotoAttachment();
                 photo.setId(photoAttachments.get(i).getId());
                 photo.setOwnerId(photoAttachments.get(i).getOwnerId());
                 photo.setSizes(photoAttachments.get(i).getSizes());
@@ -68,16 +83,12 @@ public class VkRandomPhotoContent implements VkRandomContent {
         return photosResponse;
     }
 
-    private static List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
-        VkApiClient api = new VkApiClient(new HttpTransportClient());
-        VkApiCredentials credentials = new VkApiDefaultCredentials();
-        UserActor userActor = new UserActor(credentials.getUserId(), credentials.getUserToken());
-
+    private List<WallpostFull> getWallPosts(int postsCount, int offset, int ownerId) {
         List<WallpostFull> wallPosts = new ArrayList<>();
         try {
             log.info("[VK] Request API: count: {}, offset: {}, ownerId: {}", postsCount, offset, ownerId);
             wallPosts = api.wall()
-                    .get(userActor)
+                    .get(user)
                     .count(postsCount)
                     .offset(offset)
                     .ownerId(ownerId)
@@ -92,7 +103,7 @@ public class VkRandomPhotoContent implements VkRandomContent {
         return wallPosts;
     }
 
-    private static List<Photo> getPhotoAttachments(List<WallpostFull> posts) {
+    private List<Photo> getPhotoAttachments(List<WallpostFull> posts) {
         List<Photo> postsWithPhoto = new ArrayList<>();
 
         // TODO: FIX BUG - NULL sometime happens

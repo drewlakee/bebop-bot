@@ -1,9 +1,8 @@
 package github.drewlakee.telegram.commands.keyboards;
 
 import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
-import github.drewlakee.vk.domain.groups.VkCustomGroup;
-import github.drewlakee.vk.domain.groups.VkGroupObjective;
-import github.drewlakee.vk.singletons.VkGroupPool;
+import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -11,10 +10,13 @@ import java.util.List;
 
 public class HostGroupKeyboard {
 
+    private final VkGroupsCustodian custodian;
+
     private final InlineKeyboardBuilder keyboard;
 
-    public HostGroupKeyboard() {
+    public HostGroupKeyboard(VkGroupsCustodian custodian) {
         this.keyboard = new InlineKeyboardBuilder();
+        this.custodian = custodian;
     }
 
     public InlineKeyboardMarkup build(String callbackCommand) {
@@ -22,12 +24,12 @@ public class HostGroupKeyboard {
     }
 
     public InlineKeyboardMarkup build(String callbackCommand, boolean withCancel) {
-        List<VkCustomGroup> hosts = VkGroupPool.getConcreteGroups(VkGroupObjective.HOST);
+        List<VkGroupFullDecorator> groupsWithEditableRights = custodian.getGroupsWithEditableRights();
 
-        for (VkCustomGroup host : hosts) {
+        for (VkGroupFullDecorator editableGroup : groupsWithEditableRights) {
             this.keyboard.addButton(new InlineKeyboardButton()
-                    .setText(host.getName())
-                    .setCallbackData(callbackCommand + "_group_id" + host.getId()))
+                    .setText(editableGroup.getGroupFull().getName())
+                    .setCallbackData(callbackCommand + "_group_id" + editableGroup.getGroupFull().getId()))
                     .nextLine();
         }
 

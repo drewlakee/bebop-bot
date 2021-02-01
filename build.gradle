@@ -1,27 +1,29 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '2.4.2'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_14
+    targetCompatibility = JavaVersion.VERSION_14
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    compile 'com.vk.api:sdk:1.0.6'
-    compile 'org.telegram:telegrambots:4.6'
-    compile 'com.google.guava:guava:28.2-jre'
-
-    compile 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
-
-    testCompile 'junit:junit:4.13'
+bootJar {
+    baseName("bot-app")
+    manifest.attributes("Start-Class" : "github.drewlakee.Application")
 }
 
-task stage(type: Copy, dependsOn: build) {
-    from sourceSets.main.runtimeClasspath
-    into 'build/staging'
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter:2.4.2')
+    compile('com.vk.api:sdk:1.0.6') {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+    compile('org.telegram:telegrambots:4.6')
+    compile('com.google.guava:guava:28.2-jre')
+
+    testCompile('junit:junit:4.13')
 }

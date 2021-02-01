@@ -1,27 +1,21 @@
 package github.drewlakee.telegram;
 
-import github.drewlakee.telegram.commands.ConstructCommand;
-import github.drewlakee.telegram.commands.MyGroupsCommand;
-import github.drewlakee.telegram.commands.SomePicCommand;
-import github.drewlakee.telegram.commands.SomeTrackCommand;
+import github.drewlakee.telegram.commands.PostCommand;
+import github.drewlakee.telegram.commands.GroupsCommand;
 import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
+import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-public class HandlerBot extends TelegramLongPollingBot {
+public class ContentDeliveryHandler extends TelegramLongPollingBot {
 
-    private static final Logger log = LoggerFactory.getLogger(HandlerBot.class);
-
-    public HandlerBot(DefaultBotOptions options) {
+    public ContentDeliveryHandler(DefaultBotOptions options) {
         super(options);
     }
 
@@ -32,14 +26,10 @@ public class HandlerBot extends TelegramLongPollingBot {
 
     private void handleUpdate(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            log.info("[TELEGRAM BOT] User [{}] request: {}", update.getMessage().getFrom().getUserName(),
-                    "[message text] " + update.getMessage().getText());
-
             handleReceivedMessage(update.getMessage());
-        } else if (update.hasCallbackQuery()) {
-            log.info("[TELEGRAM BOT] User [{}] request: {}", update.getCallbackQuery().getFrom().getUserName(),
-                    "[callback data] " + update.getCallbackQuery().getData());
+        }
 
+        if (update.hasCallbackQuery()) {
             handleReceivedCallbackQuery(update.getCallbackQuery());
         }
     }
@@ -48,25 +38,19 @@ public class HandlerBot extends TelegramLongPollingBot {
         String handleCommand = message.getText();
 
         switch (handleCommand) {
-            case ConstructCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, message);
+            case PostCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(PostCommand.COMMAND_NAME, this, message);
                 break;
-            case SomePicCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(SomePicCommand.COMMAND_NAME, this, message);
-                break;
-            case SomeTrackCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(SomeTrackCommand.COMMAND_NAME, this, message);
-                break;
-            case MyGroupsCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(MyGroupsCommand.COMMAND_NAME, this, message);
+            case GroupsCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(GroupsCommand.COMMAND_NAME, this, message);
         }
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
         String handleCommand = callbackQuery.getData();
 
-        if (handleCommand.startsWith(ConstructCommand.COMMAND_NAME)) {
-            handleCommand = ConstructCommand.COMMAND_NAME;
+        if (handleCommand.startsWith(PostCommand.COMMAND_NAME)) {
+            handleCommand = PostCommand.COMMAND_NAME;
         }
 
         if (handleCommand.equals(HandlerBotCallback.DELETE_MESSAGE.name())) {
@@ -74,8 +58,8 @@ public class HandlerBot extends TelegramLongPollingBot {
         }
 
         switch (handleCommand) {
-            case ConstructCommand.COMMAND_NAME:
-                CommandsPool.handleCommand(ConstructCommand.COMMAND_NAME, this, callbackQuery);
+            case PostCommand.COMMAND_NAME:
+                CommandsPool.handleCommand(PostCommand.COMMAND_NAME, this, callbackQuery);
                 break;
             case "delete_message":
                 deleteMessage(this, callbackQuery);

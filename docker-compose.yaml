@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+
+  bot-content-delivery:
+    container_name: bot-content-delivery
+    image: bot-content-delivery:1.0.0
+    build: .
+    environment:
+      - bot_username=<bot_username>
+      - bot_token=<bot_token>
+      - vk_user_id=<vk_user_id>
+      - vk_token=<vk_token>
+      - vk_audio_groups_ids=<vk_audio_groups_ids>
+      - vk_photo_groups_ids=<vk_photo_groups_ids>
+      #- bot_threads=<count>
+      #- bot_proxy_type=<HTTP|SOCKS4|SOCKS5>
+      #- bot_proxy_host=<host>
+      #- bot_proxy_port=<port>
+

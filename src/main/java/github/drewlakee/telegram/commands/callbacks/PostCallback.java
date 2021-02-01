@@ -1,6 +1,6 @@
 package github.drewlakee.telegram.commands.callbacks;
 
-public enum ConstructCallback {
+public enum PostCallback {
 
     CHANGE_SET_CALLBACK,
     CHANGE_AUDIO_QUANTITY_CALLBACK,
