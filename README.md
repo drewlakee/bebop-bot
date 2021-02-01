@@ -2,6 +2,7 @@
 
 1. [Доступные команды](#доступные-команды) :joystick:
 2. [Конфигурация](#конфигурация) :gear:
+3. [Развертывание](#развертывание) :package:
 
 ### Доступные команды
 
@@ -31,3 +32,32 @@ bot_threads             | Количество потоков, которые б
 bot_proxy_type          | Протоколы для прокси. Доступные: HTTP, SOCKS4, SOCKS5. Подробнее в [документации TelegramBots](https://github.com/rubenlagus/TelegramBots/wiki/Getting-Started).  |
 bot_proxy_host          | IPv4 адрес хост-сервера  |
 bot_proxy_port          | Порт хост-сервера  |
+
+### Развертывание
+
+1. Клонировать проект
+
+```
+git@github.com:drewlakee/content-delivery-bot.git
+```
+
+2. Сконфигурировать необходимые параметры в файле [docker-compose.yaml](docker-compose.yaml)
+
+```
+    ...
+  - bot_username=<bot_username>
+  - bot_token=<bot_token>
+  - vk_user_id=<vk_user_id>
+  - vk_token=<vk_token>
+  - vk_audio_groups_ids=<vk_audio_groups_ids>
+  - vk_photo_groups_ids=<vk_photo_groups_ids>
+    ...
+```
+
+3. Поднять docker-compose с необходимыми параметрами 
+
+```
+docker-compose up
+```
+
+Можно обращаться к своему поднятому боту :rocket:
