@@ -1,6 +1,5 @@
 package github.drewlakee.telegram.commands.keyboards;
 
-import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -43,7 +42,7 @@ public class NumpadKeyboardBuilder {
         if (withCancel) {
             this.keyboardMarkup
                     .nextLine()
-                    .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData(HandlerBotCallback.DELETE_MESSAGE.name()));
+                    .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData("delete_message"));
         }
 
         return this.keyboardMarkup.build();

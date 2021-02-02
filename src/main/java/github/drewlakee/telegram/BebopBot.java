@@ -2,8 +2,8 @@ package github.drewlakee.telegram;
 
 import github.drewlakee.telegram.commands.GroupsCommand;
 import github.drewlakee.telegram.commands.PostCommand;
-import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
-import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -12,10 +12,12 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class BebopBot extends TelegramLongPollingBot {
+
+    private final Logger log = LoggerFactory.getLogger(BebopBot.class);
 
     private final PostCommand postCommand;
     private final GroupsCommand groupsCommand;
@@ -29,10 +31,10 @@ public class BebopBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        exe.submit(() -> handleUpdate(update));
+        exe.submit(() -> handleReceivedEvent(update));
     }
 
-    private void handleUpdate(Update update) {
+    private void handleReceivedEvent(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             handleReceivedMessage(update.getMessage());
         }
@@ -58,21 +60,23 @@ public class BebopBot extends TelegramLongPollingBot {
             handleCommand = PostCommand.COMMAND_NAME;
         }
 
-        if (handleCommand.equals(HandlerBotCallback.DELETE_MESSAGE.name())) {
-           handleCommand = "delete_message";
-        }
-
         switch (handleCommand) {
             case PostCommand.COMMAND_NAME -> postCommand.handle(this, callbackQuery);
-            case "delete_message" -> deleteMessage(this, callbackQuery);
+            case "delete_message" -> deleteMessage(callbackQuery);
         }
     }
 
-    private void deleteMessage(AbsSender sender, CallbackQuery callbackQuery) {
+    private void deleteMessage(CallbackQuery callbackQuery) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
         deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
-        ResponseMessageDispatcher.send(sender, deleteMessage);
+
+        try {
+            execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            log.error(String.format("%s message error: can't execute", deleteMessage.toString()));
+            e.printStackTrace();
+        }
     }
 
     @Override

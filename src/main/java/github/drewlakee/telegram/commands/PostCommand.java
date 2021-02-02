@@ -1,6 +1,5 @@
 package github.drewlakee.telegram.commands;
 
-import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.telegram.commands.callbacks.PostCallback;
 import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
@@ -15,7 +14,6 @@ import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
 import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
-import github.drewlakee.vk.services.VkContentStrategyService;
 import github.drewlakee.vk.services.VkWallPostService;
 import github.drewlakee.vk.services.random.VkRandomAudioContent;
 import github.drewlakee.vk.services.random.VkRandomPhotoContent;
@@ -166,6 +164,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         if (audiosQuantity > 0 || photosQuantity > 0) {
             response.setReplyMarkup(buildConstructKeyboard());
         }
+
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -307,7 +306,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")
-                        .setCallbackData(HandlerBotCallback.DELETE_MESSAGE.name()))
+                        .setCallbackData("delete_message"))
                 .build();
     }
 }
