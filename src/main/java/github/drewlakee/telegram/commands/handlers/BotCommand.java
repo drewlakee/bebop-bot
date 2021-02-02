@@ -1,5 +1,7 @@
 package github.drewlakee.telegram.commands.handlers;
 
+import java.util.Objects;
+
 public abstract class BotCommand {
 
     protected final String commandName;
@@ -10,6 +12,19 @@ public abstract class BotCommand {
 
     public String getCommandName() {
         return commandName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BotCommand that = (BotCommand) o;
+        return Objects.equals(commandName, that.commandName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(commandName);
     }
 
     @Override
