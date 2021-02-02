@@ -1,20 +1,28 @@
 package github.drewlakee;
 
-import github.drewlakee.telegram.ContentDeliveryBot;
+import github.drewlakee.telegram.BebopBot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.telegram.telegrambots.ApiContextInitializer;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
+
 
 @SpringBootApplication
 public class Application {
 
-    private final ContentDeliveryBot contentDeliveryBot;
+    public static final Logger log = LoggerFactory.getLogger(Application.class);
+
+    private final BebopBot bebopBot;
 
     @Autowired
-    public Application(ContentDeliveryBot contentDeliveryBot) {
-        this.contentDeliveryBot = contentDeliveryBot;
+    public Application(BebopBot bebopBot) {
+        this.bebopBot = bebopBot;
     }
 
     public static void main(String[] args) {
@@ -23,6 +31,17 @@ public class Application {
 
     @PostConstruct
     public void telegramLaunch() {
-        contentDeliveryBot.run();
+        ApiContextInitializer.init();
+        TelegramBotsApi botsApi = new TelegramBotsApi();
+
+        bebopBot.setBotUsername(System.getenv("bot_username"));
+        bebopBot.setBotToken(System.getenv("bot_token"));
+
+        try {
+            botsApi.registerBot(bebopBot);
+        } catch (TelegramApiException e) {
+            log.error(String.format("%s: Bots launch fail", this.getClass().getSimpleName()));
+            e.printStackTrace();
+        }
     }
 }

@@ -1,6 +1,5 @@
 package github.drewlakee.telegram.commands.keyboards;
 
-import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -37,7 +36,7 @@ public class HostGroupKeyboard {
             this.keyboard
                     .addButton(new InlineKeyboardButton()
                             .setText("Cancel")
-                            .setCallbackData(HandlerBotCallback.DELETE_MESSAGE.name()));
+                            .setCallbackData("/deleteMessage"));
         }
 
         return this.keyboard.build();

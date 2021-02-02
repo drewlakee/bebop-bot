@@ -1,8 +1,6 @@
 package github.drewlakee.telegram.commands;
 
-import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.telegram.commands.callbacks.PostCallback;
-import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.telegram.commands.keyboards.HostGroupKeyboard;
@@ -15,13 +13,10 @@ import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
 import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
-import github.drewlakee.vk.services.VkContentStrategyService;
 import github.drewlakee.vk.services.VkWallPostService;
 import github.drewlakee.vk.services.random.VkRandomAudioContent;
 import github.drewlakee.vk.services.random.VkRandomPhotoContent;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -41,7 +36,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PostCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
     public final VkGroupsCustodian custodian;
@@ -49,13 +43,12 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     public final VkRandomAudioContent randomAudioContent;
     public final VkRandomPhotoContent randomPhotoContent;
 
-    public static final String COMMAND_NAME = "/post";
     public static final int MAX_VK_ATTACHMENTS = 10;
 
     @Autowired
     public PostCommand(VkGroupsCustodian custodian, VkWallPostService vkWallPostService,
                        VkRandomAudioContent randomAudioContent, VkRandomPhotoContent randomPhotoContent) {
-        super(COMMAND_NAME);
+        super("/post");
         this.custodian = custodian;
         this.vkWallPostService = vkWallPostService;
         this.randomAudioContent = randomAudioContent;
@@ -68,7 +61,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         response.setChatId(message.getChatId());
         response.setText("Choose quantity of photos: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS);
-        response.setReplyMarkup(numpad.build( COMMAND_NAME + "_first_call_photo", true));
+        response.setReplyMarkup(numpad.build( getCommandName() + "_first_call_photo", true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -81,51 +74,51 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
         if (data.contains("photo_numpad")) {
             if (data.contains("_first_call_")) {
-                photosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "_first_call_photo_numpad", ""));
+                photosQuantity = Integer.parseInt(data.replace(getCommandName() + "_first_call_photo_numpad", ""));
                 if (photosQuantity < 10) {
                     handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
                 }
             } else {
                 Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-                photosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "photo_numpad", ""));
+                photosQuantity = Integer.parseInt(data.replace(getCommandName() + "photo_numpad", ""));
                 audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
             }
         }
 
-        if (data.contains("audio_numpad")) {
+        if (data.contains("_audio_numpad")) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
-            audiosQuantity = Integer.parseInt(data.replace(COMMAND_NAME + "audio_numpad", ""));
+            audiosQuantity = Integer.parseInt(data.replace(getCommandName() + "_audio_numpad", ""));
         }
 
-        if (data.contains(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName()))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
             handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
             handleCallback = PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
             audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
         }
 
-        if (data.contains(PostCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME))) {
+        if (data.contains(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName()))) {
             handleCallback = PostCallback.SEND_CALLBACK;
         }
 
         int groupId = 0;
-        if (data.contains(COMMAND_NAME + "_group_id")) {
+        if (data.contains(getCommandName() + "_group_id")) {
             handleCallback = PostCallback.GROUP_CALLBACK;
-            groupId = Integer.parseInt(data.replace(COMMAND_NAME + "_group_id", ""));
+            groupId = Integer.parseInt(data.replace(getCommandName() + "_group_id", ""));
         }
 
         switch (handleCallback) {
@@ -166,6 +159,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         if (audiosQuantity > 0 || photosQuantity > 0) {
             response.setReplyMarkup(buildConstructKeyboard());
         }
+
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -229,7 +223,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         response.setMessageId(callbackQuery.getMessage().getMessageId());
         response.setText("photos_quantity: " + photoQuantity + "\n\nChoose audios quantity: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS - photoQuantity);
-        response.setReplyMarkup(numpad.build(COMMAND_NAME + "audio", true));
+        response.setReplyMarkup(numpad.build(getCommandName() + "_audio", true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -239,7 +233,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         response.setMessageId(callbackQuery.getMessage().getMessageId());
         response.setText("audios_quantity: " + audioQuantity + "\n\nChoose photos quantity: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS - audioQuantity);
-        response.setReplyMarkup(numpad.build(COMMAND_NAME + "photo", true));
+        response.setReplyMarkup(numpad.build(getCommandName() + "_photo", true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -284,7 +278,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setReplyMarkup(new HostGroupKeyboard(custodian).build(COMMAND_NAME, true));
+        response.setReplyMarkup(new HostGroupKeyboard(custodian).build(getCommandName(), true));
         ResponseMessageDispatcher.send(sender, response);
     }
 
@@ -292,22 +286,22 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton()
                     .setText("Change content set")
-                    .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(COMMAND_NAME)))
+                    .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Change audio quantity")
-                        .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
                 .addButton(new InlineKeyboardButton()
                         .setText("Change photo quantity")
-                        .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Send")
-                        .setCallbackData(PostCallback.SEND_CALLBACK.toCallbackString(COMMAND_NAME)))
+                        .setCallbackData(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Cancel")
-                        .setCallbackData(HandlerBotCallback.DELETE_MESSAGE.name()))
+                        .setCallbackData("/deleteMessage"))
                 .build();
     }
 }
