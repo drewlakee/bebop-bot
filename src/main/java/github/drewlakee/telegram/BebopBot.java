@@ -1,32 +1,37 @@
 package github.drewlakee.telegram;
 
-import github.drewlakee.telegram.commands.GroupsCommand;
-import github.drewlakee.telegram.commands.PostCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import github.drewlakee.telegram.commands.BotCommand;
+import github.drewlakee.telegram.commands.NotFoundCommand;
+import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
+import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.HashMap;
+import java.util.Objects;
 
 @Component
 public class BebopBot extends TelegramLongPollingBot {
 
-    private final Logger log = LoggerFactory.getLogger(BebopBot.class);
+    private String botUsername;
+    private String botToken;
 
-    private final PostCommand postCommand;
-    private final GroupsCommand groupsCommand;
+    private final HashMap<String, BotCommand> commands;
+    private final NotFoundCommand notFoundCommand;
 
     @Autowired
-    public BebopBot(DefaultBotOptions options, PostCommand postCommand, GroupsCommand groupsCommand) {
+    public BebopBot(DefaultBotOptions options,
+                    HashMap<String, BotCommand> commands,
+                    NotFoundCommand notFoundCommand) {
         super(options);
-        this.postCommand = postCommand;
-        this.groupsCommand = groupsCommand;
+
+        this.commands = commands;
+        this.notFoundCommand = notFoundCommand;
     }
 
     @Override
@@ -45,47 +50,45 @@ public class BebopBot extends TelegramLongPollingBot {
     }
 
     private void handleReceivedMessage(Message message) {
-        String handleCommand = message.getText();
-
-        switch (handleCommand) {
-            case PostCommand.COMMAND_NAME -> postCommand.handle(this, message);
-            case GroupsCommand.COMMAND_NAME -> groupsCommand.handle(this, message);
-        }
+        String command = message.getText();
+        BotCommand botCommand = commands.getOrDefault(command, notFoundCommand);
+        ((MessageHandler) botCommand).handle(this, message);
     }
 
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
-        String handleCommand = callbackQuery.getData();
-
-        if (handleCommand.startsWith(PostCommand.COMMAND_NAME)) {
-            handleCommand = PostCommand.COMMAND_NAME;
-        }
-
-        switch (handleCommand) {
-            case PostCommand.COMMAND_NAME -> postCommand.handle(this, callbackQuery);
-            case "delete_message" -> deleteMessage(callbackQuery);
-        }
+        String command = callbackQuery.getData().split("_")[0]; // '/someCommand_some_callback_name'
+        BotCommand botCommand = commands.getOrDefault(command, notFoundCommand);
+        ((CallbackQueryHandler) botCommand).handle(this, callbackQuery);
     }
 
-    private void deleteMessage(CallbackQuery callbackQuery) {
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(callbackQuery.getMessage().getChatId());
-        deleteMessage.setMessageId(callbackQuery.getMessage().getMessageId());
+    public void setBotUsername(String botUsername) {
+        this.botUsername = botUsername;
+    }
 
-        try {
-            execute(deleteMessage);
-        } catch (TelegramApiException e) {
-            log.error(String.format("%s message error: can't execute", deleteMessage.toString()));
-            e.printStackTrace();
-        }
+    public void setBotToken(String botToken) {
+        this.botToken = botToken;
     }
 
     @Override
     public String getBotUsername() {
-        return System.getenv("bot_username");
+        return botUsername;
     }
 
     @Override
     public String getBotToken() {
-        return System.getenv(("bot_token"));
+        return botToken;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BebopBot bebopBot = (BebopBot) o;
+        return Objects.equals(botUsername, bebopBot.botUsername) && Objects.equals(botToken, bebopBot.botToken) && Objects.equals(commands, bebopBot.commands) && Objects.equals(notFoundCommand, bebopBot.notFoundCommand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(botUsername, botToken, commands, notFoundCommand);
     }
 }

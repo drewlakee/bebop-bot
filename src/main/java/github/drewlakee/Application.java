@@ -34,10 +34,13 @@ public class Application {
         ApiContextInitializer.init();
         TelegramBotsApi botsApi = new TelegramBotsApi();
 
+        bebopBot.setBotUsername(System.getenv("bot_username"));
+        bebopBot.setBotToken(System.getenv("bot_token"));
+
         try {
             botsApi.registerBot(bebopBot);
         } catch (TelegramApiException e) {
-            log.error(String.format("%s: Bot launch fail", this.getClass().getSimpleName()));
+            log.error(String.format("%s: Bots launch fail", this.getClass().getSimpleName()));
             e.printStackTrace();
         }
     }

@@ -42,7 +42,7 @@ public class NumpadKeyboardBuilder {
         if (withCancel) {
             this.keyboardMarkup
                     .nextLine()
-                    .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData("delete_message"));
+                    .addButton(new InlineKeyboardButton().setText("Cancel").setCallbackData("/deleteMessage"));
         }
 
         return this.keyboardMarkup.build();

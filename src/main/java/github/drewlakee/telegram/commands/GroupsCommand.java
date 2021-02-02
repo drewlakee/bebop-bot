@@ -16,13 +16,11 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 @Component
 public class GroupsCommand extends BotCommand implements MessageHandler {
 
-    public static final String COMMAND_NAME = "/groups";
-
     private final VkGroupsCustodian custodian;
 
     @Autowired
     public GroupsCommand(VkGroupsCustodian custodian) {
-        super(COMMAND_NAME);
+        super("/groups");
         this.custodian = custodian;
     }
 

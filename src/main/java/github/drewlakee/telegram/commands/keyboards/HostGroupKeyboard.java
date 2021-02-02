@@ -36,7 +36,7 @@ public class HostGroupKeyboard {
             this.keyboard
                     .addButton(new InlineKeyboardButton()
                             .setText("Cancel")
-                            .setCallbackData("delete_message"));
+                            .setCallbackData("/deleteMessage"));
         }
 
         return this.keyboard.build();
