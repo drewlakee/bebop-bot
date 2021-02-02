@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PostCommand extends BotCommand implements CallbackQueryHandler, MessageHandler {
 
     public final VkGroupsCustodian custodian;

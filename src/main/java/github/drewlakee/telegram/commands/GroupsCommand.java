@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 @Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class GroupsCommand extends BotCommand implements MessageHandler {
 
     public static final String COMMAND_NAME = "/groups";
