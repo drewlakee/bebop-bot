@@ -1,6 +1,6 @@
 package github.drewlakee;
 
-import github.drewlakee.telegram.ContentDeliveryBot;
+import github.drewlakee.telegram.BebopBot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,11 +10,11 @@ import javax.annotation.PostConstruct;
 @SpringBootApplication
 public class Application {
 
-    private final ContentDeliveryBot contentDeliveryBot;
+    private final BebopBot bebopBot;
 
     @Autowired
-    public Application(ContentDeliveryBot contentDeliveryBot) {
-        this.contentDeliveryBot = contentDeliveryBot;
+    public Application(BebopBot bebopBot) {
+        this.bebopBot = bebopBot;
     }
 
     public static void main(String[] args) {
@@ -23,6 +23,6 @@ public class Application {
 
     @PostConstruct
     public void telegramLaunch() {
-        contentDeliveryBot.run();
+        bebopBot.run();
     }
 }

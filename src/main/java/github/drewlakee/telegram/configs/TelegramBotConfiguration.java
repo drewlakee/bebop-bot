@@ -17,7 +17,7 @@ public class TelegramBotConfiguration {
     }
 
     @Bean
-    public DefaultBotOptions configureContentDeliverBot() {
+    public DefaultBotOptions configureBebopBot() {
         DefaultBotOptions options = new DefaultBotOptions();
 
         options.setMaxThreads(env.getProperty("bot_threads", Integer.class, 1));

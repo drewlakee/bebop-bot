@@ -5,6 +5,8 @@ import github.drewlakee.telegram.commands.GroupsCommand;
 import github.drewlakee.telegram.commands.callbacks.HandlerBotCallback;
 import github.drewlakee.telegram.commands.singletons.CommandsPool;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -13,9 +15,11 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-public class ContentDeliveryHandler extends TelegramLongPollingBot {
+@Component
+public class BebopBotHandler extends TelegramLongPollingBot {
 
-    public ContentDeliveryHandler(DefaultBotOptions options) {
+    @Autowired
+    public BebopBotHandler(DefaultBotOptions options) {
         super(options);
     }
 
