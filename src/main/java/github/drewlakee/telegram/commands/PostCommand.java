@@ -1,7 +1,6 @@
 package github.drewlakee.telegram.commands;
 
 import github.drewlakee.telegram.commands.callbacks.PostCallback;
-import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.telegram.commands.keyboards.HostGroupKeyboard;

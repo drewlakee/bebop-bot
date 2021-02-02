@@ -1,6 +1,5 @@
 package github.drewlakee.telegram.commands;
 
-import github.drewlakee.telegram.commands.handlers.BotCommand;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;

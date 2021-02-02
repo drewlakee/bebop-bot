@@ -1,4 +1,4 @@
-package github.drewlakee.telegram.commands.handlers;
+package github.drewlakee.telegram.commands;
 
 import java.util.Objects;
 
