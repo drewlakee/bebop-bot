@@ -9,4 +9,4 @@ RUN ./gradlew build --no-daemon
 
 RUN cp build/libs/bot-app.jar /bin
 
-ENTRYPOINT java -jar /bin/bot-app.jar
+ENTRYPOINT ["java", "-jar", "/bin/bot-app.jar"]
