@@ -2,7 +2,6 @@ package github.drewlakee.telegram.commands;
 
 import com.vk.api.sdk.objects.groups.GroupAdminLevel;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
-import github.drewlakee.telegram.commands.keyboards.InlineKeyboardBuilder;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
@@ -10,11 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 

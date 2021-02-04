@@ -1,6 +1,5 @@
 package github.drewlakee.telegram.configs;
 
-import github.drewlakee.telegram.BebopBot;
 import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.DeleteMessageCommand;
 import github.drewlakee.telegram.commands.GroupsCommand;
