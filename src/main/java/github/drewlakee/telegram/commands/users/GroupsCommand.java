@@ -51,6 +51,7 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         StringBuilder groupsDesk = new StringBuilder();
         List<VkGroupFullDecorator> allGroups = custodian.getAllGroups();
         groupsDesk.append("Всего уникальных групп ").append(allGroups.size()).append("\n").append("\n");
+        constructCountedGroupListOnDesk(groupsDesk, allGroups);
         constructGroupListWithObjectives(groupsDesk, allGroups);
         constructGroupListWithAdminRoles(groupsDesk, allGroups);
         return groupsDesk.toString();
@@ -78,7 +79,7 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
                         .filter(group -> group.getObjective() == currentGroupObjective)
                         .collect(Collectors.toUnmodifiableList());
 
-                groupsDesk.append("Подгруппа ").append(currentGroupObjective).append(":").append("\n");
+                groupsDesk.append("Подгруппа с назначением ").append(currentGroupObjective).append(":").append("\n");
                 constructCountedGroupListOnDesk(groupsDesk, groupsWithCurrentObjective);
             }
         }
