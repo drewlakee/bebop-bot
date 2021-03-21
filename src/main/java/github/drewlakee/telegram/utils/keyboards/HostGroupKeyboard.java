@@ -18,10 +18,6 @@ public class HostGroupKeyboard {
         this.custodian = custodian;
     }
 
-    public InlineKeyboardMarkup build(String callbackCommand) {
-        return build(callbackCommand, false);
-    }
-
     public InlineKeyboardMarkup build(String callbackCommand, boolean withCancel) {
         List<VkGroupFullDecorator> groupsWithEditableRights = custodian.getGroupsWithEditableRights();
 
@@ -35,7 +31,7 @@ public class HostGroupKeyboard {
         if (withCancel) {
             this.keyboard
                     .addButton(new InlineKeyboardButton()
-                            .setText("Cancel")
+                            .setText("Отменить запрос")
                             .setCallbackData("/deleteMessage"));
         }
 

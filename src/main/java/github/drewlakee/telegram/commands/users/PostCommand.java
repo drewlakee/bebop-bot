@@ -60,7 +60,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     public void handle(AbsSender sender, Message message) {
         SendMessage response = new SendMessage();
         response.setChatId(message.getChatId());
-        response.setText("Choose quantity of photos: ");
+        response.setText("Выбери кол-во пикч: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS);
         response.setReplyMarkup(numpad.build( getCommandName() + "_first_call_photo", true));
         ResponseMessageDispatcher.send(sender, response);
@@ -81,35 +81,35 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 }
             } else {
                 Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-                photosQuantity = Integer.parseInt(data.replace(getCommandName() + "photo_numpad", ""));
-                audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
+                photosQuantity = Integer.parseInt(data.replace(getCommandName() + "_photo_numpad", ""));
+                audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
             }
         }
 
         if (data.contains("_audio_numpad")) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-            photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
             audiosQuantity = Integer.parseInt(data.replace(getCommandName() + "_audio_numpad", ""));
         }
 
         if (data.contains(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName()))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-            photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
-            audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
+            audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
         if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
             handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-            photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
-            audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
+            audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
         if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
             handleCallback = PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-            photosQuantity = Integer.parseInt(keys.get("photos_quantity"));
-            audiosQuantity = Integer.parseInt(keys.get("audios_quantity"));
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
+            audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
         if (data.contains(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName()))) {
@@ -158,11 +158,11 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     private String fillTextBody(List<VkAttachment> attachments, int photosQuantity, int audiosQuantity) {
         StringBuilder text = new StringBuilder();
         if (audiosQuantity == 0 && photosQuantity == 0) {
-            text.append("oopsy doopsy, nothing to look for...");
+            text.append("Для подборки нужно указать правильные данные.");
             return text.toString();
         } else {
-            text.append("photos_quantity: ").append(photosQuantity).append("\n");
-            text.append("audios_quantity: ").append(audiosQuantity).append("\n");
+            text.append("пикч_в_подборке: ").append(photosQuantity).append("\n");
+            text.append("треков_в_подборке: ").append(audiosQuantity).append("\n");
             text.append("\n");
         }
 
@@ -177,7 +177,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 URL photoURL = vkCustomPhoto.getLargestSize().getUrl();
                 String vkAttachmentFormat = photo.toAttachmentString();
 
-                text.append("photo_").append(count).append(": ");
+                text.append("пикча_").append(count).append(": ");
                 text.append("<a href=\"").append(photoURL).append("\">").append(vkAttachmentFormat).append("</a>");
                 text.append("\n");
                 count++;
@@ -199,7 +199,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 String prettyNameOfAudio = vkAudioAttachment.toPrettyString();
                 String vkAttachmentFormat = audio.toAttachmentString();
 
-                text.append("audio_").append(count).append(": ");
+                text.append("трек_").append(count).append(": ");
                 text.append(vkAttachmentFormat).append(" (").append(prettyNameOfAudio).append(")");
                 text.append("\n");
                 count++;
@@ -213,7 +213,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         EditMessageText response = new EditMessageText();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setText("photos_quantity: " + photoQuantity + "\n\nChoose audios quantity: ");
+        response.setText("пикч_в_подборке: " + photoQuantity + "\n\nВыбери кол-во треков: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS - photoQuantity);
         response.setReplyMarkup(numpad.build(getCommandName() + "_audio", true));
         ResponseMessageDispatcher.send(sender, response);
@@ -223,7 +223,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         EditMessageText response = new EditMessageText();
         response.setChatId(callbackQuery.getMessage().getChatId());
         response.setMessageId(callbackQuery.getMessage().getMessageId());
-        response.setText("audios_quantity: " + audioQuantity + "\n\nChoose photos quantity: ");
+        response.setText("треков_в_подборке: " + audioQuantity + "\n\nВыбери кол-во пикч: ");
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(4, MAX_VK_ATTACHMENTS - audioQuantity);
         response.setReplyMarkup(numpad.build(getCommandName() + "_photo", true));
         ResponseMessageDispatcher.send(sender, response);
@@ -231,8 +231,8 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
     private void sendSetToGroup(AbsSender sender, CallbackQuery callbackQuery, int groupId) {
         Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
-        List<String> audiosKeys = keys.keySet().stream().filter(key -> key.startsWith("audio_")).collect(Collectors.toList());
-        List<String> photosKeys = keys.keySet().stream().filter(key -> key.startsWith("photo_")).collect(Collectors.toList());
+        List<String> audiosKeys = keys.keySet().stream().filter(key -> key.startsWith("трек_")).collect(Collectors.toList());
+        List<String> photosKeys = keys.keySet().stream().filter(key -> key.startsWith("пикча_")).collect(Collectors.toList());
         List<String> vkAttachments = new ArrayList<>();
 
         for (String key : audiosKeys) {
@@ -253,7 +253,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         if (isRequestSuccessful) {
             keyboardBuilder.addButton(
                     new InlineKeyboardButton()
-                            .setText("Post was send to " + first.orElseThrow().getGroupFull().getName() + " group!")
+                            .setText("Пост отправлен в " + first.orElseThrow().getGroupFull().getName() + " группу!")
                             .setUrl("https://vk.com/" + first.orElseThrow().getGroupFull().getScreenName())
             );
         } else {
@@ -277,22 +277,22 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     private InlineKeyboardMarkup buildConstructKeyboard() {
         return new InlineKeyboardBuilder()
                 .addButton(new InlineKeyboardButton()
-                    .setText("Change content set")
+                    .setText("Обновить подборку")
                     .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
-                        .setText("Change audio quantity")
+                        .setText("Изменить кол-во треков")
                         .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
                 .addButton(new InlineKeyboardButton()
-                        .setText("Change photo quantity")
+                        .setText("Изменить кол-во пикч")
                         .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
-                        .setText("Send")
+                        .setText("Отправить в группу")
                         .setCallbackData(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
-                        .setText("Cancel")
+                        .setText("Отменить запрос")
                         .setCallbackData("/deleteMessage"))
                 .build();
     }
