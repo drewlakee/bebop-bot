@@ -18,7 +18,7 @@ public class NotFoundCommand extends BotCommand implements MessageHandler, Callb
     private static final Logger log = LoggerFactory.getLogger(NotFoundCommand.class);
 
     public NotFoundCommand() {
-        super("/undefined");
+        super("/not_found");
     }
 
     @Override

@@ -22,16 +22,11 @@ public class BebopBot extends TelegramLongPollingBot {
     private String botToken;
 
     private final HashMap<String, BotCommand> commands;
-    private final NotFoundCommand notFoundCommand;
 
     @Autowired
-    public BebopBot(DefaultBotOptions options,
-                    HashMap<String, BotCommand> commands,
-                    NotFoundCommand notFoundCommand) {
+    public BebopBot(DefaultBotOptions options, HashMap<String, BotCommand> commands) {
         super(options);
-
         this.commands = commands;
-        this.notFoundCommand = notFoundCommand;
     }
 
     @Override
@@ -51,13 +46,21 @@ public class BebopBot extends TelegramLongPollingBot {
 
     private void handleReceivedMessage(Message message) {
         String command = message.getText();
-        BotCommand botCommand = commands.getOrDefault(command, notFoundCommand);
+        BotCommand botCommand = commands.getOrDefault(command, commands.get("/not_found"));
         ((MessageHandler) botCommand).handle(this, message);
     }
 
+    /**
+     * Receives telegram callback such a keyboard click or something else.
+     *
+     * Callbacks must be divided by their data. For example, "/post_<callback_name>" and handler
+     * of that callback must be in commands pool.
+     *
+     * @param callbackQuery Telegram callback
+     */
     private void handleReceivedCallbackQuery(CallbackQuery callbackQuery) {
-        String command = callbackQuery.getData().split("_")[0]; // '/someCommand_some_callback_name'
-        BotCommand botCommand = commands.getOrDefault(command, notFoundCommand);
+        String command = callbackQuery.getData().split("_")[0];
+        BotCommand botCommand = commands.getOrDefault(command, commands.get("/not_found"));
         ((CallbackQueryHandler) botCommand).handle(this, callbackQuery);
     }
 
@@ -84,11 +87,11 @@ public class BebopBot extends TelegramLongPollingBot {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BebopBot bebopBot = (BebopBot) o;
-        return Objects.equals(botUsername, bebopBot.botUsername) && Objects.equals(botToken, bebopBot.botToken) && Objects.equals(commands, bebopBot.commands) && Objects.equals(notFoundCommand, bebopBot.notFoundCommand);
+        return Objects.equals(botUsername, bebopBot.botUsername) && Objects.equals(botToken, bebopBot.botToken) && Objects.equals(commands, bebopBot.commands);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(botUsername, botToken, commands, notFoundCommand);
+        return Objects.hash(botUsername, botToken, commands);
     }
 }
