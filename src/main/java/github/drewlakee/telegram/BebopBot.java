@@ -1,7 +1,6 @@
 package github.drewlakee.telegram;
 
 import github.drewlakee.telegram.commands.BotCommand;
-import github.drewlakee.telegram.commands.devs.NotFoundCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,7 @@ public class BebopBot extends TelegramLongPollingBot {
     /**
      * Receives telegram callback such a keyboard click or something else.
      *
-     * Callbacks must be divided by their data. For example, "/post_<callback_name>" and handler
+     * Callbacks must be divided by their data. Like "/<command_name>_<callback_name>" and handler for "/<command_name>"
      * of that callback must be in commands pool.
      *
      * @param callbackQuery Telegram callback
