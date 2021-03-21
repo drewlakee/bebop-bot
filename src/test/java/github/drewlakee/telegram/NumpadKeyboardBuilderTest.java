@@ -1,6 +1,6 @@
 package github.drewlakee.telegram;
 
-import github.drewlakee.telegram.commands.keyboards.NumpadKeyboardBuilder;
+import github.drewlakee.telegram.utils.keyboards.NumpadKeyboardBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,8 +15,6 @@ public class NumpadKeyboardBuilderTest {
     public void buildCorrectRandomNumpadTest() {
         int columns = RandomUtils.nextInt(1, 10);
         int nums = RandomUtils.nextInt(1, 10);
-        System.out.println("columns: " + columns);
-        System.out.println("toNumber: " + nums);
         NumpadKeyboardBuilder numpad = new NumpadKeyboardBuilder(columns, nums);
         InlineKeyboardMarkup keyboard = numpad.build("test");
         List<List<InlineKeyboardButton>> rows = keyboard.getKeyboard();

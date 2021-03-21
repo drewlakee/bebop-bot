@@ -1,7 +1,7 @@
 package github.drewlakee.telegram;
 
 import github.drewlakee.telegram.commands.BotCommand;
-import github.drewlakee.telegram.commands.NotFoundCommand;
+import github.drewlakee.telegram.commands.devs.NotFoundCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;

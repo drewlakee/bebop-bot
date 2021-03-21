@@ -1,6 +1,7 @@
-package github.drewlakee.telegram.commands;
+package github.drewlakee.telegram.commands.users;
 
 import com.vk.api.sdk.objects.groups.GroupAdminLevel;
+import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;

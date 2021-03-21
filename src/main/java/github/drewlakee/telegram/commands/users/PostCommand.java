@@ -1,12 +1,13 @@
-package github.drewlakee.telegram.commands;
+package github.drewlakee.telegram.commands.users;
 
+import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.callbacks.PostCallback;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
-import github.drewlakee.telegram.commands.keyboards.HostGroupKeyboard;
-import github.drewlakee.telegram.commands.keyboards.InlineKeyboardBuilder;
-import github.drewlakee.telegram.commands.keyboards.NumpadKeyboardBuilder;
-import github.drewlakee.telegram.utils.MessageKeysParser;
+import github.drewlakee.telegram.utils.keyboards.HostGroupKeyboard;
+import github.drewlakee.telegram.utils.keyboards.InlineKeyboardBuilder;
+import github.drewlakee.telegram.utils.keyboards.NumpadKeyboardBuilder;
+import github.drewlakee.telegram.utils.parsers.MessageKeysParser;
 import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.vk.domain.attachments.VkAttachment;
 import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
@@ -122,20 +123,11 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         }
 
         switch (handleCallback) {
-            case CONSTRUCT_CALLBACK:
-                sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
-                break;
-            case CHANGE_PHOTO_QUANTITY_CALLBACK:
-                sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
-                break;
-            case GROUP_CALLBACK:
-                sendSetToGroup(sender, callbackQuery, groupId);
-                break;
-            case SEND_CALLBACK:
-                sendGroupKeyboard(sender, callbackQuery);
-                break;
-            default:
-                sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity);
+            case CONSTRUCT_CALLBACK -> sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
+            case CHANGE_PHOTO_QUANTITY_CALLBACK -> sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
+            case GROUP_CALLBACK -> sendSetToGroup(sender, callbackQuery, groupId);
+            case SEND_CALLBACK -> sendGroupKeyboard(sender, callbackQuery);
+            default -> sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity);
         }
     }
 

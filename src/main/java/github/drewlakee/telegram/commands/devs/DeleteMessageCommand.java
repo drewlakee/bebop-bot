@@ -1,5 +1,6 @@
-package github.drewlakee.telegram.commands;
+package github.drewlakee.telegram.commands.devs;
 
+import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

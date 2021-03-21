@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '2.4.2'
 }
 
+version '1.0.1'
+
 java {
     sourceCompatibility = JavaVersion.VERSION_14
     targetCompatibility = JavaVersion.VERSION_14
@@ -13,7 +15,7 @@ repositories {
 }
 
 bootJar {
-    baseName("bot-app")
+    baseName("bebop-bot")
     manifest.attributes("Start-Class" : "github.drewlakee.Application")
 }
 

@@ -1,6 +1,6 @@
 package github.drewlakee.telegram;
 
-import github.drewlakee.telegram.utils.MessageKeysParser;
+import github.drewlakee.telegram.utils.parsers.MessageKeysParser;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
