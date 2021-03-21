@@ -53,21 +53,21 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         List<VkGroupFullDecorator> allGroups = custodian.getAllGroups();
         groupsDesk.append("Группы (всего ").append(allGroups.size()).append(")").append("\n").append("\n");
 
-        for (int index = 0; index < allGroups.size(); index++) {
-            groupsDesk.append(index).append(". ");
-            groupsDesk.append("<a href=\"").append("https://vk.com/").append(allGroups.get(index).getGroupFull().getScreenName()).append("\">");
-            groupsDesk.append(allGroups.get(index).getGroupFull().getName()).append("</a>").append(" ");
+        for (int i = 0; i < allGroups.size(); i++) {
+            groupsDesk.append(i + 1).append(". ");
+            groupsDesk.append("<a href=\"").append("https://vk.com/").append(allGroups.get(i).getGroupFull().getScreenName()).append("\">");
+            groupsDesk.append(allGroups.get(i).getGroupFull().getName()).append("</a>").append(" ");
 
             List<String> objectivesAndRights = new ArrayList<>();
-            if (allGroups.get(index).getObjective() != VkGroupObjective.EMPTY) {
-                objectivesAndRights.add(allGroups.get(index).getObjective().toString());
+            if (allGroups.get(i).getObjective() != VkGroupObjective.EMPTY) {
+                objectivesAndRights.add(allGroups.get(i).getObjective().toString());
             }
 
-            if (allGroups.get(index).getGroupFull().getAdminLevel() == GroupAdminLevel.ADMINISTRATOR) {
+            if (allGroups.get(i).getGroupFull().getAdminLevel() == GroupAdminLevel.ADMINISTRATOR) {
                 objectivesAndRights.add("Администратор");
             }
 
-            if (allGroups.get(index).getGroupFull().getAdminLevel() == GroupAdminLevel.EDITOR) {
+            if (allGroups.get(i).getGroupFull().getAdminLevel() == GroupAdminLevel.EDITOR) {
                 objectivesAndRights.add("Редактор");
             }
 
