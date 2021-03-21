@@ -15,8 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class GroupsCommand extends BotCommand implements MessageHandler {
@@ -35,8 +35,7 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
     public void handle(AbsSender sender, Message message) {
         SendMessage response = new SendMessage();
         response.setChatId(message.getChatId());
-        String desk = toPrettyGroupsDesk();
-        response.setText(desk);
+        response.setText(prettyGroupsDesk());
         response.disableWebPagePreview();
         response.enableHtml(true);
 
@@ -48,34 +47,51 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         }
     }
 
-    private String toPrettyGroupsDesk() {
+    private String prettyGroupsDesk() {
         StringBuilder groupsDesk = new StringBuilder();
         List<VkGroupFullDecorator> allGroups = custodian.getAllGroups();
-        groupsDesk.append("Группы (всего ").append(allGroups.size()).append(")").append("\n").append("\n");
+        groupsDesk.append("Всего уникальных групп ").append(allGroups.size()).append("\n").append("\n");
+        constructGroupListWithObjectives(groupsDesk, allGroups);
+        constructGroupListWithAdminRoles(groupsDesk, allGroups);
+        return groupsDesk.toString();
+    }
 
-        for (int i = 0; i < allGroups.size(); i++) {
-            groupsDesk.append(i + 1).append(". ");
-            groupsDesk.append("<a href=\"").append("https://vk.com/").append(allGroups.get(i).getGroupFull().getScreenName()).append("\">");
-            groupsDesk.append(allGroups.get(i).getGroupFull().getName()).append("</a>").append(" ");
+    private void constructGroupListWithAdminRoles(StringBuilder groupsDesk, List<VkGroupFullDecorator> allGroups) {
+        GroupAdminLevel[] groupRoles = GroupAdminLevel.values();
+        for (final GroupAdminLevel currentGroupRole : groupRoles) {
+            List<VkGroupFullDecorator> groupsWithCurrentGroupRole = allGroups.stream()
+                    .filter(group -> group.getGroupFull().getAdminLevel() == currentGroupRole)
+                    .collect(Collectors.toUnmodifiableList());
 
-            List<String> objectivesAndRights = new ArrayList<>();
-            if (allGroups.get(i).getObjective() != VkGroupObjective.EMPTY) {
-                objectivesAndRights.add(allGroups.get(i).getObjective().toString());
+            if (groupsWithCurrentGroupRole.size() > 0) {
+                groupsDesk.append("Подгруппа с правами ").append(currentGroupRole.name()).append(":").append("\n");
+                constructCountedGroupListOnDesk(groupsDesk, groupsWithCurrentGroupRole);
             }
+        }
+    }
 
-            if (allGroups.get(i).getGroupFull().getAdminLevel() == GroupAdminLevel.ADMINISTRATOR) {
-                objectivesAndRights.add("Администратор");
+    private void constructGroupListWithObjectives(StringBuilder groupsDesk, List<VkGroupFullDecorator> allGroups) {
+        VkGroupObjective[] groupObjectives = VkGroupObjective.values();
+        for (final VkGroupObjective currentGroupObjective : groupObjectives) {
+            if (currentGroupObjective != VkGroupObjective.EMPTY) {
+                List<VkGroupFullDecorator> groupsWithCurrentObjective = allGroups.stream()
+                        .filter(group -> group.getObjective() == currentGroupObjective)
+                        .collect(Collectors.toUnmodifiableList());
+
+                groupsDesk.append("Подгруппа ").append(currentGroupObjective).append(":").append("\n");
+                constructCountedGroupListOnDesk(groupsDesk, groupsWithCurrentObjective);
             }
+        }
+    }
 
-            if (allGroups.get(i).getGroupFull().getAdminLevel() == GroupAdminLevel.EDITOR) {
-                objectivesAndRights.add("Редактор");
-            }
-
-            groupsDesk.append("(").append(String.join(", ", objectivesAndRights)).append(")");
-
-            groupsDesk.append("\n").append("\n");
+    private void constructCountedGroupListOnDesk(StringBuilder groupsDesk, List<VkGroupFullDecorator> concreteGroups) {
+        for (int count = 0; count < concreteGroups.size(); count++) {
+            groupsDesk.append(count + 1).append(". ");
+            groupsDesk.append("<a href=\"").append("https://vk.com/").append(concreteGroups.get(count).getGroupFull().getScreenName()).append("\">");
+            groupsDesk.append(concreteGroups.get(count).getGroupFull().getName()).append("</a>").append(" ");
+            groupsDesk.append("\n");
         }
 
-        return groupsDesk.toString();
+        groupsDesk.append("\n");
     }
 }
