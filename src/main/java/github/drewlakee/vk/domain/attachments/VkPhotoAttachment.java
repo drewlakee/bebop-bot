@@ -10,7 +10,7 @@ public class VkPhotoAttachment extends Photo implements VkAttachment {
     }
 
     @Override
-    public String toAttachmentString() {
+    public String toPrettyVkAttachmentString() {
         return "photo" + this.getOwnerId() + "_" + this.getId();
     }
 }

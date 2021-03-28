@@ -2,5 +2,5 @@ package github.drewlakee.vk.domain.attachments;
 
 public interface VkAttachment {
 
-    String toAttachmentString();
+    String toPrettyVkAttachmentString();
 }

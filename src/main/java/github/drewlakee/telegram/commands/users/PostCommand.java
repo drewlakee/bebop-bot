@@ -15,8 +15,8 @@ import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import github.drewlakee.vk.services.VkWallPostService;
-import github.drewlakee.vk.services.random.VkRandomAudioContent;
-import github.drewlakee.vk.services.random.VkRandomPhotoContent;
+import github.drewlakee.vk.services.content.VkRandomAudioSearch;
+import github.drewlakee.vk.services.content.VkRandomPhotoSearch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -41,14 +41,14 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
     public final VkGroupsCustodian custodian;
     public final VkWallPostService vkWallPostService;
-    public final VkRandomAudioContent randomAudioContent;
-    public final VkRandomPhotoContent randomPhotoContent;
+    public final VkRandomAudioSearch randomAudioContent;
+    public final VkRandomPhotoSearch randomPhotoContent;
 
     public static final int MAX_VK_ATTACHMENTS = 10;
 
     @Autowired
     public PostCommand(VkGroupsCustodian custodian, VkWallPostService vkWallPostService,
-                       VkRandomAudioContent randomAudioContent, VkRandomPhotoContent randomPhotoContent) {
+                       VkRandomAudioSearch randomAudioContent, VkRandomPhotoSearch randomPhotoContent) {
         super("/post");
         this.custodian = custodian;
         this.vkWallPostService = vkWallPostService;
@@ -140,11 +140,11 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         List<VkAttachment> attachments = new ArrayList<>();
 
         if (photosQuantity > 0) {
-            attachments.addAll(randomPhotoContent.find(photosQuantity));
+            attachments.addAll(randomPhotoContent.search(photosQuantity));
         }
 
         if (audiosQuantity > 0) {
-            attachments.addAll(randomAudioContent.find(audiosQuantity));
+            attachments.addAll(randomAudioContent.search(audiosQuantity));
         }
 
         response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity));
@@ -175,7 +175,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             for (VkAttachment photo : photos) {
                 VkPhotoAttachment vkCustomPhoto = (VkPhotoAttachment) photo;
                 URL photoURL = vkCustomPhoto.getLargestSize().getUrl();
-                String vkAttachmentFormat = photo.toAttachmentString();
+                String vkAttachmentFormat = photo.toPrettyVkAttachmentString();
 
                 text.append("пикча_").append(count).append(": ");
                 text.append("<a href=\"").append(photoURL).append("\">").append(vkAttachmentFormat).append("</a>");
@@ -197,7 +197,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             for (VkAttachment audio : audios) {
                 VkAudioAttachment vkAudioAttachment = (VkAudioAttachment) audio;
                 String prettyNameOfAudio = vkAudioAttachment.toPrettyString();
-                String vkAttachmentFormat = audio.toAttachmentString();
+                String vkAttachmentFormat = audio.toPrettyVkAttachmentString();
 
                 text.append("трек_").append(count).append(": ");
                 text.append(vkAttachmentFormat).append(" (").append(prettyNameOfAudio).append(")");

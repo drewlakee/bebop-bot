@@ -56,6 +56,7 @@ public class VkGroupsConfiguration {
         VkObjectiveGroupFullApiLoader audioGroupsLoader = new VkObjectiveGroupFullApiLoader(audioGroupIds, api, user);
 
         for (GroupFull groupFull : audioGroupsLoader.load()) {
+            groupFull.setId(groupFull.getId() * -1);
             custodian.add(groupFull.getScreenName(), new VkGroupFullDecorator(VkGroupObjective.AUDIO, groupFull));
         }
 
@@ -63,6 +64,7 @@ public class VkGroupsConfiguration {
         VkObjectiveGroupFullApiLoader photoGroupsLoader = new VkObjectiveGroupFullApiLoader(photoGroupIds, api, user);
 
         for (GroupFull groupFull : photoGroupsLoader.load()) {
+            groupFull.setId(groupFull.getId() * -1);
             custodian.add(groupFull.getScreenName(), new VkGroupFullDecorator(VkGroupObjective.PHOTO, groupFull));
         }
     }
