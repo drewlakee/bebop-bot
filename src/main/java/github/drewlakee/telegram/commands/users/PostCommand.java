@@ -166,7 +166,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
         response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity).toString());
         if (audiosQuantity > 0 || photosQuantity > 0) {
-            response.setReplyMarkup(buildConstructKeyboard());
+            response.setReplyMarkup(buildConstructKeyboard(audiosQuantity, photosQuantity));
         }
 
         ResponseMessageDispatcher.send(sender, response);
@@ -189,14 +189,10 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             attachments.add(vkPhotoAttachment);
         }
 
-        if (audiosQuantity > 0) {
-            attachments.addAll(randomAudioContent.search(audiosQuantity));
-        }
+        attachments.addAll(randomAudioContent.search(audiosQuantity));
 
         response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity).toString());
-        if (audiosQuantity > 0 || photosQuantity > 0) {
-            response.setReplyMarkup(buildConstructKeyboard());
-        }
+        response.setReplyMarkup(buildConstructKeyboard(audiosQuantity, photosQuantity));
 
         ResponseMessageDispatcher.send(sender, response);
     }
@@ -207,11 +203,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         response.setMessageId(callbackQuery.getMessage().getMessageId());
         response.setParseMode(ParseMode.HTML);
 
-        ArrayList<VkAttachment> attachments = new ArrayList<>();
-
-        if (photosQuantity > 0) {
-            attachments.addAll(randomPhotoContent.search(photosQuantity));
-        }
+        ArrayList<VkAttachment> attachments = new ArrayList<>(randomPhotoContent.search(photosQuantity));
 
         StringBuilder textBodyForResponse = fillTextBody(attachments, photosQuantity, audiosQuantity);
 
@@ -220,10 +212,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 .forEach(rawStringLineWithTrack -> textBodyForResponse.append(rawStringLineWithTrack).append("\n"));
 
         response.setText(textBodyForResponse.toString());
-
-        if (audiosQuantity > 0 || photosQuantity > 0) {
-            response.setReplyMarkup(buildConstructKeyboard());
-        }
+        response.setReplyMarkup(buildConstructKeyboard(audiosQuantity, photosQuantity));
 
         ResponseMessageDispatcher.send(sender, response);
     }
@@ -347,20 +336,32 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         ResponseMessageDispatcher.send(sender, response);
     }
 
-    private InlineKeyboardMarkup buildConstructKeyboard() {
-        return new InlineKeyboardBuilder()
-                .addButton(new InlineKeyboardButton()
-                    .setText("Обновить подборку")
-                    .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
-                .nextLine()
-                .addButton(new InlineKeyboardButton()
+    private InlineKeyboardMarkup buildConstructKeyboard(int audioQuantity, int photoQuantity) {
+        InlineKeyboardBuilder postKeyboard = new InlineKeyboardBuilder();
+        postKeyboard.addButton(new InlineKeyboardButton()
+                .setText("Обновить подборку")
+                .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
+                .nextLine();
+
+        if (audioQuantity > 0) {
+            postKeyboard
+                    .addButton(new InlineKeyboardButton()
                         .setText("Обновить подборку треков")
-                        .setCallbackData(PostCallback.REFRESH_ONLY_AUDIO.toCallbackString(getCommandName())))
-                .addButton(new InlineKeyboardButton()
+                        .setCallbackData(PostCallback.REFRESH_ONLY_AUDIO.toCallbackString(getCommandName())));
+        }
+
+        if (photoQuantity > 0) {
+            postKeyboard
+                    .addButton(new InlineKeyboardButton()
                         .setText("Обновить подборку пикч")
-                        .setCallbackData(PostCallback.REFRESH_ONLY_PHOTO.toCallbackString(getCommandName())))
-                .nextLine()
-                .addButton(new InlineKeyboardButton()
+                        .setCallbackData(PostCallback.REFRESH_ONLY_PHOTO.toCallbackString(getCommandName())));
+        }
+
+        if (photoQuantity > 0 || audioQuantity > 0) {
+            postKeyboard.nextLine();
+        }
+
+        postKeyboard.addButton(new InlineKeyboardButton()
                         .setText("Изменить кол-во треков")
                         .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
                 .addButton(new InlineKeyboardButton()
@@ -373,7 +374,9 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Отменить запрос")
-                        .setCallbackData("/deleteMessage"))
-                .build();
+                        .setCallbackData("/deleteMessage"));
+
+
+        return postKeyboard.build();
     }
 }
