@@ -15,9 +15,11 @@ import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
 import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import github.drewlakee.vk.services.VkWallPostService;
+import github.drewlakee.vk.services.content.VkContentSearchStrategy;
 import github.drewlakee.vk.services.content.VkRandomAudioSearch;
 import github.drewlakee.vk.services.content.VkRandomPhotoSearch;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -41,14 +43,16 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
     public final VkGroupsCustodian custodian;
     public final VkWallPostService vkWallPostService;
-    public final VkRandomAudioSearch randomAudioContent;
-    public final VkRandomPhotoSearch randomPhotoContent;
+    public final VkContentSearchStrategy randomAudioContent;
+    public final VkContentSearchStrategy randomPhotoContent;
 
     public static final int MAX_VK_ATTACHMENTS = 10;
 
     @Autowired
-    public PostCommand(VkGroupsCustodian custodian, VkWallPostService vkWallPostService,
-                       VkRandomAudioSearch randomAudioContent, VkRandomPhotoSearch randomPhotoContent) {
+    public PostCommand(VkGroupsCustodian custodian,
+                       VkWallPostService vkWallPostService,
+                       @Qualifier("vkRandomAudioCachedSearch") VkContentSearchStrategy randomAudioContent,
+                       @Qualifier("vkRandomPhotoCachedSearch") VkContentSearchStrategy randomPhotoContent) {
         super("/post");
         this.custodian = custodian;
         this.vkWallPostService = vkWallPostService;
