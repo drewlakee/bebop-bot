@@ -16,8 +16,6 @@ import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import github.drewlakee.vk.services.VkWallPostService;
 import github.drewlakee.vk.services.content.VkContentSearchStrategy;
-import github.drewlakee.vk.services.content.VkRandomAudioSearch;
-import github.drewlakee.vk.services.content.VkRandomPhotoSearch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -27,15 +25,13 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -126,8 +122,25 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             groupId = Integer.parseInt(data.replace(getCommandName() + "_group_id", ""));
         }
 
+
+        if (data.contains(PostCallback.REFRESH_ONLY_AUDIO.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.REFRESH_ONLY_AUDIO;
+            Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
+            audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
+        }
+
+        if (data.contains(PostCallback.REFRESH_ONLY_PHOTO.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.REFRESH_ONLY_PHOTO;
+            Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+            photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
+            audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
+        }
+
         switch (handleCallback) {
             case CONSTRUCT_CALLBACK -> sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
+            case REFRESH_ONLY_AUDIO -> sendContentSetWithOnlyAudioUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
+            case REFRESH_ONLY_PHOTO -> sendContentSetWithOnlyPhotoUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
             case CHANGE_PHOTO_QUANTITY_CALLBACK -> sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
             case GROUP_CALLBACK -> sendSetToGroup(sender, callbackQuery, groupId);
             case SEND_CALLBACK -> sendGroupKeyboard(sender, callbackQuery);
@@ -151,7 +164,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             attachments.addAll(randomAudioContent.search(audiosQuantity));
         }
 
-        response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity));
+        response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity).toString());
         if (audiosQuantity > 0 || photosQuantity > 0) {
             response.setReplyMarkup(buildConstructKeyboard());
         }
@@ -159,11 +172,67 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         ResponseMessageDispatcher.send(sender, response);
     }
 
-    private String fillTextBody(List<VkAttachment> attachments, int photosQuantity, int audiosQuantity) {
+    private void sendContentSetWithOnlyAudioUpdated(AbsSender sender, CallbackQuery callbackQuery, int photosQuantity, int audiosQuantity) {
+        EditMessageText response = new EditMessageText();
+        response.setChatId(callbackQuery.getMessage().getChatId());
+        response.setMessageId(callbackQuery.getMessage().getMessageId());
+        response.setParseMode(ParseMode.HTML);
+
+        ArrayList<VkAttachment> attachments = new ArrayList<>();
+        Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
+        List<String> rawPhotosIds = keys.entrySet().stream().filter(entry -> entry.getKey().startsWith("пикча")).map(Map.Entry::getValue).collect(Collectors.toList());
+        List<MessageEntity> entities = callbackQuery.getMessage().getEntities();
+        for (int i = 0; i < rawPhotosIds.size(); i++) {
+            VkPhotoAttachment vkPhotoAttachment = new VkPhotoAttachment();
+            vkPhotoAttachment.setPrettyVkAttachmentString(rawPhotosIds.get(i));
+            vkPhotoAttachment.setLargestSizeUrl(entities.get(i).getUrl());
+            attachments.add(vkPhotoAttachment);
+        }
+
+        if (audiosQuantity > 0) {
+            attachments.addAll(randomAudioContent.search(audiosQuantity));
+        }
+
+        response.setText(fillTextBody(attachments, photosQuantity, audiosQuantity).toString());
+        if (audiosQuantity > 0 || photosQuantity > 0) {
+            response.setReplyMarkup(buildConstructKeyboard());
+        }
+
+        ResponseMessageDispatcher.send(sender, response);
+    }
+
+    private void sendContentSetWithOnlyPhotoUpdated(AbsSender sender, CallbackQuery callbackQuery, int photosQuantity, int audiosQuantity) {
+        EditMessageText response = new EditMessageText();
+        response.setChatId(callbackQuery.getMessage().getChatId());
+        response.setMessageId(callbackQuery.getMessage().getMessageId());
+        response.setParseMode(ParseMode.HTML);
+
+        ArrayList<VkAttachment> attachments = new ArrayList<>();
+
+        if (photosQuantity > 0) {
+            attachments.addAll(randomPhotoContent.search(photosQuantity));
+        }
+
+        StringBuilder textBodyForResponse = fillTextBody(attachments, photosQuantity, audiosQuantity);
+
+        Arrays.stream(callbackQuery.getMessage().getText().split("\n"))
+                .filter(lineInMessage -> lineInMessage.startsWith("трек_"))
+                .forEach(rawStringLineWithTrack -> textBodyForResponse.append(rawStringLineWithTrack).append("\n"));
+
+        response.setText(textBodyForResponse.toString());
+
+        if (audiosQuantity > 0 || photosQuantity > 0) {
+            response.setReplyMarkup(buildConstructKeyboard());
+        }
+
+        ResponseMessageDispatcher.send(sender, response);
+    }
+
+    private StringBuilder fillTextBody(List<VkAttachment> attachments, int photosQuantity, int audiosQuantity) {
         StringBuilder text = new StringBuilder();
         if (audiosQuantity == 0 && photosQuantity == 0) {
             text.append("Для подборки нужно указать правильные данные.");
-            return text.toString();
+            return text;
         } else {
             text.append("пикч_в_подборке: ").append(photosQuantity).append("\n");
             text.append("треков_в_подборке: ").append(audiosQuantity).append("\n");
@@ -178,7 +247,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             int count = 1;
             for (VkAttachment photo : photos) {
                 VkPhotoAttachment vkCustomPhoto = (VkPhotoAttachment) photo;
-                URL photoURL = vkCustomPhoto.getLargestSize().getUrl();
+                String photoURL = vkCustomPhoto.getLargestSizeUrl();
                 String vkAttachmentFormat = photo.toPrettyVkAttachmentString();
 
                 text.append("пикча_").append(count).append(": ");
@@ -210,7 +279,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             }
         }
 
-        return text.toString();
+        return text;
     }
 
     private void sendAudioQuantityNumpad(AbsSender sender, CallbackQuery callbackQuery, int photoQuantity) {
@@ -283,6 +352,13 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
                 .addButton(new InlineKeyboardButton()
                     .setText("Обновить подборку")
                     .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
+                .nextLine()
+                .addButton(new InlineKeyboardButton()
+                        .setText("Обновить подборку треков")
+                        .setCallbackData(PostCallback.REFRESH_ONLY_AUDIO.toCallbackString(getCommandName())))
+                .addButton(new InlineKeyboardButton()
+                        .setText("Обновить подборку пикч")
+                        .setCallbackData(PostCallback.REFRESH_ONLY_PHOTO.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Изменить кол-во треков")
