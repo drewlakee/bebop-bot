@@ -78,7 +78,7 @@ services:
 
   telegram-bebop-bot:
     container_name: bebop-bot
-    image: drewlakee/bebop-bot:v1.0.1
+    image: drewlakee/bebop-bot:latest
     environment:
       - bot_username=<bot_username>
       - bot_token=<bot_token>
