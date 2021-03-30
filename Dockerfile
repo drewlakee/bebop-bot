@@ -7,6 +7,6 @@ COPY . /
 RUN chmod 777 gradlew
 RUN ./gradlew build --no-daemon
 
-RUN cp build/libs/bot-app.jar /bin
+RUN cp build/libs/bebop-bot-1.0.1.jar /bin
 
 ENTRYPOINT ["java", "-jar", "/bin/bebop-bot-1.0.1.jar"]
