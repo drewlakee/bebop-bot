@@ -30,7 +30,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     @Override
     public void handle(AbsSender sender, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
-        PostCallback handleCallback = PostCallback.CONSTRUCT_CALLBACK;
+        PostCallback handleCallback = PostCallback.CONSTRUCT;
         int audiosQuantity = 0;
         int photosQuantity = 0;
 
@@ -77,7 +76,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             if (data.contains("_first_call_")) {
                 photosQuantity = Integer.parseInt(data.replace(getCommandName() + "_first_call_photo_numpad", ""));
                 if (photosQuantity < 10) {
-                    handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
+                    handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY;
                 }
             } else {
                 Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
@@ -92,33 +91,37 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             audiosQuantity = Integer.parseInt(data.replace(getCommandName() + "_audio_numpad", ""));
         }
 
-        if (data.contains(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName()))) {
+        if (data.contains(PostCallback.CHANGE_SET.toCallbackString(getCommandName()))) {
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
             audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
-        if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
-            handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK;
+        if (data.contains(PostCallback.CHANGE_AUDIO_QUANTITY.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.CHANGE_AUDIO_QUANTITY;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
             audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
-        if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName()))) {
-            handleCallback = PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK;
+        if (data.contains(PostCallback.CHANGE_PHOTO_QUANTITY.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.CHANGE_PHOTO_QUANTITY;
             Map<String, String> keys = MessageKeysParser.parseMessageKeysBody(callbackQuery.getMessage().getText());
             photosQuantity = Integer.parseInt(keys.get("пикч_в_подборке"));
             audiosQuantity = Integer.parseInt(keys.get("треков_в_подборке"));
         }
 
-        if (data.contains(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName()))) {
-            handleCallback = PostCallback.SEND_CALLBACK;
+        if (data.equals(PostCallback.SEND.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.SEND;
+        }
+
+        if (data.equals(PostCallback.SEND_AGAIN.toCallbackString(getCommandName()))) {
+            handleCallback = PostCallback.SEND_AGAIN;
         }
 
         int groupId = 0;
         if (data.contains(getCommandName() + "_group_id")) {
-            handleCallback = PostCallback.GROUP_CALLBACK;
+            handleCallback = PostCallback.GROUP;
             groupId = Integer.parseInt(data.replace(getCommandName() + "_group_id", ""));
         }
 
@@ -138,13 +141,13 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         }
 
         switch (handleCallback) {
-            case CONSTRUCT_CALLBACK -> sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
+            case CONSTRUCT -> sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
             case REFRESH_ONLY_AUDIO -> sendContentSetWithOnlyAudioUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
             case REFRESH_ONLY_PHOTO -> sendContentSetWithOnlyPhotoUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
-            case CHANGE_PHOTO_QUANTITY_CALLBACK -> sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
-            case GROUP_CALLBACK -> sendSetToGroup(sender, callbackQuery, groupId);
-            case SEND_CALLBACK -> sendGroupKeyboard(sender, callbackQuery);
-            default -> sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity);
+            case CHANGE_PHOTO_QUANTITY -> sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
+            case CHANGE_AUDIO_QUANTITY -> sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity);
+            case GROUP -> sendSetToGroup(sender, callbackQuery, groupId);
+            case SEND, SEND_AGAIN -> sendGroupKeyboard(sender, callbackQuery);
         }
     }
 
@@ -313,11 +316,15 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         InlineKeyboardBuilder keyboardBuilder = new InlineKeyboardBuilder();
         boolean isRequestSuccessful = vkWallPostService.makePost(first.orElseThrow(), vkAttachments);
         if (isRequestSuccessful) {
-            keyboardBuilder.addButton(
-                    new InlineKeyboardButton()
+            keyboardBuilder
+                    .addButton(new InlineKeyboardButton()
                             .setText("Пост отправлен в " + first.orElseThrow().getGroupFull().getName() + " группу!")
-                            .setUrl("https://vk.com/" + first.orElseThrow().getGroupFull().getScreenName())
-            );
+                            .setUrl("https://vk.com/" + first.orElseThrow().getGroupFull().getScreenName()))
+                    .nextLine()
+                    .addButton(new InlineKeyboardButton()
+                            .setText("Отправить еще раз")
+                            .setCallbackData(PostCallback.SEND_AGAIN.toCallbackString(getCommandName()))
+                    );
         } else {
             keyboardBuilder.addButton(new InlineKeyboardButton()
                     .setText("Oops... something was broken on the way!")
@@ -340,7 +347,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         InlineKeyboardBuilder postKeyboard = new InlineKeyboardBuilder();
         postKeyboard.addButton(new InlineKeyboardButton()
                 .setText("Обновить подборку")
-                .setCallbackData(PostCallback.CHANGE_SET_CALLBACK.toCallbackString(getCommandName())))
+                .setCallbackData(PostCallback.CHANGE_SET.toCallbackString(getCommandName())))
                 .nextLine();
 
         if (audioQuantity > 0) {
@@ -363,14 +370,14 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
 
         postKeyboard.addButton(new InlineKeyboardButton()
                         .setText("Изменить кол-во треков")
-                        .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
+                        .setCallbackData(PostCallback.CHANGE_AUDIO_QUANTITY.toCallbackString(getCommandName())))
                 .addButton(new InlineKeyboardButton()
                         .setText("Изменить кол-во пикч")
-                        .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY_CALLBACK.toCallbackString(getCommandName())))
+                        .setCallbackData(PostCallback.CHANGE_PHOTO_QUANTITY.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Отправить в группу")
-                        .setCallbackData(PostCallback.SEND_CALLBACK.toCallbackString(getCommandName())))
+                        .setCallbackData(PostCallback.SEND.toCallbackString(getCommandName())))
                 .nextLine()
                 .addButton(new InlineKeyboardButton()
                         .setText("Отменить запрос")
