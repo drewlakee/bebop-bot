@@ -40,10 +40,12 @@ bot_proxy_port          | Порт хост-сервера  |
 
 ### Развертывание
 
+#### Способ с ручным сбором образа
+
 1. Клонировать проект
 
 ```
-git@github.com:drewlakee/bebop-bot.git
+git clone git@github.com:drewlakee/bebop-bot.git
 ```
 
 2. Сконфигурировать необходимые параметры в файле [docker-compose.yaml](docker-compose.yaml)
@@ -65,4 +67,28 @@ git@github.com:drewlakee/bebop-bot.git
 docker-compose up
 ```
 
+#### Способ с взятием готового образа с регистра Docker Hub
+
+1. Cоздать файл docker-compose.yaml
+
+```
+version: "3"
+
+services:
+
+  telegram-bebop-bot:
+    container_name: bebop-bot
+    image: drewlakee/bebop-bot:v1.0.1
+    environment:
+      - bot_username=<bot_username>
+      - bot_token=<bot_token>
+      - vk_user_id=<vk_user_id>
+      - vk_token=<vk_token>
+      - vk_audio_groups_ids=<vk_audio_groups_ids>
+      - vk_photo_groups_ids=<vk_photo_groups_ids>
+```
+
+2. Поднять командой 'docker-compose up'
+
 Можно обращаться к своему поднятому боту :rocket:
+
