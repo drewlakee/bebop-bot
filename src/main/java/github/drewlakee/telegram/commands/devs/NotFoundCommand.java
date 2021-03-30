@@ -1,5 +1,6 @@
-package github.drewlakee.telegram.commands;
+package github.drewlakee.telegram.commands.devs;
 
+import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.handlers.CallbackQueryHandler;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ public class NotFoundCommand extends BotCommand implements MessageHandler, Callb
     private static final Logger log = LoggerFactory.getLogger(NotFoundCommand.class);
 
     public NotFoundCommand() {
-        super("/undefined");
+        super("/not_found");
     }
 
     @Override

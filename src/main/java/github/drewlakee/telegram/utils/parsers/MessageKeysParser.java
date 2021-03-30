@@ -1,4 +1,4 @@
-package github.drewlakee.telegram.utils;
+package github.drewlakee.telegram.utils.parsers;
 
 import java.util.HashMap;
 import java.util.Map;

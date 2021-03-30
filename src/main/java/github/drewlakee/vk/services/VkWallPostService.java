@@ -30,14 +30,14 @@ public class VkWallPostService {
         boolean isOk = true;
 
         try {
-            log.info("[VK] Request: groupId: {}, attachments: {}", group, attachments);
+            log.info("[VK] Request: groupId: {}, attachments: {}", group.getGroupFull().getId(), attachments);
             api.wall()
                     .post(user)
                     .ownerId(group.getGroupFull().getId() * -1)
                     .attachments(attachments)
                     .execute();
         } catch (ClientException | ApiException e) {
-            log.info("[VK] Request FAILED: group: {}, attachments: {}.", group, attachments);
+            log.info("[VK] Request FAILED: group: {}, attachments: {}.", group.getGroupFull().getId(), attachments);
             e.printStackTrace();
 
             isOk = false;

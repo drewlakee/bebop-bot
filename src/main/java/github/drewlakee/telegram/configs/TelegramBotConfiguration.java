@@ -1,10 +1,10 @@
 package github.drewlakee.telegram.configs;
 
-import github.drewlakee.telegram.BebopBot;
 import github.drewlakee.telegram.commands.BotCommand;
-import github.drewlakee.telegram.commands.DeleteMessageCommand;
-import github.drewlakee.telegram.commands.GroupsCommand;
-import github.drewlakee.telegram.commands.PostCommand;
+import github.drewlakee.telegram.commands.devs.DeleteMessageCommand;
+import github.drewlakee.telegram.commands.devs.NotFoundCommand;
+import github.drewlakee.telegram.commands.users.GroupsCommand;
+import github.drewlakee.telegram.commands.users.PostCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +37,7 @@ public class TelegramBotConfiguration {
         if (isProxyConfigurationSet) {
             options.setProxyType(DefaultBotOptions.ProxyType.valueOf(env.getProperty("bot_proxy_type")));
             options.setProxyHost(env.getProperty("bot_proxy_host"));
-            options.setProxyPort(env.getProperty("bot_proxy_port", Integer.class));
+            options.setProxyPort(env.getProperty("bot_proxy_port", Integer.class, -1));
         }
 
         return options;
@@ -46,11 +46,13 @@ public class TelegramBotConfiguration {
     @Bean
     public HashMap<String, BotCommand> configureBebopBotCommands(PostCommand post,
                                                                  GroupsCommand groups,
-                                                                 DeleteMessageCommand deleteMessage) {
+                                                                 DeleteMessageCommand deleteMessage,
+                                                                 NotFoundCommand notFoundCommand) {
         HashMap<String, BotCommand> commands = new HashMap<>();
         commands.put(post.getCommandName(), post);
         commands.put(groups.getCommandName(), groups);
         commands.put(deleteMessage.getCommandName(), deleteMessage);
+        commands.put(notFoundCommand.getCommandName(), notFoundCommand);
         return commands;
     }
 }
