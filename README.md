@@ -88,7 +88,11 @@ services:
       - vk_photo_groups_ids=<vk_photo_groups_ids>
 ```
 
-2. Поднять командой 'docker-compose up'
+2. Поднять docker-compose с необходимыми параметрами 
+
+```
+docker-compose up
+```
 
 Можно обращаться к своему поднятому боту :rocket:
 
