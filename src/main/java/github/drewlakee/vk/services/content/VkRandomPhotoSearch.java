@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -96,4 +97,16 @@ public class VkRandomPhotoSearch implements VkContentSearchStrategy {
         return attachments;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VkRandomPhotoSearch that = (VkRandomPhotoSearch) o;
+        return Objects.equals(custodian, that.custodian) && Objects.equals(api, that.api) && Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(custodian, api, user);
+    }
 }

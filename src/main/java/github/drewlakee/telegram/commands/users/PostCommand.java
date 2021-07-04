@@ -46,8 +46,8 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     @Autowired
     public PostCommand(VkGroupsCustodian custodian,
                        VkWallPostService vkWallPostService,
-                       @Qualifier("vkRandomAudioCachedSearch") VkContentSearchStrategy randomAudioContent,
-                       @Qualifier("vkRandomPhotoCachedSearch") VkContentSearchStrategy randomPhotoContent) {
+                       @Qualifier("vkRandomAudioSearch") VkContentSearchStrategy randomAudioContent,
+                       @Qualifier("vkRandomPhotoSearch") VkContentSearchStrategy randomPhotoContent) {
         super("/post");
         this.custodian = custodian;
         this.vkWallPostService = vkWallPostService;

@@ -17,9 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class VkRandomAudioSearch implements VkContentSearchStrategy {
@@ -66,28 +64,17 @@ public class VkRandomAudioSearch implements VkContentSearchStrategy {
         if (randomBound < 1) randomBound = 0;
         int randomOffset = random.nextInt(randomBound);
 
-        filterJsonAudioAttachments(getJsonWallPostAttachments(quantity, randomOffset, randomGroup.getGroupFull().getId()))
-                .stream()
+        int quantityAmplifier = 10;
+        List<JsonObject> filteredAudioAttachments = filterJsonAudioAttachments(
+                getJsonWallPostAttachments(quantity * quantityAmplifier, randomOffset, randomGroup.getGroupFull().getId())
+        );
+        Collections.shuffle(filteredAudioAttachments);
+        filteredAudioAttachments.stream()
                 .map(this::toVkAudioAttachment)
                 .limit(quantity)
                 .forEach(attachments::add);
 
         return attachments;
-    }
-
-    private JsonElement getJsonWallPostAttachments(int quantity, int offset, int ownerId) {
-        String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", quantity, offset, ownerId);
-
-        JsonElement postAttachments = new JsonObject();
-        try {
-            postAttachments = api.execute()
-                    .code(user, request)
-                    .execute();
-        } catch (ClientException | ApiException e) {
-            log.info("VK API CALL EXECUTE METHOD was crashed cause {0}", e.getCause());
-        }
-
-        return postAttachments;
     }
 
     private List<JsonObject> filterJsonAudioAttachments(JsonElement jsonPostAttachments) {
@@ -107,6 +94,21 @@ public class VkRandomAudioSearch implements VkContentSearchStrategy {
         return jsonAudiosAttachments;
     }
 
+    private JsonElement getJsonWallPostAttachments(int quantity, int offset, int ownerId) {
+        String request = String.format("return API.wall.get({\"count\": %d, \"offset\": %d,  \"owner_id\": %d}).items@.attachments;", quantity, offset, ownerId);
+
+        JsonElement postAttachments = new JsonObject();
+        try {
+            postAttachments = api.execute()
+                    .code(user, request)
+                    .execute();
+        } catch (ClientException | ApiException e) {
+            log.info("VK API CALL EXECUTE METHOD was crashed cause {0}", e.getCause());
+        }
+
+        return postAttachments;
+    }
+
     private VkAudioAttachment toVkAudioAttachment(JsonObject jsonAudio) {
         VkAudioAttachment audio = new VkAudioAttachment();
         audio.setArtist(jsonAudio.get("artist").getAsString());
@@ -114,5 +116,18 @@ public class VkRandomAudioSearch implements VkContentSearchStrategy {
         audio.setOwnerId(jsonAudio.get("owner_id").getAsInt());
         audio.setId(jsonAudio.get("id").getAsInt());
         return audio;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VkRandomAudioSearch that = (VkRandomAudioSearch) o;
+        return Objects.equals(custodian, that.custodian) && Objects.equals(api, that.api) && Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(custodian, api, user);
     }
 }
