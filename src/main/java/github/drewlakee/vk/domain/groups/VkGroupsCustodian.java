@@ -9,32 +9,32 @@ import java.util.stream.Collectors;
 @Component
 public class VkGroupsCustodian {
 
-    private final Map<String, VkGroupFullDecorator> groups;
+    private final Map<String, VkGroupFullWrapper> groups;
 
     public VkGroupsCustodian() {
         this.groups = new HashMap<>();
     }
 
-    public void add(String screenName, VkGroupFullDecorator groupFullDecorator) {
+    public void add(String screenName, VkGroupFullWrapper groupFullDecorator) {
         groups.put(screenName, groupFullDecorator);
     }
 
-    public List<VkGroupFullDecorator> getGroupsWithEditableRights() {
+    public List<VkGroupFullWrapper> getGroupsWithEditableRights() {
         return groups.values().stream()
                 .filter(group -> group.getGroupFull().getAdminLevel() == GroupAdminLevel.ADMINISTRATOR ||
                                  group.getGroupFull().getAdminLevel() == GroupAdminLevel.EDITOR)
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    public List<VkGroupFullDecorator> getConcreteObjectiveGroups(VkGroupObjective objective) {
+    public List<VkGroupFullWrapper> getConcreteObjectiveGroups(VkGroupObjective objective) {
         return groups.values().stream()
                 .filter(group -> group.getObjective().equals(objective))
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    public List<VkGroupFullDecorator> getAllGroups() {
+    public List<VkGroupFullWrapper> getAllGroups() {
         return groups.values().stream()
-                .sorted(Comparator.comparing(VkGroupFullDecorator::getObjective))
+                .sorted(Comparator.comparing(VkGroupFullWrapper::getObjective))
                 .collect(Collectors.toUnmodifiableList());
     }
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VkOwnedGroupFullApiLoader implements VkGroupFullLoader {
 
@@ -36,7 +37,7 @@ public class VkOwnedGroupFullApiLoader implements VkGroupFullLoader {
                     .filter(Filter.ADMIN, Filter.EDITOR)
                     .execute();
         } catch (ApiException | ClientException apiException) {
-            log.error("VK API ERROR: Cause", apiException.getCause());
+            log.error("VK API ERROR: Cause {}", apiException.getCause());
             apiException.printStackTrace();
         }
 
@@ -45,5 +46,18 @@ public class VkOwnedGroupFullApiLoader implements VkGroupFullLoader {
         }
 
         return items;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VkOwnedGroupFullApiLoader that = (VkOwnedGroupFullApiLoader) o;
+        return Objects.equals(log, that.log) && Objects.equals(api, that.api) && Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(log, api, user);
     }
 }

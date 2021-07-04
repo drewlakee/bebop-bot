@@ -12,7 +12,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 
-
 @SpringBootApplication
 public class Application {
 
@@ -40,7 +39,7 @@ public class Application {
         try {
             botsApi.registerBot(bebopBot);
         } catch (TelegramApiException e) {
-            log.error(String.format("%s: Bots launch fail", this.getClass().getSimpleName()));
+            log.error("{}: Bot's launch failed. Cause {}", this.getClass().getSimpleName(), e.getCause());
             e.printStackTrace();
         }
     }

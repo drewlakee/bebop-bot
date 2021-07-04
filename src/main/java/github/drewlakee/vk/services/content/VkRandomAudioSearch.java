@@ -9,7 +9,7 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.wall.responses.GetExtendedResponse;
 import github.drewlakee.vk.domain.attachments.VkAttachment;
 import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.slf4j.Logger;
@@ -41,9 +41,9 @@ public class VkRandomAudioSearch implements VkContentSearchStrategy {
 
     @Override
     public List<VkAttachment> search(int quantity) {
-        List<VkGroupFullDecorator> audioGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.AUDIO);
+        List<VkGroupFullWrapper> audioGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.AUDIO);
         int randomGroupIndex = random.nextInt(audioGroups.size());
-        VkGroupFullDecorator randomGroup = audioGroups.get(randomGroupIndex);
+        VkGroupFullWrapper randomGroup = audioGroups.get(randomGroupIndex);
         List<VkAttachment> attachments = new ArrayList<>();
 
         if (quantity < 1) return attachments;

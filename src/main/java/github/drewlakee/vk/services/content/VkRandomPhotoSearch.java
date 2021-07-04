@@ -9,7 +9,7 @@ import com.vk.api.sdk.objects.wall.WallpostAttachmentType;
 import com.vk.api.sdk.objects.wall.responses.GetExtendedResponse;
 import github.drewlakee.vk.domain.attachments.VkAttachment;
 import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.slf4j.Logger;
@@ -41,9 +41,9 @@ public class VkRandomPhotoSearch implements VkContentSearchStrategy {
 
     @Override
     public List<VkAttachment> search(int quantity) {
-        List<VkGroupFullDecorator> photoGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.PHOTO);
+        List<VkGroupFullWrapper> photoGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.PHOTO);
         int randomGroupIndex = random.nextInt(photoGroups.size());
-        VkGroupFullDecorator randomGroup = photoGroups.get(randomGroupIndex);
+        VkGroupFullWrapper randomGroup = photoGroups.get(randomGroupIndex);
         List<VkAttachment> attachments = new ArrayList<>();
 
         if (quantity < 1) return attachments;
