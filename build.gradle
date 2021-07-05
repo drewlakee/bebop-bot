@@ -21,7 +21,7 @@ bootJar {
 
 dependencies {
     implementation('org.springframework.boot:spring-boot-starter:2.4.2')
-    implementation('com.vk.api:sdk:1.0.6') {
+    implementation('com.vk.api:sdk:1.0.7') {
         exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
     }
     implementation('org.telegram:telegrambots:4.6')
