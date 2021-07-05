@@ -3,7 +3,7 @@ package github.drewlakee.telegram.commands.users;
 import com.vk.api.sdk.objects.groups.GroupAdminLevel;
 import github.drewlakee.telegram.commands.BotCommand;
 import github.drewlakee.telegram.commands.handlers.MessageHandler;
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
 
     private String prettyGroupsDesk() {
         StringBuilder groupsDesk = new StringBuilder();
-        List<VkGroupFullDecorator> allGroups = custodian.getAllGroups();
+        List<VkGroupFullWrapper> allGroups = custodian.getAllGroups();
         groupsDesk.append("Всего уникальных групп ").append(allGroups.size()).append("\n").append("\n");
         constructCountedGroupListOnDesk(groupsDesk, allGroups);
         constructGroupListWithObjectives(groupsDesk, allGroups);
@@ -57,10 +57,10 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         return groupsDesk.toString();
     }
 
-    private void constructGroupListWithAdminRoles(StringBuilder groupsDesk, List<VkGroupFullDecorator> allGroups) {
+    private void constructGroupListWithAdminRoles(StringBuilder groupsDesk, List<VkGroupFullWrapper> allGroups) {
         GroupAdminLevel[] groupRoles = GroupAdminLevel.values();
         for (final GroupAdminLevel currentGroupRole : groupRoles) {
-            List<VkGroupFullDecorator> groupsWithCurrentGroupRole = allGroups.stream()
+            List<VkGroupFullWrapper> groupsWithCurrentGroupRole = allGroups.stream()
                     .filter(group -> group.getGroupFull().getAdminLevel() == currentGroupRole)
                     .collect(Collectors.toUnmodifiableList());
 
@@ -71,11 +71,11 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         }
     }
 
-    private void constructGroupListWithObjectives(StringBuilder groupsDesk, List<VkGroupFullDecorator> allGroups) {
+    private void constructGroupListWithObjectives(StringBuilder groupsDesk, List<VkGroupFullWrapper> allGroups) {
         VkGroupObjective[] groupObjectives = VkGroupObjective.values();
         for (final VkGroupObjective currentGroupObjective : groupObjectives) {
             if (currentGroupObjective != VkGroupObjective.EMPTY) {
-                List<VkGroupFullDecorator> groupsWithCurrentObjective = allGroups.stream()
+                List<VkGroupFullWrapper> groupsWithCurrentObjective = allGroups.stream()
                         .filter(group -> group.getObjective() == currentGroupObjective)
                         .collect(Collectors.toUnmodifiableList());
 
@@ -85,7 +85,7 @@ public class GroupsCommand extends BotCommand implements MessageHandler {
         }
     }
 
-    private void constructCountedGroupListOnDesk(StringBuilder groupsDesk, List<VkGroupFullDecorator> concreteGroups) {
+    private void constructCountedGroupListOnDesk(StringBuilder groupsDesk, List<VkGroupFullWrapper> concreteGroups) {
         for (int count = 0; count < concreteGroups.size(); count++) {
             groupsDesk.append(count + 1).append(". ");
             groupsDesk.append("<a href=\"").append("https://vk.com/").append(concreteGroups.get(count).getGroupFull().getScreenName()).append("\">");

@@ -9,7 +9,7 @@ import com.vk.api.sdk.objects.wall.WallpostAttachmentType;
 import com.vk.api.sdk.objects.wall.responses.GetExtendedResponse;
 import github.drewlakee.vk.domain.attachments.VkAttachment;
 import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupObjective;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.slf4j.Logger;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -41,9 +42,9 @@ public class VkRandomPhotoSearch implements VkContentSearchStrategy {
 
     @Override
     public List<VkAttachment> search(int quantity) {
-        List<VkGroupFullDecorator> photoGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.PHOTO);
+        List<VkGroupFullWrapper> photoGroups = custodian.getConcreteObjectiveGroups(VkGroupObjective.PHOTO);
         int randomGroupIndex = random.nextInt(photoGroups.size());
-        VkGroupFullDecorator randomGroup = photoGroups.get(randomGroupIndex);
+        VkGroupFullWrapper randomGroup = photoGroups.get(randomGroupIndex);
         List<VkAttachment> attachments = new ArrayList<>();
 
         if (quantity < 1) return attachments;
@@ -96,4 +97,16 @@ public class VkRandomPhotoSearch implements VkContentSearchStrategy {
         return attachments;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VkRandomPhotoSearch that = (VkRandomPhotoSearch) o;
+        return Objects.equals(custodian, that.custodian) && Objects.equals(api, that.api) && Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(custodian, api, user);
+    }
 }

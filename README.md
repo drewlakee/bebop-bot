@@ -29,6 +29,7 @@ vk_photo_groups_ids     | Уникальные идентификаторы со
 
 Параметр                 | Описание  |
 ------------            |---|
+wall_post_groups_scope  | Уникальные идентификаторы сообществ ВКонтакте, которыми вы хотите ограничиться в списке групп, доступных при отправке собранного поста. Параметры указываются слитно с разделителем ",". Пример: my_group_id0,another_my_group_id12 <br><br> По умолчанию бот может отправить пост во все ваши группы, где у вас есть права администратора или редактора.
 bot_threads             | Количество потоков, которые будут проинициализированы при старте. Потоки обрабатывают параллельно входящие запросы.  |
 bot_proxy_type          | Протоколы для прокси. Доступные: HTTP, SOCKS4, SOCKS5. Подробнее в [документации TelegramBots](https://github.com/rubenlagus/TelegramBots/wiki/Getting-Started).  |
 bot_proxy_host          | IPv4 адрес хост-сервера  |
@@ -36,7 +37,7 @@ bot_proxy_port          | Порт хост-сервера  |
 
 ### Шоукейсы
 
-[![IMAGE ALT TEXT HERE](https://i9.ytimg.com/vi/FxE_PlekTss/mq2.jpg?sqp=CLTFi4MG&rs=AOn4CLD-yuRIozlj482u9Cel0FbjMZiIdQ)](https://youtu.be/FxE_PlekTss)
+- [Пример использования бота [YouTube]](https://youtu.be/FxE_PlekTss)
 
 ### Развертывание
 
@@ -76,7 +77,7 @@ version: "3"
 
 services:
 
-  telegram-bebop-bot:
+  bebop-bot:
     container_name: bebop-bot
     image: drewlakee/bebop-bot:latest
     environment:

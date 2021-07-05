@@ -1,12 +1,12 @@
-FROM openjdk:14-alpine
+FROM openjdk:11-slim
 
 LABEL maintainer = "Andrew Aleynikov [drew.lake@yandex.ru]"
 
-COPY . /
+COPY [".", "/bebop-bot"]
 
-RUN chmod 777 gradlew
-RUN ./gradlew build --no-daemon
+WORKDIR /bebop-bot
 
-RUN cp build/libs/bebop-bot-1.0.1.jar /bin
+RUN ["chmod", "+x", "./gradlew"]
+RUN ["./gradlew", "build", "--no-daemon"]
 
-ENTRYPOINT ["java", "-jar", "/bin/bebop-bot-1.0.1.jar"]
+ENTRYPOINT ["java", "-jar", "build/libs/bebop-bot-1.0.2.jar"]

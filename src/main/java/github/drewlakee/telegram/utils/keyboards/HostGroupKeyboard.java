@@ -1,6 +1,6 @@
 package github.drewlakee.telegram.utils.keyboards;
 
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -19,9 +19,9 @@ public class HostGroupKeyboard {
     }
 
     public InlineKeyboardMarkup build(String callbackCommand, boolean withCancel) {
-        List<VkGroupFullDecorator> groupsWithEditableRights = custodian.getGroupsWithEditableRights();
+        List<VkGroupFullWrapper> groupsWithEditableRights = custodian.getGroupsWithEditableRights();
 
-        for (VkGroupFullDecorator editableGroup : groupsWithEditableRights) {
+        for (VkGroupFullWrapper editableGroup : groupsWithEditableRights) {
             this.keyboard.addButton(new InlineKeyboardButton()
                     .setText(editableGroup.getGroupFull().getName())
                     .setCallbackData(callbackCommand + "_group_id" + editableGroup.getGroupFull().getId()))

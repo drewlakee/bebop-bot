@@ -12,7 +12,7 @@ import github.drewlakee.telegram.utils.ResponseMessageDispatcher;
 import github.drewlakee.vk.domain.attachments.VkAttachment;
 import github.drewlakee.vk.domain.attachments.VkAudioAttachment;
 import github.drewlakee.vk.domain.attachments.VkPhotoAttachment;
-import github.drewlakee.vk.domain.groups.VkGroupFullDecorator;
+import github.drewlakee.vk.domain.groups.VkGroupFullWrapper;
 import github.drewlakee.vk.domain.groups.VkGroupsCustodian;
 import github.drewlakee.vk.services.VkWallPostService;
 import github.drewlakee.vk.services.content.VkContentSearchStrategy;
@@ -46,8 +46,8 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
     @Autowired
     public PostCommand(VkGroupsCustodian custodian,
                        VkWallPostService vkWallPostService,
-                       @Qualifier("vkRandomAudioCachedSearch") VkContentSearchStrategy randomAudioContent,
-                       @Qualifier("vkRandomPhotoCachedSearch") VkContentSearchStrategy randomPhotoContent) {
+                       @Qualifier("vkRandomAudioSearch") VkContentSearchStrategy randomAudioContent,
+                       @Qualifier("vkRandomPhotoSearch") VkContentSearchStrategy randomPhotoContent) {
         super("/post");
         this.custodian = custodian;
         this.vkWallPostService = vkWallPostService;
@@ -141,13 +141,15 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
         }
 
         switch (handleCallback) {
-            case CONSTRUCT -> sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity);
-            case REFRESH_ONLY_AUDIO -> sendContentSetWithOnlyAudioUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
-            case REFRESH_ONLY_PHOTO -> sendContentSetWithOnlyPhotoUpdated(sender, callbackQuery, photosQuantity, audiosQuantity);
-            case CHANGE_PHOTO_QUANTITY -> sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity);
-            case CHANGE_AUDIO_QUANTITY -> sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity);
-            case GROUP -> sendSetToGroup(sender, callbackQuery, groupId);
-            case SEND, SEND_AGAIN -> sendGroupKeyboard(sender, callbackQuery);
+            case CONSTRUCT: sendContentSet(sender, callbackQuery, photosQuantity, audiosQuantity); break;
+            case REFRESH_ONLY_AUDIO: sendContentSetWithOnlyAudioUpdated(sender, callbackQuery, photosQuantity, audiosQuantity); break;
+            case REFRESH_ONLY_PHOTO: sendContentSetWithOnlyPhotoUpdated(sender, callbackQuery, photosQuantity, audiosQuantity); break;
+            case CHANGE_PHOTO_QUANTITY: sendPhotoQuantityNumpad(sender, callbackQuery, audiosQuantity); break;
+            case CHANGE_AUDIO_QUANTITY: sendAudioQuantityNumpad(sender, callbackQuery, photosQuantity); break;
+            case GROUP: sendSetToGroup(sender, callbackQuery, groupId); break;
+            case SEND:
+            case SEND_AGAIN:
+                sendGroupKeyboard(sender, callbackQuery);
         }
     }
 
@@ -308,7 +310,7 @@ public class PostCommand extends BotCommand implements CallbackQueryHandler, Mes
             vkAttachments.add(keys.get(key));
         }
 
-        Optional<VkGroupFullDecorator> first = custodian.getGroupsWithEditableRights().stream().filter(group -> group.getGroupFull().getId() == groupId).findFirst();
+        Optional<VkGroupFullWrapper> first = custodian.getGroupsWithEditableRights().stream().filter(group -> group.getGroupFull().getId() == groupId).findFirst();
 
         EditMessageReplyMarkup response = new EditMessageReplyMarkup();
         response.setChatId(callbackQuery.getMessage().getChatId());

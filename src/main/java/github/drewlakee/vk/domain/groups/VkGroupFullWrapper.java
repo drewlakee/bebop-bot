@@ -4,17 +4,17 @@ import com.vk.api.sdk.objects.groups.GroupFull;
 
 import java.util.Objects;
 
-public class VkGroupFullDecorator {
+public class VkGroupFullWrapper {
 
-    private VkGroupObjective objective;
-    private GroupFull groupFull;
+    private final VkGroupObjective objective;
+    private final GroupFull groupFull;
 
-    public VkGroupFullDecorator(GroupFull groupFull) {
+    public VkGroupFullWrapper(GroupFull groupFull) {
         this.objective = VkGroupObjective.EMPTY;
         this.groupFull = groupFull;
     }
 
-    public VkGroupFullDecorator(VkGroupObjective objective, GroupFull groupFull) {
+    public VkGroupFullWrapper(VkGroupObjective objective, GroupFull groupFull) {
         this.objective = objective;
         this.groupFull = groupFull;
     }
@@ -31,7 +31,7 @@ public class VkGroupFullDecorator {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        VkGroupFullDecorator that = (VkGroupFullDecorator) o;
+        VkGroupFullWrapper that = (VkGroupFullWrapper) o;
         return objective == that.objective && Objects.equals(groupFull, that.groupFull);
     }
 
