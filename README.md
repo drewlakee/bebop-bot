@@ -77,7 +77,7 @@ version: "3"
 
 services:
 
-  telegram-bebop-bot:
+  bebop-bot:
     container_name: bebop-bot
     image: drewlakee/bebop-bot:latest
     environment:
