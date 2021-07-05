@@ -37,7 +37,7 @@ bot_proxy_port          | Порт хост-сервера  |
 
 ### Шоукейсы
 
-- [Example of general usage [YouTube]](https://youtu.be/FxE_PlekTss)
+- [Пример использования бота [YouTube]](https://youtu.be/FxE_PlekTss)
 
 ### Развертывание
 
