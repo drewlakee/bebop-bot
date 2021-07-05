@@ -37,7 +37,7 @@ bot_proxy_port          | Порт хост-сервера  |
 
 ### Шоукейсы
 
-[![SHOWCASE](https://user-images.githubusercontent.com/44072343/124400609-62c04780-dd2c-11eb-9beb-b08197556784.png)](https://youtu.be/FxE_PlekTss)
+- [Example of general usage [YouTube]](https://youtu.be/FxE_PlekTss)
 
 ### Развертывание
 
