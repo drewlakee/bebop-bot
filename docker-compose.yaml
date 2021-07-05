@@ -2,9 +2,9 @@ version: "3"
 
 services:
 
-  bot-content-delivery:
-    container_name: bot-content-delivery
-    image: bot-content-delivery:1.0.0
+  bebop-bot:
+    container_name: bebop-bot
+    image: bebop-bot:1.0.2
     build: .
     environment:
       - bot_username=<bot_username>
@@ -13,6 +13,7 @@ services:
       - vk_token=<vk_token>
       - vk_audio_groups_ids=<vk_audio_groups_ids>
       - vk_photo_groups_ids=<vk_photo_groups_ids>
+      #-wall_post_groups_scope=<vk_owned_groups_ids>
       #- bot_threads=<count>
       #- bot_proxy_type=<HTTP|SOCKS4|SOCKS5>
       #- bot_proxy_host=<host>
